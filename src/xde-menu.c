@@ -42,162 +42,21 @@
 
  *****************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "autoconf.h"
-#endif
-
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600
-#endif
-
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include <sys/stat.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <time.h>
-#include <signal.h>
-#include <syslog.h>
-#include <sys/utsname.h>
-
-#include <assert.h>
-#include <locale.h>
-#include <langinfo.h>
-#include <stdarg.h>
-#include <strings.h>
-#include <regex.h>
-
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xresource.h>
-#ifdef XRANDR
-#include <X11/extensions/Xrandr.h>
-#include <X11/extensions/randr.h>
-#endif
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif
-#ifdef STARTUP_NOTIFICATION
-#define SN_API_NOT_YET_FROZEN
-#include <libsn/sn.h>
-#endif
-#include <X11/SM/SMlib.h>
-#include <glib.h>
-#include <gdk/gdkx.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gtk/gtk.h>
-#include <cairo.h>
-
-#define WNCK_I_KNOW_THIS_IS_UNSTABLE
-#include <libwnck/libwnck.h>
-
-#define GMENU_I_KNOW_THIS_IS_UNSTABLE
-#include <gmenu-tree.h>
-
-#include <pwd.h>
-
-#ifdef _GNU_SOURCE
-#include <getopt.h>
-#endif
-
-#define XPRINTF(args...) do { } while (0)
-#define OPRINTF(args...) do { if (options.output > 1) { \
-	fprintf(stderr, "I: "); \
-	fprintf(stderr, args); \
-	fflush(stderr); } } while (0)
-#define DPRINTF(args...) do { if (options.debug) { \
-	fprintf(stderr, "D: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr); } } while (0)
-#define EPRINTF(args...) do { \
-	fprintf(stderr, "E: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr);   } while (0)
-#define WPRINTF(args...) do { \
-	fprintf(stderr, "W: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr);   } while (0)
-#define DPRINT() do { if (options.debug) { \
-	fprintf(stderr, "D: %s +%d %s()\n", __FILE__, __LINE__, __func__); \
-	fflush(stderr); } } while (0)
-
-#undef EXIT_SUCCESS
-#undef EXIT_FAILURE
-#undef EXIT_SYNTAXERR
-
-#define EXIT_SUCCESS	0
-#define EXIT_FAILURE	1
-#define EXIT_SYNTAXERR	2
+#include "xde-menu.h"
 
 #define XA_SELECTION_NAME	"_XDE_MENU_S%d"
 
-static int saveArgc;
-static char **saveArgv;
+int saveArgc;
+char **saveArgv;
 
-static Atom _XA_XDE_WM_NAME;
-static Atom _XA_XDE_WM_MENU;
-static Atom _XA_XDE_WM_THEME;
-static Atom _XA_XDE_WM_ICONTHEME;
-static Atom _XA_XDE_THEME_NAME;
-static Atom _XA_XDE_ICON_THEME_NAME;
-static Atom _XA_GTK_READ_RCFILES;
-static Atom _XA_MANAGER;
-
-typedef enum {
-	CommandDefault,
-	CommandRun,
-	CommandQuit,
-	CommandReplace,
-	CommandHelp,
-	CommandVersion,
-	CommandCopying,
-} Command;
-
-typedef enum {
-	StyleFullmenu,
-	StyleAppmenu,
-	StyleEntries,
-} Style;
-
-typedef struct {
-	int debug;
-	int output;
-	Command command;
-	char *format;
-	Style style;
-	char *desktop;
-	char *charset;
-	char *language;
-	char *locale;
-	char *rootmenu;
-	Bool dieonerr;
-	Bool fileout;
-	char *filename;
-	Bool noicons;
-	char *theme;
-	Bool launch;
-	char *clientId;
-	char *saveFile;
-	char *runhist;
-	char *recapps;
-	char *recently;
-	char *recent;
-	char *keep;
-	char *menu;
-} Options;
+Atom _XA_XDE_WM_NAME;
+Atom _XA_XDE_WM_MENU;
+Atom _XA_XDE_WM_THEME;
+Atom _XA_XDE_WM_ICONTHEME;
+Atom _XA_XDE_THEME_NAME;
+Atom _XA_XDE_ICON_THEME_NAME;
+Atom _XA_GTK_READ_RCFILES;
+Atom _XA_MANAGER;
 
 Options options = { 0, 1, };
 
@@ -228,21 +87,7 @@ Options defaults = {
 	.menu = "applications",
 };
 
-typedef struct {
-	int index;
-	GdkDisplay *disp;
-	GdkScreen *scrn;
-	GdkWindow *root;
-	WnckScreen *wnck;
-	char *theme;
-	char *itheme;
-	Window selwin;
-	Atom atom;
-	char *wmname;
-	Bool goodwm;
-} XdeScreen;
-
-static XdeScreen *screens;
+XdeScreen *screens;
 
 char *xdg_data_home = NULL;
 char *xdg_data_dirs = NULL;
@@ -266,12 +111,12 @@ char *xdg_config_last = NULL;
 GMenuTree *tree = NULL;
 
 static void
-display_level(int level)
+display_level(FILE *file, int level)
 {
 	int i;
 
 	for (i = 0; i < level; i++)
-		fputs("  ", stdout);
+		fputs("  ", file);
 }
 
 static void display_directory(FILE *file, GMenuTreeDirectory *directory, int level);
@@ -283,7 +128,7 @@ static void display_alias(FILE *file, GMenuTreeAlias *alias, int level);
 static void
 display_invalid(FILE *file, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Invalid Entry");
 }
 
@@ -294,61 +139,82 @@ display_entry(FILE *file, GMenuTreeEntry *entry, int level)
 {
 	GDesktopAppInfo *info;
 	GIcon *icon;
+	const gchar *const *act;
 
 	info = gmenu_tree_entry_get_app_info(entry);
 
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Entry");
 
-	display_level(level + 1);
+	level++;
+
+	display_level(file, level);
 	fprintf(file, "Name=%s\n", g_app_info_get_name(G_APP_INFO(info)));
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "GenericName=%s\n", g_desktop_app_info_get_generic_name(info));
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "DisplayName=%s\n", g_app_info_get_display_name(G_APP_INFO(info)));
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "Comment=%s\n", g_app_info_get_description(G_APP_INFO(info)));
 	if ((icon = g_app_info_get_icon(G_APP_INFO(info)))) {
-		display_level(level + 1);
+		display_level(file, level);
 		fprintf(file, "Icon=%s\n", g_icon_to_string(icon));
 	}
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "TryExec=%s\n", g_app_info_get_executable(G_APP_INFO(info)));
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "Exec=%s\n", g_app_info_get_commandline(G_APP_INFO(info)));
-	display_level(level + 1);
-	fprintf(file, "Terminal=%s\n", g_desktop_app_info_get_string(info, "Terminal") ? "true" : "false");
+	display_level(file, level);
+	fprintf(file, "Terminal=%s\n",
+		g_desktop_app_info_get_string(info, "Terminal") ? "true" : "false");
 
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "Path=%s\n", gmenu_tree_entry_get_desktop_file_path(entry));
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "Id=%s\n", gmenu_tree_entry_get_desktop_file_id(entry));
-	display_level(level + 1);
+	display_level(file, level);
 	fprintf(file, "Excluded=%s\n", gmenu_tree_entry_get_is_excluded(entry) ? "true" : "false");
-	display_level(level + 1);
-	fprintf(file, "NoDisplay=%s\n", gmenu_tree_entry_get_is_nodisplay_recurse(entry) ? "true" : "false");
-	display_level(level + 1);
-	fprintf(file, "Unallocated=%s\n", gmenu_tree_entry_get_is_unallocated(entry) ? "true" : "false");
+	display_level(file, level);
+	fprintf(file, "NoDisplay=%s\n",
+		gmenu_tree_entry_get_is_nodisplay_recurse(entry) ? "true" : "false");
+	display_level(file, level);
+	fprintf(file, "Unallocated=%s\n",
+		gmenu_tree_entry_get_is_unallocated(entry) ? "true" : "false");
+
+	if ((act = g_desktop_app_info_list_actions(info)) && *act) {
+		display_level(file, level);
+		fprintf(file, "%s\n", "Menu Entry Actions");
+
+		level++;
+
+		while (*act) {
+			display_level(file, level);
+			fprintf(file, "DesktopAction=%s\n", *act);
+			display_level(file, level);
+			fprintf(file, "Name=%s\n", g_desktop_app_info_get_action_name(info, *act));
+			act++;
+		}
+	}
 }
 
 static void
 display_separator(FILE *file, GMenuTreeSeparator *separator, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Separator");
 }
 
 static void
 display_header(FILE *file, GMenuTreeHeader *header, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Header");
 }
 
 static void
 display_alias(FILE *file, GMenuTreeAlias *alias, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Alias");
 }
 
@@ -359,23 +225,23 @@ display_directory(FILE* file, GMenuTreeDirectory *directory, int level)
 	GMenuTreeItemType type;
 	GIcon *icon;
 
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Directory");
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Name=%s\n", gmenu_tree_directory_get_name(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "GenericName=%s\n", gmenu_tree_directory_get_generic_name(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Comment=%s\n", gmenu_tree_directory_get_comment(directory));
 	if ((icon = gmenu_tree_directory_get_icon(directory))) {
-		display_level(level + 1);
+		display_level(file, level + 1);
 		fprintf(file, "Icon=%s\n", g_icon_to_string(icon));
 	}
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Path=%s\n", gmenu_tree_directory_get_desktop_file_path(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Id=%s\n", gmenu_tree_directory_get_menu_id(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "NoDisplay=%s\n",
 		gmenu_tree_directory_get_is_nodisplay(directory) ? "true" : "false");
 
@@ -428,50 +294,50 @@ make_menu(int argc, char *argv[])
 static void
 display_entry(FILE *file, GMenuTreeEntry *entry, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Entry");
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Name=%s\n", gmenu_tree_entry_get_name(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "GenericName=%s\n", gmenu_tree_entry_get_generic_name(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "DisplayName=%s\n", gmenu_tree_entry_get_display_name(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Comment=%s\n", gmenu_tree_entry_get_comment(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Icon=%s\n", gmenu_tree_entry_get_icon(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Exec=%s\n", gmenu_tree_entry_get_exec(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Terminal=%s\n", gmenu_tree_entry_get_launch_in_terminal(entry) ? "true" : "false");
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Path=%s\n", gmenu_tree_entry_get_desktop_file_path(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Id=%s\n", gmenu_tree_entry_get_desktop_file_id(entry));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Excluded=%s\n", gmenu_tree_entry_get_is_excluded(entry) ? "true" : "false");
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "NoDisplay=%s\n", gmenu_tree_entry_get_is_nodisplay(entry) ? "true" : "false");
 }
 
 static void
 display_separator(FILE *file, GMenuTreeSeparator *separator, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Separator");
 }
 
 static void
 display_header(FILE *file, GMenuTreeHeader *header, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Header");
 }
 
 static void
 display_alias(FILE *file, GMenuTreeAlias *alias, int level)
 {
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Alias");
 }
 
@@ -517,19 +383,19 @@ display_directory(FILE *file, GMenuTreeDirectory *directory, int level)
 		.file = file,
 	};
 
-	display_level(level);
+	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Directory");
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Name=%s\n", gmenu_tree_directory_get_name(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Comment=%s\n", gmenu_tree_directory_get_comment(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Icon=%s\n", gmenu_tree_directory_get_icon(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Path=%s\n", gmenu_tree_directory_get_desktop_file_path(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "Id=%s\n", gmenu_tree_directory_get_menu_id(directory));
-	display_level(level + 1);
+	display_level(file, level + 1);
 	fprintf(file, "NoDisplay=%s\n", gmenu_tree_directory_get_is_nodisplay(directory) ? "true" : "false");
 	contents = gmenu_tree_directory_get_contents(directory);
 	g_slist_foreach(contents, display_item, &ctx);
