@@ -136,6 +136,9 @@ eval "xdgdatadir=\"$xdgdatadir\""
 eval "xdgdatadir=\"$xdgdatadir\""
 AC_SUBST([xdgdatadir])
 
+xdemoddir='${libdir}/xde-menu/modules'
+AC_SUBST([xdemoddir])
+
 autostartdir='$(xdgconfdir)/xdg/autostart'
 AC_SUBST([autostartdir])
 

@@ -1,3 +1,235 @@
+=pod
+
+=head1 NAME
+
+xde-menu -- generate XDG compliant menus
+
+=head1 SYNOPSIS
+
+xde-menu -- [ OPTIONS ]
+
+=head1 DESCRIPTION
+
+B<xde-menu> is a command-line program that can be used to generate an
+XDG compliant menu in a number of formats to support configuration of
+the root menu for light-weight window managers.
+
+B<xde-menu> is capable of generating either a complete menu for a
+number of well-known window managers, or for generating a sub-menu that
+can be included in the root menu of those window managers.
+
+=head1 OPTIONS
+
+B<xde-menu> uses L<getopt_long_only(3)>, so non-ambiguous option
+abbreviations are permitted.  B<xde-menu> recognizes the following
+options:
+
+=head2 COMMAND OPTIONS
+
+Command options affect the primary operating mode of the program.  Only
+one command option can be specified.  B<xde-menu> recognizes the
+following command options:
+
+=over
+
+=item B<--monitor>, B<-m>
+
+Specifies that B<xde-menu> is not to exit after successfully
+generating the menu, but to monitor pertinent directories for changes,
+and regenerate the menu when changes are detected.  This option implies
+the B<--output> option.  This option requires L<libinotify(3)>.
+
+=item B<--replace>, B<-R>
+
+Replace a currently running instance (that was invoked with the
+B<--monitor> option).  It is not an error if no other instance is
+running.  This option implies the B<--monitor> option.
+
+=item B<--quit>, B<-q>
+
+Ask a currently running instance (that was invoked with the B<--monitor>
+option) to quit.  It is not an error if no other instance is running.
+
+=item B<--help>, B<-h>
+
+Print usage information, including the current values of option
+defaults, and exit.
+
+=item B<--version>, B<-V>
+
+Print version information and exit.
+
+=item B<--copying>, B<-C>
+
+Print coping information and exit.
+
+=back
+
+=head2 GENERAL OPTIONS
+
+=over
+
+=item B<--verbose>, B<-v> [I<LEVEL>]
+
+When generating output, generate more verbose output.  Increments or
+sets the output verbosity to I<LEVEL>.
+
+=item B<--debug>, B<-D> [I<LEVEL>]
+
+Print debugging information to standard error during operation.
+Increments or sets the debug verbosity to I<LEVEL>.
+
+=item B<--format>, B<-f> I<FORMAT>
+
+Specify the output format.  Recognized output formats are as follows:
+L<2bwm(1)>,
+L<adwm(1)>,
+L<afterstep(1)>,
+L<awesome(1)>,
+L<blackbox(1)>,
+L<ctwm(1)>,
+L<cwm(1)>,
+L<dtwm(1)>,
+L<dwm(1)>,
+L<echinus(1)>,
+L<etwm(1)>,
+L<fluxbox(1)>,
+L<flwm(1)>,
+L<fvwm(1)>,
+L<icewm(1)>,
+L<jwm(1)>,
+L<matwm2(1)>,
+L<metacity(1)>,
+L<mwmw(1)>,
+L<openbox(1)>,
+L<pekwm(1)>,
+L<spectrwm(1)>,
+L<twm(1)>,
+L<uwm(1)>,
+L<vtwm(1)>,
+L<waimea(1)>,
+L<wind(1)>,
+L<wmaker(1)>,
+L<wmx(1)>,
+L<yeahwm(1)>.
+
+When unspecified, the setting of the C<_XDE_WM_NAME> property on the
+root window (or the C<_NET_WM_NAME> property on the window manager check
+window) is examined to determine the format.  This is accomplished by
+converting the value of either property to all lower case.  See also,
+L</ENVIRONMENT>.
+
+=item B<--fullmenu>, B<-F>, B<--nofullmenu>, B<-N>
+
+When specified, output a full menu and not only the application
+sub-menu, or not.  The defaults it to output a full menu.
+
+=item B<--desktop>, B<-d> I<DESKTOP>
+
+Specify the desktop name for C<NotShowIn> and C<OnlyShowInc>
+comparisons.  The default is the all upper-case value corresponding to
+the format unless C<XDG_CURRENT_DESKTOP> is defined.
+
+=item B<--charset>, B<-c> I<CHARSET>
+
+Specify the character set with which to output the menu.  Defaults to
+the character set in use by the current local.
+
+=item B<--language>, B<-l> I<LANGUAGE>
+
+Specify the output language for the menu.  Defaults to the language in
+the current locale.
+
+=item B<--rooo-menu>, B<-r> I<MENU>
+
+Specify the location of the root menu file.  The default is calculated
+using XDG denvironment variables (see L</ENVIRONMENT>), and defaults to
+the file F<${XDG_MEU_PREFIX}applications.menu> in the
+F<$XDG_CONFIG_HOME:$XDG_CONFIG_DIRS> search path.
+
+=item B<--die-on-error>, B<-e>
+
+Abort execution on any error.
+
+=item B<--output>, B<-o> I<FILENAME>
+
+Write output to the file, I<FILENAME>.  This is particularly useful with
+option B<--die-on-error> as the output will not be written at all if an
+error is encountered.  If the I<FILENAME> is not specified, the default
+menu location for the current B<--format> will be used.
+
+=item B<--noicons>, B<-n>
+
+Do not include icons in the generated menu files.  This option has no
+effect when it is not possible to generate icons for the menu format.
+That is, when the B<--format> is one such as L<blackbox(1)>, or
+L<waimea(1)>, it is not possible to place icons in the menu and this
+option is therefore ignored.  The default is to place icons in in
+capable generated menus.
+
+=item B<--theme>, B<-t> I<THEME>
+
+Specify the icon theme name ot use when generating icons.  The default
+is to obtain the icon theme name from the default locations (such as
+the F<$HOME/.gtk2rc-2.0> file).
+
+=item B<--style>, B<-s> I<STYLE>
+
+Specify which format of output to generate.  I<STYLE> can be one of the
+following:
+
+=over
+
+=item fullmenu
+
+The default: output a full menu suitable for use as the root menu
+specification for the window manager.
+
+=item appmen
+
+Output a complete menu; however, only output the applications portion of
+the menu (no styles, window manager controls, logout, etc), suitable to
+reference as an "Appications" menu.
+
+=item entries
+
+Only output the entires for the menu but not the enclosing menu itself:
+this is useful for some pipe menu commands.
+
+=back
+
+=item B<--launch>, B<-L>, B<--nolaunch>
+
+Specifies whether to use B<xde-launch(1)> to launch the desktop files
+directly or not.  This option will only be honored when the
+L<xde-launch(1)> program is available and accessible.
+
+=back
+
+=head1 ENVIRONMENT
+
+The following environment variables are significant to the operation of
+B<xde-menu>:
+
+=over
+
+=item C<$XDG_CURRENT_DESKTOP>
+
+Specifies the current desktop.  When the B<--format> is not specified,
+the format defaults to the value of this environment variable converted
+to lower-case.  When the B<--desktop> is not specified, the desktop
+defaults to the value of this environment variable.
+
+=item C<$XDG_MENU_PREFIX>
+
+Specifies the prefix to apply to the default menu name to derive the
+root menu unless specified with the B<--root-menu> option.  When
+unspecified, this variable defaults to a null string.
+
+B<xde-menu> finds the root menu using the following logic:
+
+=over
+
 =item 1.
 
 If a file name is specified using the B<--root-menu> option, that file
