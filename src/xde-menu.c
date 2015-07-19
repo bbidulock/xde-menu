@@ -61,7 +61,7 @@ Atom _XA_MANAGER;
 Options options = { 0, 1, };
 
 Options defaults = {
-	.debug = 0,
+	.debug = 1,
 	.output = 1,
 	.command = CommandDefault,
 	.format = NULL,
@@ -489,39 +489,28 @@ get_selection(Bool replace, Window selwin)
 	return (gotone);
 }
 
-static Bool
-good_window_manager(XdeScreen *xscr)
+static MenuContext *
+wm_menu_context(const char *name)
 {
-	/* ignore non fully compliant names */
-	if (!xscr->wmname)
-		return False;
-	if (!strcasecmp(xscr->wmname, "fluxbox"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "blackbox"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "openbox"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "icewm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "pekwm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "jwm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "fvwm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "wmaker"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "ctwm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "vtwm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "twm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "uwm"))
-		return True;
-	if (!strcasecmp(xscr->wmname, "waimea"))
-		return True;
-	return False;
+	char dlfile[128], *p;
+	void *handle;
+	MenuContext *ops = NULL;
+
+	if (!name)
+		return NULL;
+	snprintf(dlfile, sizeof(dlfile), "xde-menu-%s.so", name);
+	for (p = dlfile; *p; p++)
+		*p = tolower(*p);
+	DPRINTF("attempting to dlopen %s\n", dlfile);
+	if ((handle = dlopen(dlfile, RTLD_NOW | RTLD_LOCAL))) {
+		DPRINTF("dlopen of %s succeeded\n", dlfile);
+		if ((ops = dlsym(handle, "xde_menu_ops")))
+			ops->handle = handle;
+		else
+			EPRINTF("could not find symbol xde_menu_ops");
+	} else
+		EPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
+	return ops;
 }
 
 static void
@@ -553,7 +542,8 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 			free(xscr->wmname);
 			xscr->wmname = strdup("uwm");
 		}
-		xscr->goodwm = good_window_manager(xscr);
+		xscr->context = wm_menu_context(xscr->wmname);
+		xscr->goodwm = xscr->context ? True : False;
 	}
 	DPRINTF("window manager is '%s'\n", xscr->wmname);
 	DPRINTF("window manager is %s\n", xscr->goodwm ? "usable" : "unusable");
@@ -578,11 +568,60 @@ static void update_icon_theme(XdeScreen *xscr, Atom prop);
 static void
 do_generate(int argc, char *argv[])
 {
-	Window owner;
+	GdkDisplay *disp;
+	Display *dpy;
+	GdkScreen *scrn;
+	GdkWindow *root, *sel;
+	char selection[64] = { 0, };
+	Window selwin, owner;
+	XdeScreen *xscr;
+	int s, nscr;
 
-	if ((owner = get_selection(False, None))) {
+	DPRINTF("getting default GDK display\n");
+	disp = gdk_display_get_default();
+	DPRINTF("getting default display\n");
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+	DPRINTF("getting default GDK screen\n");
+	scrn = gdk_display_get_default_screen(disp);
+	DPRINTF("getting default GDK root window\n");
+	root = gdk_screen_get_root_window(scrn);
+
+	DPRINTF("creating select window\n");
+	selwin = XCreateSimpleWindow(dpy, GDK_WINDOW_XID(root), 0, 0, 1, 1, 0, 0, 0);
+
+	DPRINTF("checking for selection\n");
+	if ((owner = get_selection(False, selwin))) {
+		XDestroyWindow(dpy, selwin);
 		EPRINTF("%s: an instance 0x%08lx is running\n", argv[0], owner);
 		exit(EXIT_FAILURE);
+	}
+	DPRINTF("selecting inputs on 0x%08lx\n", selwin);
+	XSelectInput(dpy, selwin,
+		     StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask);
+
+	DPRINTF("getting number of screens\n");
+	nscr = gdk_display_get_n_screens(disp);
+	DPRINTF("allocating %d screen structures\n", nscr);
+	screens = calloc(nscr, sizeof(*screens));
+
+	DPRINTF("getting GDK window for 0x%08lx\n", selwin);
+	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
+	DPRINTF("adding a filter for the select window\n");
+	gdk_window_add_filter(sel, selwin_handler, screens);
+
+	DPRINTF("initializing %d screens\n", nscr);
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		xscr->index = s;
+		xscr->atom = XInternAtom(dpy, selection, False);
+		xscr->disp = disp;
+		xscr->scrn = gdk_display_get_screen(disp, s);
+		xscr->root = gdk_screen_get_root_window(xscr->scrn);
+		xscr->selwin = selwin;
+		gdk_window_add_filter(xscr->root, root_handler, xscr);
+		init_wnck(xscr);
+		update_theme(xscr, None);
+		update_icon_theme(xscr, None);
 	}
 	make_menu(argc, argv);
 }
@@ -617,6 +656,7 @@ do_run(int argc, char *argv[], Bool replace)
 	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
 	gdk_window_add_filter(sel, selwin_handler, screens);
 
+	DPRINTF("initializing %d screens\n", nscr);
 	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
 		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
 		xscr->index = s;

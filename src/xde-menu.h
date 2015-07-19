@@ -83,6 +83,7 @@
 #include <strings.h>
 #include <regex.h>
 #include <pwd.h>
+#include <dlfcn.h>
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -112,8 +113,6 @@
 
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-tree.h>
-
-#include <pwd.h>
 
 #ifdef _GNU_SOURCE
 #include <getopt.h>
@@ -206,37 +205,10 @@ typedef struct {
 extern Options options;
 extern Options defaults;
 
-typedef struct {
-	int index;
-	GdkDisplay *disp;
-	GdkScreen *scrn;
-	GdkWindow *root;
-	WnckScreen *wnck;
-	char *theme;
-	char *itheme;
-	Window selwin;
-	Atom atom;
-	char *wmname;
-	Bool goodwm;
-} XdeScreen;
-
-extern XdeScreen *screens;
-
-extern char *xdg_data_home;
-extern char *xdg_data_dirs;
-extern char *xdg_data_path;
-extern char *xdg_data_last;
-
-extern char *xdg_config_home;
-extern char *xdg_config_dirs;
-extern char *xdg_config_path;
-extern char *xdg_config_last;
-
-extern GMenuTree *tree;
-
 typedef struct MenuContext MenuContext;
 
 struct MenuContext {
+	void *handle;
 	char *name;
 	char *version;
 	GMenuTree *tree;
@@ -255,8 +227,36 @@ struct MenuContext {
 	} ops;
 	GList *(*themes) (MenuContext *ctx);
 	GList *(*styles) (MenuContext *ctx);
-
 };
+
+typedef struct {
+	int index;
+	GdkDisplay *disp;
+	GdkScreen *scrn;
+	GdkWindow *root;
+	WnckScreen *wnck;
+	char *theme;
+	char *itheme;
+	Window selwin;
+	Atom atom;
+	char *wmname;
+	Bool goodwm;
+	MenuContext *context;
+} XdeScreen;
+
+extern XdeScreen *screens;
+
+extern char *xdg_data_home;
+extern char *xdg_data_dirs;
+extern char *xdg_data_path;
+extern char *xdg_data_last;
+
+extern char *xdg_config_home;
+extern char *xdg_config_dirs;
+extern char *xdg_config_path;
+extern char *xdg_config_last;
+
+extern GMenuTree *tree;
 
 #endif				/* __XDE_MENU_H__ */
 
