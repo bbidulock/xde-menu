@@ -1,0 +1,94 @@
+=item 1.
+
+If a file name is specified using the B<--root-menu> option, that file
+name is used as the root menu.
+
+=item 2.
+
+If not found, the file name F<${XDG_MENU_PREFIX}applications.menu> is
+sought in each of the sub-directories named F<menu> in the path
+F<$XDG_CONFIG_HOME:$XDG_CONFIG_DIRS>.
+
+=item 3.
+
+If not found, the file name F<applications.menu> is sought in each of
+the F<menu> sub-directories in the path
+F<$XDG_CONFIG_HOME:$XDG_CONFIG_DIRS>.
+
+=back
+
+=item C<$XDG_CONFIG_HOME>
+
+Specifies the user XDG configuration directory.  When unspecified, defaults
+to F<$HOME/.config> in accordance with XDG specifications.
+
+=item C<$XDG_CONFIG_DIRS>
+
+Specifies the system XDG configuration directories.  When unspecified,
+defaults to F</etc/xdg> in accordance with XDG specifications.
+
+=item C<$XDG_DATA_HOME>
+
+Specifies the user XDG data directory.  When unspecified, defaults to
+F<$HOME/.local/share> in accordance with XDG specifications.
+
+=item C<$XDG_DATA_DIRS>
+
+Specifies the system XDG data directory search path.  When unspecified,
+defaults to F</usr/local/share:/usr/share> in accordance with XDG
+specific ations.
+
+=item C<$XDG_ICON_THEME>
+
+Specifies the name of the icon theme.  When not specified, the icon
+theme will be determined from configuration sources (e.g.
+F<$HOME/.gtkrc-2)>).
+
+=back
+
+=head1 HISTORY
+
+B<xde-menu> was written for a number of reasons:
+
+=over
+
+=item 1.
+
+Existing L<fluxbox(1)> menu generators that read XDG .desktop files
+(L<fbmenugen(1)>, L<menutray(1)>) do not conform to the XDG menu
+generation specifications and in particular are incapable of merging
+menus.
+
+=item 2.
+
+Existing XDG menu generators (such as the SuSE L<xdg_menu(1)> script) do
+not property merge default merge directories and do not observer
+C<E<lt>LayourtE<gt>> commands.  Also, they are poor at including icons
+in the generated menus.  They , of course, do not generate tray menus
+either.
+
+=item 3.
+
+Existing XDG menu generators run once and keep cache information, or
+have a C<regenerate> command placed in the menu.  They do not monitor
+XDG directories for changes and update menus on changes.
+
+=item 4.
+
+The L<lxpanel(1)> and L<pcmanfm(1)> menu generators do not have any of
+the above deficiencies; however, they do not create window manager
+specific sub-menus.
+
+=back
+
+=head1 AUTHOR
+
+Brian Bidulock L<mailto:bidulock@openss7.org>.
+
+=head1 SEE ALSO
+
+L<xde-style(1)>
+
+=cut
+
+# vim:set ft=pod tw=72 nocin:

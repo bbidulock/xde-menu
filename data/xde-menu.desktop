@@ -1,0 +1,15 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=Applications Menu
+GenericName=Menu
+Comment=Popup menu for the X Desktop Environment
+Icon=menu
+TryExec=xde-menu
+Exec=xde-menu
+Terminal=false
+Categories=XDE;System;Utilities;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=xde-menu
+X-GNOME-Autostart-enabled=true
