@@ -51,7 +51,7 @@ xde_wmmenu(MenuContext *ctx)
 }
 
 static GList *
-xde_appmenu(MenuContext *ctx, GList *entries, char *name)
+xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
 	return NULL;
 }

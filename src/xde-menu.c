@@ -276,11 +276,11 @@ make_menu(int argc, char *argv[])
 	GMenuTreeDirectory *directory;
 
 	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, 0))) {
-		EPRINTF("could not look up mneu %s\n", options.rootmenu);
+		EPRINTF("could not look up menu %s\n", options.rootmenu);
 		exit(EXIT_FAILURE);
 	}
 	if (!gmenu_tree_load_sync(tree, NULL)) {
-		EPRINTF("could not load mneu %s\n", options.rootmenu);
+		EPRINTF("could not load menu %s\n", options.rootmenu);
 		exit(EXIT_FAILURE);
 	}
 	fprintf(stdout, "Path=%s\n", gmenu_tree_get_canonical_menu_path(tree));
@@ -2181,8 +2181,8 @@ main(int argc, char *argv[])
 		case 'o':	/* -o, --output [OUTPUT] */
 			defaults.fileout = options.fileout = True;
 			if (optarg != NULL) {
-				free(options.rootmenu);
-				defaults.rootmenu = options.rootmenu = strdup(optarg);
+				free(options.filename);
+				defaults.filename = options.filename = strdup(optarg);
 			}
 			break;
 		case 'n':	/* -n, --noicons */

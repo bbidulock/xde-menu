@@ -213,12 +213,15 @@ struct MenuContext {
 	char *version;
 	GMenuTree *tree;
 	int level;
+	char *indent;
 	GList *output;
+	GList *(*create) (MenuContext *ctx, Style style, const char *name);
 	GList *(*wmmenu) (MenuContext *ctx);	/* output the window manager menu */
-	GList *(*appmenu) (MenuContext *ctx, GList *entries, char *name);
+	GList *(*appmenu) (MenuContext *ctx, GList *entries, const char *name);
 	GList *(*rootmenu) (MenuContext *ctx, GList *entries);
+	GList *(*build) (MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 	struct {
-		GList *(*menu) (MenuContext *ctx, GMenuTreeDirectory *dir);
+		GList *(*menu) (MenuContext *ctx, GMenuTreeDirectory *menu);
 		GList *(*directory) (MenuContext *ctx, GMenuTreeDirectory *dir);
 		GList *(*header) (MenuContext *ctx, GMenuTreeHeader *hdr);
 		GList *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
