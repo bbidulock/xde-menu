@@ -58,7 +58,12 @@ Atom _XA_XDE_ICON_THEME_NAME;
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
 
-Options options = { 0, 1, };
+Options options = {
+	.debug = 0,
+	.output = 1,
+	.command = CommandDefault,
+	.launch = True,
+};
 
 Options defaults = {
 	.debug = 1,
@@ -271,9 +276,19 @@ display_directory(FILE* file, GMenuTreeDirectory *directory, int level)
 }
 
 static void
+print_line(gpointer string, gpointer file)
+{
+	fputs(string, file);
+}
+
+static void
 make_menu(int argc, char *argv[])
 {
-	GMenuTreeDirectory *directory;
+	GList *menu;
+	MenuContext *ctx;
+
+	if (options.desktop)
+		setenv("XDG_CURRENT_DESKTOP", options.desktop, TRUE);
 
 	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, 0))) {
 		EPRINTF("could not look up menu %s\n", options.rootmenu);
@@ -283,10 +298,29 @@ make_menu(int argc, char *argv[])
 		EPRINTF("could not load menu %s\n", options.rootmenu);
 		exit(EXIT_FAILURE);
 	}
-	fprintf(stdout, "Path=%s\n", gmenu_tree_get_canonical_menu_path(tree));
-	if ((directory = gmenu_tree_get_root_directory(tree))) {
-		display_directory(stdout, directory, 0);
+#if 0
+	{
+		GMenuTreeDirectory *directory;
+
+		fprintf(stdout, "Path=%s\n", gmenu_tree_get_canonical_menu_path(tree));
+		if ((directory = gmenu_tree_get_root_directory(tree))) {
+			display_directory(stdout, directory, 0);
+		}
 	}
+#else
+	(void) display_directory;
+#endif
+	if (!(ctx = screens[0].context)) {
+		EPRINTF("no menu context for screen 0\n");
+		exit(EXIT_FAILURE);
+	}
+	ctx->tree = tree;
+	ctx->level = 0;
+	ctx->indent = calloc(64, sizeof(*ctx->indent));
+	DPRINTF("calling create!\n");
+	menu = ctx->create(ctx, options.style, NULL);
+	DPRINTF("done create!\n");
+	g_list_foreach(menu, print_line, stdout);
 }
 
 #else				/* HAVE_GNOME_MENUS_3 */

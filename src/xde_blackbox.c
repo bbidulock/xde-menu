@@ -44,26 +44,75 @@
 
 #include "xde-menu.h"
 
+const char *
+xde_increase_indent(MenuContext *ctx)
+{
+	int i, chars;
+
+	ctx->level++;
+	chars = ctx->level << 1;
+	ctx->indent = realloc(ctx->indent, chars + 1);
+	for (i = 0; i < chars; i++)
+		ctx->indent[i] = ' ';
+	ctx->indent[chars] = '\0';
+	return ctx->indent;
+}
+
+const char *
+xde_decrease_indent(MenuContext *ctx)
+{
+	int chars;
+
+	ctx->level--;
+	if (ctx->level < 0)
+		ctx->level = 0;
+	chars = ctx->level <<1;
+	ctx->indent = realloc(ctx->indent, chars + 1);
+	ctx->indent[chars] = '\0';
+	return ctx->indent;
+}
+
+static char *
+xde_blackbox_escape(const char *string, char special)
+{
+	const char *p;
+	char *escaped, *q;
+	int len;
+
+	len = strlen(string) + 1;
+	escaped = calloc(len << 1, sizeof(*escaped));
+	for (p = string, q = escaped; p && *p; p++, q++) {
+		if ((*q = *p) == special) {
+			*q++ = '\\';
+			*q = special;
+		}
+	}
+	*q = '\0';
+	return (escaped);
+}
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
 	GMenuTreeDirectory *directory;
 	GList *result = NULL;
 
-	if (!name)
-		name = "Applications";
 	if (!(directory = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
 		return (result);
 	}
 	ctx->level = 0;
-	result = ctx->build(ctx, GMENU_TREE_ITEM_DIRECTORY, directory);
+	xde_increase_indent(ctx);
+	result = ctx->ops.menu(ctx, directory);
+	xde_decrease_indent(ctx);
 	switch (style) {
 	case StyleFullmenu:
 	default:
 		result = ctx->rootmenu(ctx, result);
 		break;
 	case StyleAppmenu:
+		if (!name)
+			name = gmenu_tree_directory_get_name(directory);
 		result = ctx->appmenu(ctx, result, name);
 		break;
 	case StyleEntries:
@@ -77,14 +126,13 @@ static GList *
 xde_wmmenu(MenuContext *ctx)
 {
 	GList *text = NULL;
-	const char *indent = ctx->indent ?: "";
 
-	text = g_list_append(text, g_strdup_printf("%s%s\n", indent, "[submenu] (WindowManagers)"));
-	text = g_list_append(text, g_strdup_printf("%s%s\n", indent, "  [restart] (Restart)"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (WindowManagers)"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "  [restart] (Restart)"));
 	/* FIXME need to get xsessions and fill in all the entries */
 	/* following is what each entry should look like */
-	/* text = g_list_append(text, g_strdup_printf("%s  [restart] (Start %s) {%s}\n", indent, "Blackbox", "xdg-launch -X blackbox")); */
-	text = g_list_append(text, g_strdup_printf("%s%s\n", indent, "[end]"));
+	/* text = g_list_append(text, g_strdup_printf("%s  [restart] (Start %s) {%s}\n", ctx->indent, "Blackbox", "xdg-launch -X blackbox")); */
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[end]"));
 	return (text);
 }
 
@@ -92,9 +140,17 @@ static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
 	GList *text = NULL;
-	text = g_list_append(text, g_strdup_printf("[submenu] (%s)\n", name));
+	char *esc1, *esc2;
+
+	esc1 = xde_blackbox_escape(name, ')');
+	esc2 = xde_blackbox_escape(name, '}');
+
+	text = g_list_append(text, g_strdup_printf("[submenu] (%s) {%s Menu}\n", esc1, esc2));
 	text = g_list_concat(text, entries);
 	text = g_list_append(text, g_strdup_printf("[end]\n"));
+
+	free(esc1);
+	free(esc2);
 	return (text);
 }
 
@@ -103,20 +159,22 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 {
 	GList *text = NULL;
 
-	text = g_list_append(text, g_strdup_printf("%s\n", "[begin] (Blackbox)"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[begin] (Blackbox)"));
 	text = g_list_concat(text, entries);
-	text = g_list_append(text, g_strdup_printf("%s\n", "  [nop] (————————————) {}"));
-	text = g_list_append(text, g_strdup_printf("%s\n", "  [workspaces] (Workspace List)"));
-	text = g_list_append(text, g_strdup_printf("%s\n", "  [config] (Configuration)"));
+	xde_increase_indent(ctx);
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[workspaces] (Workspace List)"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[config] (Configuration)"));
 	text = g_list_concat(text, ctx->themes(ctx));
 	text = g_list_concat(text, ctx->styles(ctx));
 	text = g_list_concat(text, ctx->wmmenu(ctx));
-	text = g_list_append(text, g_strdup_printf("%s\n", "  [reconfig] (Reconfigure)"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[reconfig] (Reconfigure)"));
 	if (options.filename)
-		text = g_list_append(text, g_strdup_printf("%s%s\n", "  [exec] (Refresh menu) {xde-menugen -format blackbox -desktop BLACKBOX -launch -o ", options.filename));
-	text = g_list_append(text, g_strdup_printf("%s\n", "  [nop] (————————————) {}"));
-	text = g_list_append(text, g_strdup_printf("%s\n", "  [exit] (Exit)"));
-	text = g_list_append(text, g_strdup_printf("%s\n", "[end]"));
+		text = g_list_append(text, g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format blackbox -desktop BLACKBOX -launch -o ", options.filename));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}"));
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[exit] (Exit)"));
+	xde_decrease_indent(ctx);
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[end]"));
 	return (text);
 }
 
@@ -152,33 +210,6 @@ xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 	return (text);
 }
 
-const char *
-xde_increase_indent(MenuContext *ctx)
-{
-	int i, chars;
-
-	ctx->level++;
-	chars = ctx->level << 1;
-	ctx->indent = realloc(ctx->indent, chars);
-	for (i = 0; i < chars; i++)
-		ctx->indent[i] = ' ';
-	return ctx->indent;
-}
-
-const char *
-xde_decrease_indent(MenuContext *ctx)
-{
-	int chars;
-
-	ctx->level--;
-	if (ctx->level < 0)
-		ctx->level = 0;
-	chars = ctx->level <<1;
-	ctx->indent = realloc(ctx->indent, chars);
-	ctx->indent[chars] = '\0';
-	return ctx->indent;
-}
-
 static GList *
 xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 {
@@ -192,6 +223,7 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 	while((type = gmenu_tree_iter_next(iter)) != GMENU_TREE_ITEM_INVALID) {
 		switch (type) {
 		case GMENU_TREE_ITEM_INVALID:
+		default:
 			break;
 		case GMENU_TREE_ITEM_DIRECTORY:
 			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_directory(iter)));
@@ -218,18 +250,36 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GList *text = NULL;
+	const char *name;
+	char *esc1, *esc2;
+
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc1 = xde_blackbox_escape(name, ')');
+	esc2 = xde_blackbox_escape(name, '}');
+
+	DPRINTF("Processing menu '%s'\n", name);
+	text = g_list_append(text, g_strdup_printf("%s[submenu] (%s) {%s Menu}\n", ctx->indent, esc1, esc2));
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_append(text, g_strdup_printf("%s[end]\n", ctx->indent));
+	DPRINTF("Done processing menu '%s'\n", name);
+
+	free(esc1);
+	free(esc2);
+	return (text);
 }
 
 static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	GMenuTreeDirectory *directory;
+	GMenuTreeDirectory *dir;
 	GList *text = NULL;
 
-	if (!(directory = gmenu_tree_header_get_directory(hdr)))
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
 		return (text);
-	text = g_list_append(text, g_strdup_printf("%s[nop] (%s)\n", ctx->indent, gmenu_tree_directory_get_name(directory)));
+	text = g_list_append(text, g_strdup_printf("%s[nop] (%s)\n", ctx->indent, gmenu_tree_directory_get_name(dir)));
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
 	return (text);
 }
 
@@ -238,20 +288,66 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GList *text = NULL;
 
-	text = g_list_append(text, g_strdup_printf("%s[nop] (————————————) { }\n", ctx->indent));
+	text = g_list_append(text, g_strdup_printf("%s[nop] (————————————) {}\n", ctx->indent));
 	return (text);
 }
 
 static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name, *exec;
+	char *esc1, *esc2, *cmd;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+
+	esc1 = xde_blackbox_escape(name, ')');
+
+	if (options.launch) {
+		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+		if ((p = strstr(str, ".desktop")))
+			*p = '\0';
+		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
+		free(str);
+	} else {
+		exec = g_app_info_get_commandline(G_APP_INFO(info));
+		cmd = g_strdup(exec);
+	}
+
+	esc2 = xde_blackbox_escape(cmd, '}');
+	text = g_list_append(text, g_strdup_printf("%s[exec] (%s) {%s}\n", ctx->indent, esc1, esc2));
+
+	free(esc1);
+	free(esc2);
+	free(cmd);
+	return (text);
 }
 
 static GList *
 xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
-	return NULL;
+	GMenuTreeItemType type;
+	GList *text = NULL;
+
+	switch ((type = gmenu_tree_alias_get_aliased_item_type(als))) {
+	case GMENU_TREE_ITEM_INVALID:
+		break;
+	case GMENU_TREE_ITEM_DIRECTORY:
+		text = ctx->build(ctx, type, gmenu_tree_alias_get_aliased_directory(als));
+		break;
+	case GMENU_TREE_ITEM_ENTRY:
+		text = ctx->build(ctx, type, gmenu_tree_alias_get_aliased_entry(als));
+		break;
+	case GMENU_TREE_ITEM_SEPARATOR:
+		break;
+	case GMENU_TREE_ITEM_HEADER:
+		break;
+	case GMENU_TREE_ITEM_ALIAS:
+		break;
+	}
+	return (text);
 }
 
 static GList *

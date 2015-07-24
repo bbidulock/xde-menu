@@ -2,14 +2,6 @@
 AM_CFLAGS = $(X11_CFLAGS) $(XEXT_CFLAGS) $(XSCRNSAVER_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(CAIRO_CFLAGS) $(GDK_CFLAGS) $(GTK_CFLAGS) $(WNCK_CFLAGS) $(GNOME_MENU_CFLAGS)
 AM_LDFLAGS = $(GNOME_MENU_LIBS) $(WNCK_LIBS) $(GTK_LIBS) $(GDK_LIBS) $(CAIRO_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(XSCRNSAVER_LIBS) $(XEXT_LIBS) $(X11_LIBS)
 
-if MAINTAINER_MODE
-runtime_search = 
-runtime_path = 
-else
-runtime_search = -R $(xdemoddir)
-runtime_path = -rpath $(xdemoddir)
-endif
-
 bin_PROGRAMS = \
 	xde-menu
 
@@ -17,7 +9,7 @@ xde_menu_CPPFLAGS = -DNAME=\"xde-menu\"
 xde_menu_SOURCES = xde-menu.h xde-menu.c
 xde_menu_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
 xde_menu_LDADD = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
-xde_menu_LDFLAGS = $(runtime_search) -ldl
+xde_menu_LDFLAGS = -export-dynamic -R $(xdemoddir) -ldl
 
 xdemod_LTLIBRARIES = \
 	xde-menu-2bwm.la \
@@ -51,8 +43,8 @@ xdemod_LTLIBRARIES = \
 	xde-menu-wmx.la \
 	xde-menu-yeahwm.la
 
-#module_ldflags = -module -export-dynamic -release $(VERSION) -shared $(runtime_path) -avoid-version
-module_ldflags = -module -export-dynamic -shared $(runtime_path) -avoid-version
+#module_ldflags = -module -export-dynamic -release $(VERSION) -shared -rpath $(xdemoddir) -avoid-version
+module_ldflags = -module -export-dynamic -shared -rpath $(xdemoddir) -avoid-version
 
 xde_menu_2bwm_la_CPPFLAGS = -DNAME=\"xde-2bwm\"
 xde_menu_2bwm_la_CFLAGS = $(AM_CFLAGS)
