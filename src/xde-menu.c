@@ -596,7 +596,14 @@ make_menu(int argc, char *argv[])
 	if (options.desktop)
 		setenv("XDG_CURRENT_DESKTOP", options.desktop, TRUE);
 
-	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, 0))) {
+	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, 0
+//					     | GMENU_TREE_FLAGS_INCLUDE_EXCLUDED
+//					     | GMENU_TREE_FLAGS_INCLUDE_NODISPLAY
+//					     | GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
+//					     | GMENU_TREE_FLAGS_SHOW_EMPTY
+//					     | GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS
+					     | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
+					     ))) {
 		EPRINTF("could not look up menu %s\n", options.rootmenu);
 		exit(EXIT_FAILURE);
 	}
