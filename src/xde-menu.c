@@ -49,12 +49,33 @@
 int saveArgc;
 char **saveArgv;
 
-Atom _XA_XDE_WM_NAME;
-Atom _XA_XDE_WM_MENU;
-Atom _XA_XDE_WM_THEME;
-Atom _XA_XDE_WM_ICONTHEME;
+Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
 Atom _XA_XDE_THEME_NAME;
-Atom _XA_XDE_ICON_THEME_NAME;
+Atom _XA_XDE_WM_CLASS;
+Atom _XA_XDE_WM_CMDLINE;
+Atom _XA_XDE_WM_COMMAND;
+Atom _XA_XDE_WM_ETCDIR;
+Atom _XA_XDE_WM_HOST;
+Atom _XA_XDE_WM_HOSTNAME;
+Atom _XA_XDE_WM_ICCCM_SUPPORT;
+Atom _XA_XDE_WM_ICON;
+Atom _XA_XDE_WM_ICONTHEME;	/* XXX */
+Atom _XA_XDE_WM_INFO;
+Atom _XA_XDE_WM_MENU;
+Atom _XA_XDE_WM_NAME;
+Atom _XA_XDE_WM_NETWM_SUPPORT;
+Atom _XA_XDE_WM_PID;
+Atom _XA_XDE_WM_PRVDIR;
+Atom _XA_XDE_WM_RCFILE;
+Atom _XA_XDE_WM_REDIR_SUPPORT;
+Atom _XA_XDE_WM_STYLE;
+Atom _XA_XDE_WM_STYLENAME;
+Atom _XA_XDE_WM_SYSDIR;
+Atom _XA_XDE_WM_THEME;
+Atom _XA_XDE_WM_THEMEFILE;
+Atom _XA_XDE_WM_USRDIR;
+Atom _XA_XDE_WM_VERSION;
+
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
 
@@ -136,6 +157,291 @@ display_invalid(FILE *file, int level)
 	display_level(file, level);
 	fprintf(file, "%s\n", "Invalid Entry");
 }
+
+static char **
+xde_get_xsession_dirs(int *np)
+{
+	char *home, *xhome, *xdata, *dirs, *pos, *end, **xdg_dirs;
+	int len, n;
+
+	home = getenv("HOME") ? : ".";
+	xhome = getenv("XDG_DATA_HOME");
+	xdata = getenv("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
+
+	len = (xhome ? strlen(xhome) : strlen(home) + strlen("/.local/share")) + strlen(xdata) + 2;
+	dirs = calloc(len, sizeof(*dirs));
+	if (xhome)
+		strcpy(dirs, xhome);
+	else {
+		strcpy(dirs, home);
+		strcat(dirs, "/.local/share");
+	}
+	strcat(dirs, ":");
+	strcat(dirs, xdata);
+	end = dirs + strlen(dirs);
+	for (n = 0, pos = dirs; pos < end; n++,
+	     *strchrnul(pos, ':') = '\0', pos += strlen(pos) + 1) ;
+	xdg_dirs = calloc(n + 1, sizeof(*xdg_dirs));
+	for (n = 0, pos = dirs; pos < end; n++, pos += strlen(pos) + 1) {
+		len = strlen(pos) + strlen("/xsessions") + 1;
+		xdg_dirs[n] = calloc(len, sizeof(*xdg_dirs[n]));
+		strcpy(xdg_dirs[n], pos);
+		strcat(xdg_dirs[n], "/xsessions");
+	}
+	free(dirs);
+	if (np)
+		*np = n;
+	return (xdg_dirs);
+}
+
+static GKeyFile *
+xde_get_xsession_entry(const char *key, const char *file)
+{
+	GKeyFile *entry;
+
+	if (!(entry = g_key_file_new())) {
+		EPRINTF("%s: could not allocate key file\n", file);
+		return (NULL);
+	}
+	if (!g_key_file_load_from_file(entry, file, G_KEY_FILE_NONE, NULL)) {
+		EPRINTF("%s: could not load keyfile\n", file);
+		g_key_file_unref(entry);
+		return (NULL);
+	}
+	if (!g_key_file_has_group(entry, G_KEY_FILE_DESKTOP_GROUP)) {
+		EPRINTF("%s: has no [%s] section\n", file, G_KEY_FILE_DESKTOP_GROUP);
+		g_key_file_free(entry);
+		return (NULL);
+	}
+	if (!g_key_file_has_key(entry, G_KEY_FILE_DESKTOP_GROUP, G_KEY_FILE_DESKTOP_KEY_TYPE, NULL)) {
+		EPRINTF("%s: has no %s= entry\n", file, G_KEY_FILE_DESKTOP_KEY_TYPE);
+		g_key_file_free(entry);
+		return (NULL);
+	}
+	DPRINTF("got xsession file: %s (%s)\n", key, file);
+	return (entry);
+}
+
+static gboolean
+xde_bad_xsession(const char *appid, GKeyFile *entry)
+{
+	gchar *name, *exec, *tryexec, *binary;
+
+	if (!(name = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+					   G_KEY_FILE_DESKTOP_KEY_NAME, NULL))) {
+		DPRINTF("%s: no Name\n", appid);
+		return TRUE;
+	}
+	g_free(name);
+	if (!(exec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+					   G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
+		DPRINTF("%s: no Exec\n", appid);
+		return TRUE;
+	}
+	if (g_key_file_get_boolean(entry, G_KEY_FILE_DESKTOP_GROUP,
+				   G_KEY_FILE_DESKTOP_KEY_HIDDEN, NULL)) {
+		DPRINTF("%s: is Hidden\n", appid);
+		return TRUE;
+	}
+#if 0
+	/* NoDisplay is often used to hide XSession desktop entries from the
+	   application menu and does not indicate that it should not be
+	   displayed as an XSession entry. */
+
+	if (g_key_file_get_boolean(entry, G_KEY_FILE_DESKTOP_GROUP,
+				   G_KEY_FILE_DESKTOP_KEY_NO_DISPLAY, NULL)) {
+		DPRINTF("%s: is NoDisplay\n", appid);
+		return TRUE;
+	}
+#endif
+	if ((tryexec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+					     G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
+		binary = g_strdup(tryexec);
+		g_free(tryexec);
+	} else {
+		char *p;
+
+		/* parse the first word of the exec statement and see whether
+		   it is executable or can be found in PATH */
+		binary = g_strdup(exec);
+		if ((p = strpbrk(binary, " \t")))
+			*p = '\0';
+
+	}
+	g_free(exec);
+	if (binary[0] == '/') {
+		if (access(binary, X_OK)) {
+			DPRINTF("%s: %s: %s\n", appid, binary, strerror(errno));
+			g_free(binary);
+			return TRUE;
+		}
+	} else {
+		char *dir, *end;
+		char *path = strdup(getenv("PATH") ? : "");
+		int blen = strlen(binary) + 2;
+		gboolean execok = FALSE;
+
+		for (dir = path, end = dir + strlen(dir); dir < end;
+		     *strchrnul(dir, ':') = '\0', dir += strlen(dir) + 1) ;
+		for (dir = path; dir < end; dir += strlen(dir) + 1) {
+			int len = strlen(dir) + blen;
+			char *file = calloc(len, sizeof(*file));
+
+			strcpy(file, dir);
+			strcat(file, "/");
+			strcat(file, binary);
+			if (!access(file, X_OK)) {
+				execok = TRUE;
+				free(file);
+				break;
+			}
+			// to much noise
+			// DPRINTF("%s: %s: %s\n", appid, file,
+			// strerror(errno));
+		}
+		free(path);
+		if (!execok) {
+			DPRINTF("%s: %s: not executable\n", appid, binary);
+			g_free(binary);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+static void
+xde_xsession_key_free(gpointer data)
+{
+	free(data);
+}
+
+void
+xde_xsession_value_free(gpointer filename)
+{
+	free(filename);
+}
+
+static GHashTable *
+xde_find_xsessions(void)
+{
+	char **xdg_dirs, **dirs;
+	int i, n = 0;
+	static const char *suffix = ".desktop";
+	static const int suflen = 8;
+	static GHashTable *xsessions = NULL;
+
+	if (xsessions)
+		return (xsessions);
+
+	if (!(xdg_dirs = xde_get_xsession_dirs(&n)) || !n)
+		return (xsessions);
+
+	xsessions = g_hash_table_new_full(g_str_hash, g_str_equal,
+					  xde_xsession_key_free, xde_xsession_value_free);
+
+	/* go through them backward */
+	for (i = n - 1, dirs = &xdg_dirs[i]; i >= 0; i--, dirs--) {
+		char *file, *p;
+		DIR *dir;
+		struct dirent *d;
+		int len;
+		char *key;
+
+		if (!(dir = opendir(*dirs))) {
+			DPRINTF("%s: %s\n", *dirs, strerror(errno));
+			continue;
+		}
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			if (!(p = strstr(d->d_name, suffix)) || p[suflen]) {
+				DPRINTF("%s: no %s suffix\n", d->d_name, suffix);
+				continue;
+			}
+			len = strlen(*dirs) + strlen(d->d_name) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, *dirs);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			key = strdup(d->d_name);
+			*strstr(key, suffix) = '\0';
+			g_hash_table_replace(xsessions, key, file);
+		}
+		closedir(dir);
+	}
+	for (i = 0; i < n; i++)
+		free(xdg_dirs[i]);
+	free(xdg_dirs);
+	return (xsessions);
+}
+
+static gint
+xde_xsession_compare(gconstpointer a, gconstpointer b)
+{
+	const XdeXsession *A = a;
+	const XdeXsession *B = b;
+
+	return g_strcasecmp(A->name, B->name);
+}
+
+GList *
+xde_get_xsessions(void)
+{
+	GList *result = NULL;
+	GHashTable *xsessions;
+
+	if (!(xsessions = xde_find_xsessions())) {
+		EPRINTF("cannot build XSessions\n");
+		return (result);
+	}
+	if (!g_hash_table_size(xsessions)) {
+		EPRINTF("cannot find any XSessions\n");
+		return (result);
+	}
+
+	GHashTableIter xiter;
+	const char *key;
+	const char *file;
+
+	g_hash_table_iter_init(&xiter, xsessions);
+	while (g_hash_table_iter_next(&xiter, (gpointer *)&key, (gpointer *)&file)) {
+		GKeyFile *entry;
+		XdeXsession *xsession;
+
+		if (!(entry = xde_get_xsession_entry(key, file)))
+			continue;
+		if (xde_bad_xsession(key, entry)) {
+			g_key_file_free(entry);
+			continue;
+		}
+		xsession = calloc(1, sizeof(*xsession));
+		xsession->key = g_strdup(key);
+		xsession->name = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+				G_KEY_FILE_DESKTOP_KEY_NAME, NULL);
+		xsession->entry = g_key_file_ref(entry);
+		result = g_list_prepend(result, xsession);
+	}
+	g_hash_table_destroy(xsessions);
+	return g_list_sort(result, &xde_xsession_compare);
+}
+
+static void
+xde_xsession_free(gpointer data)
+{
+	XdeXsession *xsess = data;
+
+	g_free(xsess->key);
+	g_free(xsess->name);
+	g_key_file_free(xsess->entry);
+	free(xsess);
+}
+
+void
+xde_free_xsessions(GList *list)
+{
+	g_list_free_full(list, &xde_xsession_free);
+}
+
 
 #ifdef HAVE_GNOME_MENUS_3
 
@@ -1428,23 +1734,83 @@ startup(int argc, char *argv[])
 	disp = gdk_display_get_default();
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
 
-	atom = gdk_atom_intern_static_string("_XDE_WM_NAME");
-	_XA_XDE_WM_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
-
-	atom = gdk_atom_intern_static_string("_XDE_WM_MENU");
-	_XA_XDE_WM_MENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
-
-	atom = gdk_atom_intern_static_string("_XDE_WM_THEME");
-	_XA_XDE_WM_THEME = gdk_x11_atom_to_xatom_for_display(disp, atom);
-
-	atom = gdk_atom_intern_static_string("_XDE_WM_ICONTHEME");
-	_XA_XDE_WM_ICONTHEME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string("_XDE_ICON_THEME_NAME");
+	_XA_XDE_ICON_THEME_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
 	atom = gdk_atom_intern_static_string("_XDE_THEME_NAME");
 	_XA_XDE_THEME_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_XDE_ICON_THEME_NAME");
-	_XA_XDE_ICON_THEME_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string("_XDE_WM_CLASS");
+	_XA_XDE_WM_CLASS = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_CMDLINE");
+	_XA_XDE_WM_CMDLINE = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_COMMAND");
+	_XA_XDE_WM_COMMAND = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_ETCDIR");
+	_XA_XDE_WM_ETCDIR = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_HOST");
+	_XA_XDE_WM_HOST = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_HOSTNAME");
+	_XA_XDE_WM_HOSTNAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_ICCCM_SUPPORT");
+	_XA_XDE_WM_ICCCM_SUPPORT = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_ICON");
+	_XA_XDE_WM_ICON = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_ICONTHEME");
+	_XA_XDE_WM_ICONTHEME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_INFO");
+	_XA_XDE_WM_INFO = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_MENU");
+	_XA_XDE_WM_MENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_NAME");
+	_XA_XDE_WM_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_NETWM_SUPPORT");
+	_XA_XDE_WM_NETWM_SUPPORT = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_PID");
+	_XA_XDE_WM_PID = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_PRVDIR");
+	_XA_XDE_WM_PRVDIR = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_RCFILE");
+	_XA_XDE_WM_RCFILE = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_REDIR_SUPPORT");
+	_XA_XDE_WM_REDIR_SUPPORT = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_STYLE");
+	_XA_XDE_WM_STYLE = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_STYLENAME");
+	_XA_XDE_WM_STYLENAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_SYSDIR");
+	_XA_XDE_WM_SYSDIR = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_THEME");
+	_XA_XDE_WM_THEME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_THEMEFILE");
+	_XA_XDE_WM_THEMEFILE = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_USRDIR");
+	_XA_XDE_WM_USRDIR = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_WM_VERSION");
+	_XA_XDE_WM_VERSION = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
 	atom = gdk_atom_intern_static_string("_GTK_READ_RCFILES");
 	_XA_GTK_READ_RCFILES = gdk_x11_atom_to_xatom_for_display(disp, atom);

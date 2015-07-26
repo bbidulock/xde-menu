@@ -126,13 +126,23 @@ static GList *
 xde_wmmenu(MenuContext *ctx)
 {
 	GList *text = NULL;
+	GList *xsessions, *xsession;
 
-	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (WindowManagers)"));
-	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "  [restart] (Restart)"));
-	/* FIXME need to get xsessions and fill in all the entries */
-	/* following is what each entry should look like */
-	/* text = g_list_append(text, g_strdup_printf("%s  [restart] (Start %s) {%s}\n", ctx->indent, "Blackbox", "xdg-launch -X blackbox")); */
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Window Managers)"));
+	xde_increase_indent(ctx);
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[restart] (Restart)"));
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+
+		if (strcmp(xsess->key, "blackbox") == 0)
+			continue;
+		text = g_list_append(text, g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}\n",
+					ctx->indent, xsess->name, xsess->key));
+	}
+	xde_decrease_indent(ctx);
 	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[end]"));
+	xde_free_xsessions(xsessions);
 	return (text);
 }
 
@@ -350,16 +360,283 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 	return (text);
 }
 
-static GList *
-xde_themes(MenuContext *ctx)
+static gint
+xde_string_compare(gconstpointer a, gconstpointer b)
 {
-	return NULL;
+	return g_strcasecmp(a, b);
 }
 
 static GList *
+xde_theme_entries(MenuContext *ctx, const char *dname, Which which)
+{
+	GList *text = NULL;
+	DIR *dir;
+	static const char *sysfmt = "%s[exec] (%s) {xde-style -s -t -r -y '%s'}\n";
+	static const char *usrfmt = "%s[exec] (%s) {xde-style -s -t -r -u '%s'}\n";
+	static const char *mixfmt = "%s[exec] (%s) {xde-style -s -t -r '%s'}\n";
+	const char *fmt;
+
+	switch (which) {
+	case XdeStyleSystem:
+		fmt = sysfmt;
+		break;
+	case XdeStyleUser:
+		fmt = usrfmt;
+		break;
+	case XdeStyleMixed:
+	default:
+		fmt = mixfmt;
+		break;
+	}
+
+	if ((dir = opendir(dname))) {
+		struct dirent *d;
+		struct stat st;
+		char *file;
+		int len;
+
+		xde_increase_indent(ctx);
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dname) + strlen(d->d_name) + 16;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (lstat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			switch (which) {
+			case XdeStyleMixed:
+			{
+				static const char *fname = "/xde/themerc";
+
+				if (!S_ISDIR(st.st_mode)) {
+					DPRINTF("%s: not file or directory\n", file);
+					free(file);
+					continue;
+				}
+				strcat(file, fname);
+				if (stat(file, &st)) {
+					EPRINTF("%s: %s\n", file, strerror(errno));
+					free(file);
+					continue;
+				}
+				if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not a file\n", file);
+					free(file);
+					continue;
+				}
+				break;
+			}
+			case XdeStyleSystem:
+			case XdeStyleUser:
+			default:
+			{
+				static const char *fname = "/stylerc";
+
+				if (!S_ISLNK(st.st_mode)) {
+					DPRINTF("%s: not symbolic link\n", file);
+					free(file);
+					continue;
+				}
+				if (stat(file, &st)) {
+					EPRINTF("%s: %s\n", file, strerror(errno));
+					free(file);
+					continue;
+				}
+				if (S_ISDIR(st.st_mode)) {
+					strcat(file, fname);
+					if (stat(file, &st)) {
+						EPRINTF("%s: %s\n", file, strerror(errno));
+						free(file);
+						continue;
+					}
+					if (!S_ISREG(st.st_mode)) {
+						DPRINTF("%s: not a file\n", file);
+						free(file);
+						continue;
+					}
+				} else if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not file or directory\n", file);
+					free(file);
+					continue;
+				}
+				break;
+			}
+			}
+			text = g_list_append(text, g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name));
+			free(file);
+		}
+		xde_decrease_indent(ctx);
+		closedir(dir);
+		text = g_list_sort(text, xde_string_compare);
+
+	} else
+		DPRINTF("%s: %s\n", dname, strerror(errno));
+	return (text);
+}
+
+static GList *
+xde_themes(MenuContext *ctx)
+{
+	static const char *sysdir = "/usr/share/blackbox/styles";
+	static const char *usr = "/.blackbox/styles";
+	char *usrdir, *string;
+	GList *text = NULL, *sysent, *usrent;
+	const char *home;
+	int len;
+
+	sysent = xde_theme_entries(ctx, sysdir, XdeStyleSystem);
+
+	home = getenv("HOME") ?: "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_theme_entries(ctx, usrdir, XdeStyleUser);
+
+	if (!sysent && !usrent) {
+		free(usrdir);
+		return (text);
+	}
+
+	string = g_strdup_printf("%s[submenu] (Themes) {Choose a theme...}\n", ctx->indent);
+	text = g_list_append(text, string);
+	if (sysent)
+		text = g_list_concat(text, sysent);
+	if (sysent && usrent) {
+		xde_increase_indent(ctx);
+		text = g_list_append(text, g_strdup_printf("%s[nop] (————————————) {}\n", ctx->indent));
+		xde_decrease_indent(ctx);
+	}
+	if (usrent)
+		text = g_list_concat(text, usrent);
+	string = g_strdup_printf("%s[end]\n", ctx->indent);
+	text = g_list_append(text, string);
+	return (text);
+}
+
+static GList *
+xde_style_entries(MenuContext *ctx, const char *dname, Which which)
+{
+	GList *text = NULL;
+	DIR *dir;
+	static const char *sysfmt = "%s[exec] (%s) {xde-style -s -r -y '%s'}\n";
+	static const char *usrfmt = "%s[exec] (%s) {xde-style -s -r -u '%s'}\n";
+	static const char *mixfmt = "%s[exec] (%s) {xde-style -s -r '%s'}\n";
+	const char *fmt;
+
+	switch (which) {
+	case XdeStyleSystem:
+		fmt = sysfmt;
+		break;
+	case XdeStyleUser:
+	default:
+		fmt = usrfmt;
+		break;
+	case XdeStyleMixed:
+		fmt = mixfmt;
+		break;
+	}
+
+	if ((dir = opendir(dname))) {
+		static const char *fname = "/stylerc";
+		struct dirent *d;
+		struct stat st;
+		char *file;
+		int len;
+
+		xde_increase_indent(ctx);
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dname) + strlen(d->d_name) + strlen(fname) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (lstat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(file, fname);
+				if (lstat(file, &st)) {
+					EPRINTF("%s: %s\n", file, strerror(errno));
+					free(file);
+					continue;
+				}
+				if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not a file\n", file);
+					free(file);
+					continue;
+				}
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not file or directory\n", file);
+				free(file);
+				continue;
+			}
+			text = g_list_append(text, g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name));
+			free(file);
+		}
+		xde_decrease_indent(ctx);
+		closedir(dir);
+		text = g_list_sort(text, xde_string_compare);
+
+	} else
+		DPRINTF("%s: %s\n", dname, strerror(errno));
+	return (text);
+}
+
+/**
+ * There are two styles divided by a separator: user styles and system styles.  For user styles, the
+ * styles are contained in the ${_XDE_WM_SYSDIR:-/usr/share/blackbox}/styles directory and the  user
+ * styles are contained in the ${_XDE_SM_USRDIR:-~/.blackbox/styles.
+ */
+static GList *
 xde_styles(MenuContext *ctx)
 {
-	return NULL;
+	static const char *sysdir = "/usr/share/blackbox/styles";
+	static const char *usr = "/.blackbox/styles";
+	char *usrdir, *string;
+	GList *text = NULL, *sysent, *usrent;
+	const char *home;
+	int len;
+
+	sysent = xde_style_entries(ctx, sysdir, XdeStyleSystem);
+
+	home = getenv("HOME") ? : "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_style_entries(ctx, usrdir, XdeStyleUser);
+
+	if (!sysent && !usrent) {
+		free(usrdir);
+		return (text);
+	}
+	string = g_strdup_printf("%s[submenu] (Styles) {Choose a style...}\n", ctx->indent);
+	text = g_list_append(text, string);
+	if (sysent)
+		text = g_list_concat(text, sysent);
+	if (sysent && usrent) {
+		xde_increase_indent(ctx);
+		text = g_list_append(text, g_strdup_printf("%s[nop] (————————————) {}\n", ctx->indent));
+		xde_decrease_indent(ctx);
+	}
+	if (usrent)
+		text = g_list_concat(text, usrent);
+	string = g_strdup_printf("%s[end]\n", ctx->indent);
+	text = g_list_append(text, string);
+	return (text);
 }
 
 MenuContext xde_menu_ops = {

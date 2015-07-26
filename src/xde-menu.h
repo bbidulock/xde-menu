@@ -150,12 +150,33 @@
 extern int saveArgc;
 extern char **saveArgv;
 
-extern Atom _XA_XDE_WM_NAME;
-extern Atom _XA_XDE_WM_MENU;
-extern Atom _XA_XDE_WM_THEME;
-extern Atom _XA_XDE_WM_ICONTHEME;
+extern Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
 extern Atom _XA_XDE_THEME_NAME;
-extern Atom _XA_XDE_ICON_THEME_NAME;
+extern Atom _XA_XDE_WM_CLASS;
+extern Atom _XA_XDE_WM_CMDLINE;
+extern Atom _XA_XDE_WM_COMMAND;
+extern Atom _XA_XDE_WM_ETCDIR;
+extern Atom _XA_XDE_WM_HOST;
+extern Atom _XA_XDE_WM_HOSTNAME;
+extern Atom _XA_XDE_WM_ICCCM_SUPPORT;
+extern Atom _XA_XDE_WM_ICON;
+extern Atom _XA_XDE_WM_ICONTHEME;	/* XXX */
+extern Atom _XA_XDE_WM_INFO;
+extern Atom _XA_XDE_WM_MENU;
+extern Atom _XA_XDE_WM_NAME;
+extern Atom _XA_XDE_WM_NETWM_SUPPORT;
+extern Atom _XA_XDE_WM_PID;
+extern Atom _XA_XDE_WM_PRVDIR;
+extern Atom _XA_XDE_WM_RCFILE;
+extern Atom _XA_XDE_WM_REDIR_SUPPORT;
+extern Atom _XA_XDE_WM_STYLE;
+extern Atom _XA_XDE_WM_STYLENAME;
+extern Atom _XA_XDE_WM_SYSDIR;
+extern Atom _XA_XDE_WM_THEME;
+extern Atom _XA_XDE_WM_THEMEFILE;
+extern Atom _XA_XDE_WM_USRDIR;
+extern Atom _XA_XDE_WM_VERSION;
+
 extern Atom _XA_GTK_READ_RCFILES;
 extern Atom _XA_MANAGER;
 
@@ -174,6 +195,12 @@ typedef enum {
 	StyleAppmenu,
 	StyleEntries,
 } Style;
+
+typedef enum {
+	XdeStyleSystem,
+	XdeStyleUser,
+	XdeStyleMixed,
+} Which;
 
 typedef struct {
 	int debug;
@@ -260,6 +287,15 @@ extern char *xdg_config_path;
 extern char *xdg_config_last;
 
 extern GMenuTree *tree;
+
+typedef struct {
+	char *key;
+	char *name;
+	GKeyFile *entry;
+} XdeXsession;
+
+GList *xde_get_xsessions(void);
+void xde_free_xsessions(GList *list);
 
 #endif				/* __XDE_MENU_H__ */
 
