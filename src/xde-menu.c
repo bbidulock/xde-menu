@@ -381,7 +381,7 @@ xde_xsession_compare(gconstpointer a, gconstpointer b)
 	const XdeXsession *A = a;
 	const XdeXsession *B = b;
 
-	return g_strcasecmp(A->name, B->name);
+	return strcasecmp(A->name, B->name);
 }
 
 GList *
@@ -440,6 +440,59 @@ void
 xde_free_xsessions(GList *list)
 {
 	g_list_free_full(list, &xde_xsession_free);
+}
+
+char *
+xde_increase_indent(MenuContext *ctx)
+{
+	int i, chars;
+
+	ctx->level++;
+	chars = ctx->level << 1;
+	ctx->indent = realloc(ctx->indent, chars + 1);
+	for (i = 0; i < chars; i++)
+		ctx->indent[i] = ' ';
+	ctx->indent[chars] = '\0';
+	return ctx->indent;
+}
+
+char *
+xde_decrease_indent(MenuContext *ctx)
+{
+	int chars;
+
+	ctx->level--;
+	if (ctx->level < 0)
+		ctx->level = 0;
+	chars = ctx->level <<1;
+	ctx->indent = realloc(ctx->indent, chars + 1);
+	ctx->indent[chars] = '\0';
+	return ctx->indent;
+}
+
+char *
+xde_character_escape(const char *string, char special)
+{
+	const char *p;
+	char *escaped, *q;
+	int len;
+
+	len = strlen(string) + 1;
+	escaped = calloc(len << 1, sizeof(*escaped));
+	for (p = string, q = escaped; p && *p; p++, q++) {
+		if ((*q = *p) == special) {
+			*q++ = '\\';
+			*q = special;
+		}
+	}
+	*q = '\0';
+	return (escaped);
+}
+
+gint
+xde_string_compare(gconstpointer a, gconstpointer b)
+{
+	return strcasecmp(a, b);
 }
 
 
@@ -585,6 +638,131 @@ static void
 print_line(gpointer string, gpointer file)
 {
 	fputs(string, file);
+}
+
+GList *
+xde_create_simple(MenuContext *ctx, Style style, const char *name)
+{
+	GMenuTreeDirectory *directory;
+	GList *result = NULL;
+
+	if (!(directory = gmenu_tree_get_root_directory(ctx->tree))) {
+		EPRINTF("could not get root directory\n");
+		return (result);
+	}
+	ctx->level = 0;
+	xde_increase_indent(ctx);
+	result = ctx->ops.menu(ctx, directory);
+	xde_decrease_indent(ctx);
+	switch (style) {
+	case StyleFullmenu:
+	default:
+		result = ctx->rootmenu(ctx, result);
+		break;
+	case StyleAppmenu:
+		if (!name)
+			name = gmenu_tree_directory_get_name(directory);
+		result = ctx->appmenu(ctx, result, name);
+		break;
+	case StyleEntries:
+		/* do nothing */
+		break;
+	}
+	return (result);
+}
+
+GList *
+xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
+{
+	GList *text = NULL;
+
+	switch (type) {
+	case GMENU_TREE_ITEM_INVALID:
+		break;
+	case GMENU_TREE_ITEM_DIRECTORY:
+		if (ctx->ops.directory)
+			text = ctx->ops.directory(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_ENTRY:
+		if (ctx->ops.entry)
+			text = ctx->ops.entry(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_SEPARATOR:
+		if (ctx->ops.separator)
+			text = ctx->ops.separator(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_HEADER:
+		if (ctx->ops.header)
+			text = ctx->ops.header(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_ALIAS:
+		if (ctx->ops.alias)
+			text = ctx->ops.alias(ctx, item);
+		break;
+	}
+	return (text);
+}
+
+GList *
+xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
+{
+	GMenuTreeItemType type;
+	GMenuTreeIter *iter;
+	GList *text = NULL;
+
+	iter = gmenu_tree_directory_iter(menu);
+
+	xde_increase_indent(ctx);
+	while((type = gmenu_tree_iter_next(iter)) != GMENU_TREE_ITEM_INVALID) {
+		switch (type) {
+		case GMENU_TREE_ITEM_INVALID:
+		default:
+			break;
+		case GMENU_TREE_ITEM_DIRECTORY:
+			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_directory(iter)));
+			continue;
+		case GMENU_TREE_ITEM_ENTRY:
+			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_entry(iter)));
+			continue;
+		case GMENU_TREE_ITEM_SEPARATOR:
+			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_separator(iter)));
+			continue;
+		case GMENU_TREE_ITEM_HEADER:
+			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_header(iter)));
+			continue;
+		case GMENU_TREE_ITEM_ALIAS:
+			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_alias(iter)));
+			continue;
+		}
+		break;
+	}
+	xde_decrease_indent(ctx);
+	return (text);
+}
+
+GList *
+xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
+{
+	GMenuTreeItemType type;
+	GList *text = NULL;
+
+	switch ((type = gmenu_tree_alias_get_aliased_item_type(als))) {
+	case GMENU_TREE_ITEM_INVALID:
+		break;
+	case GMENU_TREE_ITEM_DIRECTORY:
+		text = ctx->build(ctx, type, gmenu_tree_alias_get_aliased_directory(als));
+		break;
+	case GMENU_TREE_ITEM_ENTRY:
+		text = ctx->build(ctx, type, gmenu_tree_alias_get_aliased_entry(als));
+		break;
+	case GMENU_TREE_ITEM_SEPARATOR:
+		break;
+	case GMENU_TREE_ITEM_HEADER:
+		break;
+	case GMENU_TREE_ITEM_ALIAS:
+		break;
+	}
+	return (text);
 }
 
 static void

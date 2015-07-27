@@ -241,6 +241,7 @@ struct MenuContext {
 	GMenuTree *tree;
 	int level;
 	char *indent;
+	GtkIconLookupFlags iconflags;
 	GList *output;
 	GList *(*create) (MenuContext *ctx, Style style, const char *name);
 	GList *(*wmmenu) (MenuContext *ctx);	/* output the window manager menu */
@@ -294,8 +295,16 @@ typedef struct {
 	GKeyFile *entry;
 } XdeXsession;
 
+char *xde_increase_indent(MenuContext *ctx);
+char *xde_decrease_indent(MenuContext *ctx);
+char *xde_character_escape(const char *string, char special);
+gint xde_string_compare(gconstpointer a, gconstpointer b);
 GList *xde_get_xsessions(void);
 void xde_free_xsessions(GList *list);
+GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);
+GList *xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
+GList *xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu);
+GList *xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
 
 #endif				/* __XDE_MENU_H__ */
 
