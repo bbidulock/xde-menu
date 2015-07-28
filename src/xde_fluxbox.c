@@ -118,7 +118,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 
 	text = g_list_append(text, g_strdup_printf("[submenu] (%s) {%s}%s\n", esc1, esc2, icon));
 	text = g_list_concat(text, entries);
-	text = g_list_append(text, g_strdup_printf("[end]\n"));
+	text = g_list_append(text, g_strdup_printf("[end] # (%s)\n", esc1));
 
 	free(icon);
 	free(esc1);
@@ -262,11 +262,38 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	GMenuTreeDirectory *dir;
 	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *esc2;
+	char *icon = NULL, *s;
 
 	if (!(dir = gmenu_tree_header_get_directory(hdr)))
 		return (text);
-	text = g_list_append(text, g_strdup_printf("%s[nop] (%s)\n", ctx->indent, gmenu_tree_directory_get_name(dir)));
+
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc1 = xde_character_escape(name, ')');
+	esc2 = xde_character_escape(name, '}');
+	(void) esc2;
+
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+
+	s = g_strdup_printf("%s[nop] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
+	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+
+	free(icon);
+	free(esc2);
+	free(esc1);
 	return (text);
 }
 
@@ -340,7 +367,6 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
 
-	DPRINTF("Processing menu '%s'\n", name);
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
 		GKeyFile *file;
 
@@ -352,10 +378,10 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		g_key_file_unref(file);
 	} else
 		icon = xde_wrap_icon(icon);
+
 	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
 	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
 	text = g_list_append(text, g_strdup_printf("%s[end] # (%s)\n", ctx->indent, esc1));
-	DPRINTF("Done processing menu '%s'\n", name);
 
 	free(icon);
 	free(esc1);
@@ -580,7 +606,7 @@ xde_style_entries(MenuContext *ctx, const char *dname, Which which)
 			if (S_ISDIR(st.st_mode)) {
 				strcat(file, fname);
 				if (lstat(file, &st)) {
-					EPRINTF("%s: %s\n", file, strerror(errno));
+					DPRINTF("%s: %s\n", file, strerror(errno));
 					free(path);
 					free(file);
 					continue;

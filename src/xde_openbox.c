@@ -44,70 +44,608 @@
 
 #include "xde-menu.h"
 
+char *
+xde_wrap_icon(char *file)
+{
+	char *icon;
+
+	if (file) {
+		icon = calloc(strlen(file) + 4, sizeof(*icon));
+		strcpy(icon, " <");
+		strcat(icon, file);
+		strcat(icon, ">");
+	} else
+		icon = strdup("");
+	free(file);
+	return (icon);
+}
+
+static GList *
+xde_create(MenuContext *ctx, Style style, const char *name)
+{
+	return xde_create_simple(ctx, style, name);
+}
+
 static GList *
 xde_wmmenu(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	GList *xsessions, *xsession;
+	char *icon;
+	char *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s[submenu] (Window Managers) {Window Managers}%s\n",
+			    ctx->indent, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s[restart] (Restart)%s\n", ctx->indent, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+
+		if (strncasecmp(xsess->key, "openbox", 7) == 0)
+			continue;
+		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		s = g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}%s\n",
+				    ctx->indent, xsess->name, xsess->key, icon);
+		text = g_list_append(text, s);
+		free(icon);
+	}
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s[end] # (Window Managers)\n", ctx->indent);
+	text = g_list_append(text, s);
+	xde_free_xsessions(xsessions);
+	return (text);
 }
 
 static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
-	return NULL;
+	GList *text = NULL;
+	char *esc1, *esc2;
+	char *icon;
+
+	esc1 = xde_character_escape(name, ')');
+	esc2 = xde_character_escape(name, '}');
+	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
+
+	text = g_list_append(text, g_strdup_printf("[submenu] (%s) {%s}%s\n", esc1, esc2, icon));
+	text = g_list_concat(text, entries);
+	text = g_list_append(text, g_strdup_printf("[end] # (%s)\n", esc1));
+
+	free(icon);
+	free(esc1);
+	free(esc2);
+	return (text);
 }
 
 static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
-	return NULL;
+	GList *text = NULL;
+	char *icon;
+	char *s;
+
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[begin] (Menu)");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[separator]");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "openbox"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Openbox menu)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	text = g_list_concat(text, ctx->themes(ctx));
+	text = g_list_concat(text, ctx->styles(ctx));
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Backgrounds) {Set the Background}");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Random Background) {fbsetbg -r /usr/share/fluxbox/backgrounds}");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[workspaces] (Workspace List)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applications-utilities"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Tools)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applets-screenshooter"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}", icon);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run) {fbrun -font 10x20 -fg grey -bg black -title run}", icon);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->wmmenu(ctx));
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (Openbox menu)");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gnome-lockscreen"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Lock screen) {xlock}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[reconfig] (Reload config)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[restart] (Restart) {}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[separator]");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exit] (Exit)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (Menu)");
+	text = g_list_append(text, s);
+	return (text);
+}
+
+static GList *
+xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
+{
+	return xde_build_simple(ctx, type, item);
 }
 
 static GList *
 xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 {
-	return NULL;
-}
-
-static GList *
-xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
-{
-	return NULL;
+	return xde_menu_simple(ctx, menu);
 }
 
 static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	return NULL;
+	GMenuTreeDirectory *dir;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *esc2;
+	char *icon = NULL, *s;
+
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
+		return (text);
+
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc1 = xde_character_escape(name, ')');
+	esc2 = xde_character_escape(name, '}');
+	(void) esc2;
+
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+
+	s = g_strdup_printf("%s[nop] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+
+	free(icon);
+	free(esc2);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
-	return NULL;
+	GList *text = NULL;
+
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[separator]"));
+	return (text);
 }
 
 static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name, *exec, *path;
+	char *esc1, *esc2, *cmd;
+	char *icon = NULL;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+
+	esc1 = xde_character_escape(name, ')');
+
+	if (options.launch) {
+		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+
+		if ((p = strstr(str, ".desktop")))
+			*p = '\0';
+		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
+		free(str);
+	} else {
+		exec = g_app_info_get_commandline(G_APP_INFO(info));
+		cmd = g_strdup(exec);
+	}
+
+	esc2 = xde_character_escape(cmd, '}');
+
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+	text = g_list_append(text, g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent,
+						   esc1, esc2, icon));
+	free(icon);
+	free(esc1);
+	free(esc2);
+	free(cmd);
+	return (text);
+}
+
+static GList *
+xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
+{
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *esc2;
+	char *icon = NULL;
+
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc1 = xde_character_escape(name, ')');
+	esc2 = xde_character_escape(name, '}');
+
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+
+	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_append(text, g_strdup_printf("%s[end] # (%s)\n", ctx->indent, esc1));
+
+	free(icon);
+	free(esc1);
+	free(esc2);
+	return (text);
 }
 
 static GList *
 xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
-	return NULL;
+	return xde_alias_simple(ctx, als);
+}
+
+static GList *
+xde_theme_entries(MenuContext *ctx, const char *dname, Which which)
+{
+	GList *text = NULL;
+	DIR *dir;
+	static const char *sysfmt = "%s[exec] (%s) {xde-style -s -t -r -y '%s'}%s\n";
+	static const char *usrfmt = "%s[exec] (%s) {xde-style -s -t -r -u '%s'}%s\n";
+	static const char *mixfmt = "%s[exec] (%s) {xde-style -s -t -r '%s'}%s\n";
+	const char *fmt;
+	char *icon;
+
+	switch (which) {
+	case XdeStyleSystem:
+		fmt = sysfmt;
+		break;
+	case XdeStyleUser:
+		fmt = usrfmt;
+		break;
+	case XdeStyleMixed:
+	default:
+		fmt = mixfmt;
+		break;
+	}
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+
+	if ((dir = opendir(dname))) {
+		struct dirent *d;
+		struct stat st;
+		char *file;
+		int len;
+
+		xde_increase_indent(ctx);
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dname) + strlen(d->d_name) + 16;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (lstat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			switch (which) {
+			case XdeStyleMixed:
+			{
+				static const char *fname = "/xde/themerc";
+
+				if (!S_ISDIR(st.st_mode)) {
+					DPRINTF("%s: not file or directory\n", file);
+					free(file);
+					continue;
+				}
+				strcat(file, fname);
+				if (stat(file, &st)) {
+					EPRINTF("%s: %s\n", file, strerror(errno));
+					free(file);
+					continue;
+				}
+				if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not a file\n", file);
+					free(file);
+					continue;
+				}
+				break;
+			}
+			case XdeStyleSystem:
+			case XdeStyleUser:
+			default:
+			{
+				static const char *fname = "/openbox-3/themerc";
+
+				if (!S_ISLNK(st.st_mode)) {
+					DPRINTF("%s: not symbolic link\n", file);
+					free(file);
+					continue;
+				}
+				if (stat(file, &st)) {
+					EPRINTF("%s: %s\n", file, strerror(errno));
+					free(file);
+					continue;
+				}
+				if (S_ISDIR(st.st_mode)) {
+					strcat(file, fname);
+					if (stat(file, &st)) {
+						EPRINTF("%s: %s\n", file, strerror(errno));
+						free(file);
+						continue;
+					}
+					if (!S_ISREG(st.st_mode)) {
+						DPRINTF("%s: not a file\n", file);
+						free(file);
+						continue;
+					}
+				} else if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not file or directory\n", file);
+					free(file);
+					continue;
+				}
+				break;
+			}
+			}
+			text = g_list_append(text, g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name, icon));
+			free(file);
+		}
+		xde_decrease_indent(ctx);
+		closedir(dir);
+		text = g_list_sort(text, xde_string_compare);
+
+	} else
+		DPRINTF("%s: %s\n", dname, strerror(errno));
+	free(icon);
+	return (text);
 }
 
 static GList *
 xde_themes(MenuContext *ctx)
 {
-	return NULL;
+	static const char *sysdir = "/usr/share/themes";
+	static const char *usr = "/.config/openbox/styles";
+	char *usrdir, *string;
+	GList *text = NULL, *sysent, *usrent;
+	const char *home;
+	char *icon;
+	int len;
+
+	sysent = xde_theme_entries(ctx, sysdir, XdeStyleSystem);
+
+	home = getenv("HOME") ?: "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_theme_entries(ctx, usrdir, XdeStyleUser);
+
+	if (!sysent && !usrent) {
+		free(usrdir);
+		return (text);
+	}
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	string = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Themes) {Choose a theme...}", icon);
+	text = g_list_append(text, string);
+	if (sysent)
+		text = g_list_concat(text, sysent);
+	if (sysent && usrent) {
+		xde_increase_indent(ctx);
+		text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}"));
+		xde_decrease_indent(ctx);
+	}
+	if (usrent)
+		text = g_list_concat(text, usrent);
+	string = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (System Themes)");
+	text = g_list_append(text, string);
+	free(icon);
+	return (text);
+}
+
+static GList *
+xde_style_entries(MenuContext *ctx, const char *dname, Which which)
+{
+	GList *text = NULL;
+	DIR *dir;
+	static const char *sysfmt = "%s[exec] (%s) {xde-style -s -r -y '%s'}\n";
+	static const char *usrfmt = "%s[exec] (%s) {xde-style -s -r -u '%s'}\n";
+	static const char *mixfmt = "%s[exec] (%s) {xde-style -s -r '%s'}\n";
+	const char *fmt;
+
+	switch (which) {
+	case XdeStyleSystem:
+		fmt = sysfmt;
+		break;
+	case XdeStyleUser:
+	default:
+		fmt = usrfmt;
+		break;
+	case XdeStyleMixed:
+		fmt = mixfmt;
+		break;
+	}
+
+	if ((dir = opendir(dname))) {
+		static const char *fname = "/openbox-3/themerc";
+		struct dirent *d;
+		struct stat st;
+		char *file, *path;
+		int len;
+
+		xde_increase_indent(ctx);
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dname) + strlen(d->d_name) + strlen(fname) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			path = strdup(file);
+			if (lstat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(path);
+				free(file);
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(file, fname);
+				if (lstat(file, &st)) {
+					DPRINTF("%s: %s\n", file, strerror(errno));
+					free(path);
+					free(file);
+					continue;
+				}
+				if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not a file\n", file);
+					free(path);
+					free(file);
+					continue;
+				}
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not file or directory\n", file);
+				free(path);
+				free(file);
+				continue;
+			}
+			text = g_list_append(text, g_strdup_printf("%s[style] (%s) {%s}\n", ctx->indent, d->d_name, path));
+			(void) fmt;
+//			text = g_list_append(text, g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name));
+			free(path);
+			free(file);
+		}
+		xde_decrease_indent(ctx);
+		closedir(dir);
+		text = g_list_sort(text, xde_string_compare);
+
+	} else
+		DPRINTF("%s: %s\n", dname, strerror(errno));
+	return (text);
 }
 
 static GList *
 xde_styles(MenuContext *ctx)
 {
-	return NULL;
+	static const char *sysdir = "/usr/share/themes";
+	static const char *usr = "/.config/openbox/styles";
+	char *usrdir, *string;
+	GList *text = NULL, *sysent, *usrent;
+	const char *home;
+	char *icon;
+	int len;
+
+	sysent = xde_style_entries(ctx, sysdir, XdeStyleSystem);
+
+	home = getenv("HOME") ? : "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_style_entries(ctx, usrdir, XdeStyleUser);
+
+	if (!sysent && !usrent) {
+		free(usrdir);
+		return (text);
+	}
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	string = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Styles) {Choose a style...}", icon);
+	text = g_list_append(text, string);
+	if (sysent)
+		text = g_list_concat(text, sysent);
+	if (sysent && usrent) {
+		xde_increase_indent(ctx);
+		text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}"));
+		xde_decrease_indent(ctx);
+	}
+	if (usrent)
+		text = g_list_concat(text, usrent);
+	string = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (System Styles)");
+	text = g_list_append(text, string);
+	free(icon);
+	return (text);
 }
 
 MenuContext xde_menu_ops = {
@@ -115,10 +653,19 @@ MenuContext xde_menu_ops = {
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,
+	.iconflags = 0
+//		| GTK_ICON_LOOKUP_NO_SVG
+//		| GTK_ICON_LOOKUP_FORCE_SVG
+//		| GTK_ICON_LOOKUP_USE_BUILTIN
+//		| GTK_ICON_LOOKUP_GENERIC_FALLBACK
+//		| GTK_ICON_LOOKUP_FORCE_SIZE
+		,
 	.output = NULL,
+	.create = &xde_create,
 	.wmmenu = &xde_wmmenu,
 	.appmenu = &xde_appmenu,
 	.rootmenu = &xde_rootmenu,
+	.build = &xde_build,
 	.ops = {
 		.menu = &xde_menu,
 		.directory = &xde_directory,
