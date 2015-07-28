@@ -45,240 +45,19 @@
 #include "xde-menu.h"
 
 char *
-xde_get_icons(MenuContext *ctx, const char *inames[])
+xde_wrap_icon(char *file)
 {
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
-	char *file = NULL;
-	const char **iname;
+	char *icon;
 
-	if ((theme = gtk_icon_theme_get_default())) {
-		for (iname = inames; *iname; iname++) {
-			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
-				if ((name = gtk_icon_info_get_filename(info))) {
-					file = calloc(strlen(name) + 4, sizeof(*file));
-					strcpy(file, " <");
-					strcat(file, name);
-					strcat(file, ">");
-				}
-				gtk_icon_info_free(info);
-			} else
-				EPRINTF("Could not lookup icon: %s\n", *iname);
-			if (file)
-				break;
-		}
-	}
-	if (!file)
-		file = strdup("");
-	return (file);
-}
-
-char *
-xde_get_icon(MenuContext *ctx, const char *iname)
-{
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
-	char *file = NULL;
-
-	if ((theme = gtk_icon_theme_get_default())) {
-		if ((info = gtk_icon_theme_lookup_icon(theme, iname, 16, ctx->iconflags))) {
-			if ((name = gtk_icon_info_get_filename(info))) {
-				file = calloc(strlen(name) + 4, sizeof(*file));
-				strcpy(file, " <");
-				strcat(file, name);
-				strcat(file, ">");
-			}
-			gtk_icon_info_free(info);
-		}
-	}
-	if (!file)
-		file = strdup("");
-	return (file);
-}
-
-char *
-xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2)
-{
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
-	char *file = NULL;
-	const char *inames[3];
-	const char **iname;
-
-	if ((inames[0] = iname1)) {
-		inames[1] = iname2;
-		inames[2] = NULL;
-	} else {
-		inames[0] = iname2;
-		inames[1] = NULL;
-		inames[2] = NULL;
-	}
-	if ((theme = gtk_icon_theme_get_default())) {
-		for (iname = inames; *iname; iname++) {
-			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
-				if ((name = gtk_icon_info_get_filename(info))) {
-					file = calloc(strlen(name) + 4, sizeof(*file));
-					strcpy(file, " <");
-					strcat(file, name);
-					strcat(file, ">");
-				}
-				gtk_icon_info_free(info);
-			} else
-				EPRINTF("Could not lookup icon: %s\n", *iname);
-			if (file)
-				break;
-		}
-	}
-	if (!file)
-		file = strdup("");
-	return (file);
-}
-
-#define GET_ENTRY_ICON_FLAG_XPM	(1<<0)
-#define GET_ENTRY_ICON_FLAG_PNG (1<<1)
-#define GET_ENTRY_ICON_FLAG_SVG (1<<2)
-#define GET_ENTRY_ICON_FLAG_JPG (1<<3)
-#define GET_ENTRY_ICON_FLAG_GIF (1<<4)
-#define GET_ENTRY_ICON_FLAG_TIF (1<<5)
-
-gboolean
-xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
-{
-	char *p;
-
-	if ((p = strrchr(path, '.'))) {
-		if ((flags & GET_ENTRY_ICON_FLAG_XPM) && strcmp(p, ".xpm") == 0)
-			return TRUE;
-		else if ((flags & GET_ENTRY_ICON_FLAG_PNG) && strcmp(p, ".png") == 0)
-			return TRUE;
-		else if ((flags & GET_ENTRY_ICON_FLAG_SVG) && strcmp(p, ".svg") == 0)
-			return TRUE;
-		else if ((flags & GET_ENTRY_ICON_FLAG_JPG)
-			 && (strcmp(p, ".jpg") == 0 || strcmp(p, ".jpeg") == 0))
-			return TRUE;
-		else if ((flags & GET_ENTRY_ICON_FLAG_GIF) && strcmp(p, ".gif") == 0)
-			return TRUE;
-		else if ((flags & GET_ENTRY_ICON_FLAG_TIF)
-			 && (strcmp(p, ".tif") == 0 || strcmp(p, ".tiff") == 0))
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
- * Basically get the icon for a given entry, whether application or directory, with specified
- * defaults or fallbacks.  If the desktop entry specification contains an absolute file name, then
- * check if it exists and use it; otherwise, if the file is a relative path, then the path is
- * relative to the menu file (but we don't do that).  Otherwise, remove any extension, and remove
- * any leading path elements and look for the icon by name.  The flags above are used.
- */
-char *
-xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
-		   const char *dflt2, int flags)
-{
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
-	char *file = NULL;
-	const char *inames[8];
-	const char **iname;
-	char *icon, *tryx, *exec, *wmcl;
-	int i = 0;
-
-	if ((icon = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-					  G_KEY_FILE_DESKTOP_KEY_ICON, NULL))) {
-		char *base, *p;
-
-		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
-			DPRINTF("going with full icon path %s\n", icon);
-			file = calloc(strlen(icon) + 4, sizeof(*file));
-			strcpy(file, " <");
-			strcat(file, icon);
-			strcat(file, ">");
-			g_free(icon);
-			return (file);
-		}
-		base = icon;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
-		inames[i++] = base;
-		EPRINTF("Choice %d for icon name: %s\n", i, base);
-	}
-	if ((wmcl = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-					G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS, NULL))) {
-		inames[i++] = wmcl;
-		EPRINTF("Choice %d for icon name: %s\n", i, wmcl);
-	}
-	if ((tryx = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-					G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
-		char *base, *p;
-
-		base = tryx;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
-		if (strcmp(base, "gksu") && strcmp(base, "sh")) {
-			inames[i++] = base;
-			EPRINTF("Choice %d for icon name: %s\n", i, base);
-		}
-	}
-	if ((exec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-					G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
-		char *base, *p;
-
-		base = exec;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
-		if (strcmp(base, "gksu") && strcmp(base, "sh") && strcmp(base, "bash")) {
-			inames[i++] = base;
-			EPRINTF("Choice %d for icon name: %s\n", i, base);
-		}
-	}
-	if (dflt1) {
-		inames[i++] = dflt1;
-		EPRINTF("Choice %d for icon name: %s\n", i, dflt1);
-	}
-	if (dflt2) {
-		inames[i++] = dflt2;
-		EPRINTF("Choice %d for icon name: %s\n", i, dflt2);
-	}
-	inames[i++] = NULL;
-	if ((theme = gtk_icon_theme_get_default())) {
-		for (iname = inames; *iname; iname++) {
-			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
-				if ((name = gtk_icon_info_get_filename(info))) {
-					file = calloc(strlen(name) + 4, sizeof(*file));
-					strcpy(file, " <");
-					strcat(file, name);
-					strcat(file, ">");
-				} else
-					EPRINTF("Gtk Icon Info has not filename!\n");
-				gtk_icon_info_free(info);
-			} else
-				EPRINTF("Could not find icon!\n");
-			if (file)
-				break;
-		}
+	if (file) {
+		icon = calloc(strlen(file) + 4, sizeof(*icon));
+		strcpy(icon, " <");
+		strcat(icon, file);
+		strcat(icon, ">");
 	} else
-		EPRINTF("Cannot obtain default icon theme!\n");
-	g_free(icon);
-	g_free(wmcl);
-	g_free(tryx);
-	g_free(exec);
-	if (!file)
-		file = strdup("");
-	return (file);
+		icon = strdup("");
+	free(file);
+	return (icon);
 }
 
 static GList *
@@ -295,13 +74,13 @@ xde_wmmenu(MenuContext *ctx)
 	char *icon;
 	char *s;
 
-	icon = xde_get_icon(ctx, "gtk-quit");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%s[submenu] (Window Managers) {Window Managers}%s\n",
 			    ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
-	icon = xde_get_icon(ctx, "gtk-refresh");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("%s[restart] (Restart)%s\n", ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -313,6 +92,7 @@ xde_wmmenu(MenuContext *ctx)
 			continue;
 		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
 				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
 		s = g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}%s\n",
 				    ctx->indent, xsess->name, xsess->key, icon);
 		text = g_list_append(text, s);
@@ -334,7 +114,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
-	icon = xde_get_icon2(ctx, "start-here", "folder");
+	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
 
 	text = g_list_append(text, g_strdup_printf("[submenu] (%s) {%s}%s\n", esc1, esc2, icon));
 	text = g_list_concat(text, entries);
@@ -361,12 +141,12 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_increase_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[separator]");
 	text = g_list_append(text, s);
-	icon = xde_get_icon(ctx, "fluxbox");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "fluxbox"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Fluxbox menu)", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
-	icon = xde_get_icon(ctx, "preferences-desktop");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -380,24 +160,24 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
-	icon = xde_get_icon(ctx, "preferences-desktop-display");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[workspaces] (Workspace List)", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_get_icon(ctx, "applications-utilities");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applications-utilities"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Tools)", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
 	text = g_list_append(text, s);
-	icon = xde_get_icon(ctx, "applets-screenshooter");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applets-screenshooter"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}", icon);
 	text = g_list_append(text, s);
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_get_icon(ctx, "gtk-execute");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run) {fbrun -font 10x20 -fg grey -bg black -title run}", icon);
 	text = g_list_append(text, s);
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}", icon);
@@ -406,7 +186,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
-	icon = xde_get_icon(ctx, "preferences-system-windows");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Arrange Windows)", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -424,28 +204,28 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (Fluxbox menu)");
 	text = g_list_append(text, s);
-	icon = xde_get_icon(ctx, "gnome-lockscreen");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gnome-lockscreen"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Lock screen) {xlock}", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_get_icon(ctx, "gtk-execute");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[commanddialog] (Fluxbox Command)", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_get_icon(ctx, "gtk-redo-ltr");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[reconfig] (Reload config)", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_get_icon(ctx, "gtk-refresh");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[restart] (Restart) {}", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_get_icon(ctx, "help-about");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "help-about"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (About) {(fluxbox -v; fluxbox -info | sed 1d) | gxmessage -file - -center}", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	if (options.output) {
-		icon = xde_get_icon(ctx, "gtk-refresh");
+		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf("%s%s%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format fluxbox -desktop FLUXBOX -o ",
 				options.filename, "}", icon);
 		text = g_list_append(text, s);
@@ -453,7 +233,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	}
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[separator]");
 	text = g_list_append(text, s);
-	icon = xde_get_icon(ctx, "gtk-quit");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exit] (Exit)", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -483,8 +263,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	GList *text = NULL;
 	const char *name, *path;
 	char *esc1, *esc2;
-	GKeyFile *file;
-	char *icon;
+	char *icon = NULL;
 
 	name = gmenu_tree_directory_get_name(dir);
 
@@ -492,18 +271,23 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	esc2 = xde_character_escape(name, '}');
 
 	DPRINTF("Processing menu '%s'\n", name);
-	path = gmenu_tree_directory_get_desktop_file_path(dir);
-	file = g_key_file_new();
-	g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-	icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
-			GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
 	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
 	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
 	text = g_list_append(text, g_strdup_printf("%s[end] # (%s)\n", ctx->indent, esc1));
 	DPRINTF("Done processing menu '%s'\n", name);
 
 	free(icon);
-	g_key_file_unref(file);
 	free(esc1);
 	free(esc2);
 	return (text);
@@ -538,8 +322,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	GList *text = NULL;
 	const char *name, *exec, *path;
 	char *esc1, *esc2, *cmd;
-	GKeyFile *file;
-	char *icon;
+	char *icon = NULL;
 
 	info = gmenu_tree_entry_get_app_info(ent);
 	name = g_app_info_get_name(G_APP_INFO(info));
@@ -560,16 +343,20 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 
 	esc2 = xde_character_escape(cmd, '}');
 
-	path = gmenu_tree_entry_get_desktop_file_path(ent);
-	file = g_key_file_new();
-	g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file;
 
-	icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
-				  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
 	text = g_list_append(text, g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent,
 						   esc1, esc2, icon));
 	free(icon);
-	g_key_file_unref(file);
 	free(esc1);
 	free(esc2);
 	free(cmd);
@@ -606,7 +393,7 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which)
 		break;
 	}
 
-	icon = xde_get_icon(ctx, "style");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
 
 	if ((dir = opendir(dname))) {
 		struct dirent *d;
@@ -726,7 +513,7 @@ xde_themes(MenuContext *ctx)
 		return (text);
 	}
 
-	icon = xde_get_icon(ctx, "style");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
 	string = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Themes) {Choose a theme...}", icon);
 	text = g_list_append(text, string);
 	if (sysent)
@@ -855,7 +642,7 @@ xde_styles(MenuContext *ctx)
 		free(usrdir);
 		return (text);
 	}
-	icon = xde_get_icon(ctx, "style");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
 	string = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Styles) {Choose a style...}", icon);
 	text = g_list_append(text, string);
 	if (sysent)

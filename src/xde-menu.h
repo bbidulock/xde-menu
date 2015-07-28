@@ -295,10 +295,24 @@ typedef struct {
 	GKeyFile *entry;
 } XdeXsession;
 
+#define GET_ENTRY_ICON_FLAG_XPM	(1<<0)
+#define GET_ENTRY_ICON_FLAG_PNG (1<<1)
+#define GET_ENTRY_ICON_FLAG_SVG (1<<2)
+#define GET_ENTRY_ICON_FLAG_JPG (1<<3)
+#define GET_ENTRY_ICON_FLAG_GIF (1<<4)
+#define GET_ENTRY_ICON_FLAG_TIF (1<<5)
+
 char *xde_increase_indent(MenuContext *ctx);
 char *xde_decrease_indent(MenuContext *ctx);
 char *xde_character_escape(const char *string, char special);
 gint xde_string_compare(gconstpointer a, gconstpointer b);
+
+char *xde_get_icons(MenuContext *ctx, const char *inames[]);
+char *xde_get_icon(MenuContext *ctx, const char *iname);
+char *xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2);
+gboolean xde_test_icon_ext(MenuContext *ctx, const char *path, int flags);
+char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1, const char *dflt2, int flags);
+
 GList *xde_get_xsessions(void);
 void xde_free_xsessions(GList *list);
 GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);

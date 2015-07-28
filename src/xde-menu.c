@@ -158,6 +158,200 @@ display_invalid(FILE *file, int level)
 	fprintf(file, "%s\n", "Invalid Entry");
 }
 
+char *
+xde_get_icons(MenuContext *ctx, const char *inames[])
+{
+	GtkIconTheme *theme;
+	GtkIconInfo *info;
+	const gchar *name;
+	char *file = NULL;
+	const char **iname;
+
+	if ((theme = gtk_icon_theme_get_default())) {
+		for (iname = inames; *iname; iname++) {
+			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
+				if ((name = gtk_icon_info_get_filename(info)))
+					file = strdup(name);
+				gtk_icon_info_free(info);
+			}
+			if (file)
+				break;
+		}
+	}
+	return (file);
+}
+
+char *
+xde_get_icon(MenuContext *ctx, const char *iname)
+{
+	GtkIconTheme *theme;
+	GtkIconInfo *info;
+	const gchar *name;
+	char *file = NULL;
+
+	if ((theme = gtk_icon_theme_get_default())) {
+		if ((info = gtk_icon_theme_lookup_icon(theme, iname, 16, ctx->iconflags))) {
+			if ((name = gtk_icon_info_get_filename(info)))
+				file = strdup(name);
+			gtk_icon_info_free(info);
+		}
+	}
+	return (file);
+}
+
+char *
+xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2)
+{
+	GtkIconTheme *theme;
+	GtkIconInfo *info;
+	const gchar *name;
+	char *file = NULL;
+	const char *inames[3];
+	const char **iname;
+
+	if ((inames[0] = iname1)) {
+		inames[1] = iname2;
+		inames[2] = NULL;
+	} else {
+		inames[0] = iname2;
+		inames[1] = NULL;
+		inames[2] = NULL;
+	}
+	if ((theme = gtk_icon_theme_get_default())) {
+		for (iname = inames; *iname; iname++) {
+			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
+				if ((name = gtk_icon_info_get_filename(info)))
+					file = strdup(name);
+				gtk_icon_info_free(info);
+			}
+			if (file)
+				break;
+		}
+	}
+	return (file);
+}
+
+gboolean
+xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
+{
+	char *p;
+
+	if ((p = strrchr(path, '.'))) {
+		if ((flags & GET_ENTRY_ICON_FLAG_XPM) && strcmp(p, ".xpm") == 0)
+			return TRUE;
+		else if ((flags & GET_ENTRY_ICON_FLAG_PNG) && strcmp(p, ".png") == 0)
+			return TRUE;
+		else if ((flags & GET_ENTRY_ICON_FLAG_SVG) && strcmp(p, ".svg") == 0)
+			return TRUE;
+		else if ((flags & GET_ENTRY_ICON_FLAG_JPG)
+			 && (strcmp(p, ".jpg") == 0 || strcmp(p, ".jpeg") == 0))
+			return TRUE;
+		else if ((flags & GET_ENTRY_ICON_FLAG_GIF) && strcmp(p, ".gif") == 0)
+			return TRUE;
+		else if ((flags & GET_ENTRY_ICON_FLAG_TIF)
+			 && (strcmp(p, ".tif") == 0 || strcmp(p, ".tiff") == 0))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * Basically get the icon for a given entry, whether application or directory, with specified
+ * defaults or fallbacks.  If the desktop entry specification contains an absolute file name, then
+ * check if it exists and use it; otherwise, if the file is a relative path, then the path is
+ * relative to the menu file (but we don't do that).  Otherwise, remove any extension, and remove
+ * any leading path elements and look for the icon by name.  The flags above are used.
+ */
+char *
+xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
+		   const char *dflt2, int flags)
+{
+	GtkIconTheme *theme;
+	GtkIconInfo *info;
+	const gchar *name;
+	char *file = NULL;
+	const char *inames[8];
+	const char **iname;
+	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL;
+	int i = 0;
+
+	if ((icon = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+					  G_KEY_FILE_DESKTOP_KEY_ICON, NULL))) {
+		char *base, *p;
+
+		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
+			DPRINTF("going with full icon path %s\n", icon);
+			file = strdup(icon);
+			g_free(icon);
+			return (file);
+		}
+		base = icon;
+		*strchrnul(base, ' ') = '\0';
+		if ((p = strrchr(base, '/')))
+			base = p + 1;
+		if ((p = strrchr(base, '.')))
+			*p = '\0';
+		inames[i++] = base;
+		DPRINTF("Choice %d for icon name: %s\n", i, base);
+	} else {
+		if ((wmcl = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+						G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS, NULL))) {
+			inames[i++] = wmcl;
+			DPRINTF("Choice %d for icon name: %s\n", i, wmcl);
+		}
+		if ((tryx = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+						G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
+			char *base, *p;
+
+			base = tryx;
+			*strchrnul(base, ' ') = '\0';
+			if ((p = strrchr(base, '/')))
+				base = p + 1;
+			if ((p = strrchr(base, '.')))
+				*p = '\0';
+			inames[i++] = base;
+			DPRINTF("Choice %d for icon name: %s\n", i, base);
+		} else if ((exec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
+						G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
+			char *base, *p;
+
+			base = exec;
+			*strchrnul(base, ' ') = '\0';
+			if ((p = strrchr(base, '/')))
+				base = p + 1;
+			if ((p = strrchr(base, '.')))
+				*p = '\0';
+			inames[i++] = base;
+			DPRINTF("Choice %d for icon name: %s\n", i, base);
+		}
+	}
+	if (dflt1) {
+		inames[i++] = dflt1;
+		DPRINTF("Choice %d for icon name: %s\n", i, dflt1);
+	}
+	if (dflt2) {
+		inames[i++] = dflt2;
+		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
+	}
+	inames[i++] = NULL;
+	if ((theme = gtk_icon_theme_get_default())) {
+		for (iname = inames; *iname; iname++) {
+			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
+				if ((name = gtk_icon_info_get_filename(info)))
+					file = strdup(name);
+				gtk_icon_info_free(info);
+			}
+			if (file)
+				break;
+		}
+	}
+	g_free(icon);
+	g_free(wmcl);
+	g_free(tryx);
+	g_free(exec);
+	return (file);
+}
+
 static char **
 xde_get_xsession_dirs(int *np)
 {
@@ -199,6 +393,10 @@ xde_get_xsession_entry(const char *key, const char *file)
 {
 	GKeyFile *entry;
 
+	if (!file) {
+		EPRINTF("file was NULL!\n");
+		return (NULL);
+	}
 	if (!(entry = g_key_file_new())) {
 		EPRINTF("%s: could not allocate key file\n", file);
 		return (NULL);
