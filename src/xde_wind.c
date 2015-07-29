@@ -45,6 +45,12 @@
 #include "xde-menu.h"
 
 static GList *
+xde_create(MenuContext *ctx, Style style, const char *name)
+{
+	return xde_create_simple(ctx, style, name);
+}
+
+static GList *
 xde_wmmenu(MenuContext *ctx)
 {
 	return NULL;
@@ -63,13 +69,19 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 }
 
 static GList *
-xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
+xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
-	return NULL;
+	return xde_build_simple(ctx, type, item);
 }
 
 static GList *
-xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
+xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
+{
+	return xde_menu_simple(ctx, menu);
+}
+
+static GList *
+xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	return NULL;
 }
@@ -81,7 +93,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 }
 
 static GList *
-xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	return NULL;
 }
@@ -95,7 +107,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 static GList *
 xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
-	return NULL;
+	return xde_alias_simple(ctx, als);
 }
 
 static GList *
@@ -115,10 +127,19 @@ MenuContext xde_menu_ops = {
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,
+	.iconflags = 0
+//              | GTK_ICON_LOOKUP_NO_SVG
+//              | GTK_ICON_LOOKUP_FORCE_SVG
+//              | GTK_ICON_LOOKUP_USE_BUILTIN
+//              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
+//              | GTK_ICON_LOOKUP_FORCE_SIZE
+	    ,
 	.output = NULL,
+	.create = &xde_create,
 	.wmmenu = &xde_wmmenu,
 	.appmenu = &xde_appmenu,
 	.rootmenu = &xde_rootmenu,
+	.build = &xde_build,
 	.ops = {
 		.menu = &xde_menu,
 		.directory = &xde_directory,
@@ -130,4 +151,3 @@ MenuContext xde_menu_ops = {
 	.themes = &xde_themes,
 	.styles = &xde_styles,
 };
-

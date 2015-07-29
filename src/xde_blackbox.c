@@ -149,6 +149,28 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 }
 
 static GList *
+xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+{
+	GList *text = NULL;
+
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}"));
+	return (text);
+}
+
+static GList *
+xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
+{
+	GMenuTreeDirectory *dir;
+	GList *text = NULL;
+
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
+		return (text);
+	text = g_list_append(text, g_strdup_printf("%s[nop] (%s)\n", ctx->indent, gmenu_tree_directory_get_name(dir)));
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	return (text);
+}
+
+static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GList *text = NULL;
@@ -168,28 +190,6 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 
 	free(esc1);
 	free(esc2);
-	return (text);
-}
-
-static GList *
-xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
-{
-	GMenuTreeDirectory *dir;
-	GList *text = NULL;
-
-	if (!(dir = gmenu_tree_header_get_directory(hdr)))
-		return (text);
-	text = g_list_append(text, g_strdup_printf("%s[nop] (%s)\n", ctx->indent, gmenu_tree_directory_get_name(dir)));
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
-	return (text);
-}
-
-static GList *
-xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
-{
-	GList *text = NULL;
-
-	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}"));
 	return (text);
 }
 
@@ -535,4 +535,3 @@ MenuContext xde_menu_ops = {
 	.themes = &xde_themes,
 	.styles = &xde_styles,
 };
-

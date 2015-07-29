@@ -123,7 +123,7 @@ xde_styles(MenuContext *ctx)
 }
 
 MenuContext xde_menu_ops = {
-	.name = "awesome",
+	.name = "openbox3",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

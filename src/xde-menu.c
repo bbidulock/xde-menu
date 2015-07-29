@@ -866,6 +866,7 @@ xde_create_simple(MenuContext *ctx, Style style, const char *name)
 		/* do nothing */
 		break;
 	}
+	result = g_list_concat(ctx->output, result);
 	return (result);
 }
 

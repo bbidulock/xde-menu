@@ -158,6 +158,13 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 }
 
 static GList *
+xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+{
+	/* IceWM does not support separators */
+	return NULL;
+}
+
+static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	/* IceWM does not support inline headers */
@@ -165,10 +172,41 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 }
 
 static GList *
-xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	/* IceWM does not support separators */
-	return NULL;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc, *s;
+	char *icon = NULL;
+
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc = xde_character_escape(name, '"');
+
+	DPRINTF("Processing menu '%s'\n", name);
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon =
+		    xde_get_entry_icon(ctx, file, "folder", "unknown",
+				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	DPRINTF("Done processing menu '%s'\n", name);
+
+	free(icon);
+	free(esc);
+	return (text);
 }
 
 static GList *
@@ -217,44 +255,6 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	free(icon);
 	free(esc);
 	free(cmd);
-	return (text);
-}
-
-static GList *
-xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
-{
-	GList *text = NULL;
-	const char *name, *path;
-	char *esc, *s;
-	char *icon = NULL;
-
-	name = gmenu_tree_directory_get_name(dir);
-
-	esc = xde_character_escape(name, '"');
-
-	DPRINTF("Processing menu '%s'\n", name);
-	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
-		GKeyFile *file;
-
-		file = g_key_file_new();
-		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon =
-		    xde_get_entry_icon(ctx, file, "folder", "unknown",
-				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
-		g_key_file_unref(file);
-	} else
-		icon = xde_wrap_icon(icon);
-	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
-	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
-	s = g_strdup_printf("%s}\n", ctx->indent);
-	text = g_list_append(text, s);
-	DPRINTF("Done processing menu '%s'\n", name);
-
-	free(icon);
-	free(esc);
 	return (text);
 }
 

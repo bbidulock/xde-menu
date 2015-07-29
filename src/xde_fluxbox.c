@@ -258,6 +258,15 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 }
 
 static GList *
+xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+{
+	GList *text = NULL;
+
+	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[separator]"));
+	return (text);
+}
+
+static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	GMenuTreeDirectory *dir;
@@ -298,11 +307,37 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 }
 
 static GList *
-xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *esc2;
+	char *icon = NULL;
 
-	text = g_list_append(text, g_strdup_printf("%s%s\n", ctx->indent, "[separator]"));
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc1 = xde_character_escape(name, ')');
+	esc2 = xde_character_escape(name, '}');
+
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+
+	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_append(text, g_strdup_printf("%s[end] # (%s)\n", ctx->indent, esc1));
+
+	free(icon);
+	free(esc1);
+	free(esc2);
 	return (text);
 }
 
@@ -351,41 +386,6 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	free(esc1);
 	free(esc2);
 	free(cmd);
-	return (text);
-}
-
-static GList *
-xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
-{
-	GList *text = NULL;
-	const char *name, *path;
-	char *esc1, *esc2;
-	char *icon = NULL;
-
-	name = gmenu_tree_directory_get_name(dir);
-
-	esc1 = xde_character_escape(name, ')');
-	esc2 = xde_character_escape(name, '}');
-
-	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
-		GKeyFile *file;
-
-		file = g_key_file_new();
-		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
-				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
-		icon = xde_wrap_icon(icon);
-		g_key_file_unref(file);
-	} else
-		icon = xde_wrap_icon(icon);
-
-	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
-	text = g_list_append(text, g_strdup_printf("%s[end] # (%s)\n", ctx->indent, esc1));
-
-	free(icon);
-	free(esc1);
-	free(esc2);
 	return (text);
 }
 
@@ -715,4 +715,3 @@ MenuContext xde_menu_ops = {
 	.themes = &xde_themes,
 	.styles = &xde_styles,
 };
-
