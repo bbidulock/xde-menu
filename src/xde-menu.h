@@ -302,6 +302,7 @@ typedef struct {
 #define GET_ENTRY_ICON_FLAG_GIF (1<<4)
 #define GET_ENTRY_ICON_FLAG_TIF (1<<5)
 
+int xde_reset_indent(MenuContext *ctx, int level);
 char *xde_increase_indent(MenuContext *ctx);
 char *xde_decrease_indent(MenuContext *ctx);
 char *xde_character_escape(const char *string, char special);
@@ -312,6 +313,7 @@ char *xde_get_icon(MenuContext *ctx, const char *iname);
 char *xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2);
 gboolean xde_test_icon_ext(MenuContext *ctx, const char *path, int flags);
 char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1, const char *dflt2, int flags);
+char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, const char *dflt1, const char *dflt2, int flags);
 
 GList *xde_get_xsessions(void);
 void xde_free_xsessions(GList *list);

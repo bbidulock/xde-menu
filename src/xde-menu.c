@@ -352,6 +352,92 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 	return (file);
 }
 
+char *
+xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, const char *dflt1,
+		   const char *dflt2, int flags)
+{
+	GtkIconTheme *theme;
+	GtkIconInfo *info;
+	const gchar *name;
+	char *file = NULL;
+	const char *inames[8];
+	const char **iname;
+	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL;
+	int i = 0;
+
+	if ((icon = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_ICON))) {
+		char *base, *p;
+
+		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
+			DPRINTF("going with full icon path %s\n", icon);
+			file = strdup(icon);
+			g_free(icon);
+			return (file);
+		}
+		base = icon;
+		*strchrnul(base, ' ') = '\0';
+		if ((p = strrchr(base, '/')))
+			base = p + 1;
+		if ((p = strrchr(base, '.')))
+			*p = '\0';
+		inames[i++] = base;
+		DPRINTF("Choice %d for icon name: %s\n", i, base);
+	} else {
+		if ((wmcl = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS))) {
+			inames[i++] = wmcl;
+			DPRINTF("Choice %d for icon name: %s\n", i, wmcl);
+		}
+		if ((tryx = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_TRY_EXEC))) {
+			char *base, *p;
+
+			base = tryx;
+			*strchrnul(base, ' ') = '\0';
+			if ((p = strrchr(base, '/')))
+				base = p + 1;
+			if ((p = strrchr(base, '.')))
+				*p = '\0';
+			inames[i++] = base;
+			DPRINTF("Choice %d for icon name: %s\n", i, base);
+		} else if ((exec = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_EXEC))) {
+			char *base, *p;
+
+			base = exec;
+			*strchrnul(base, ' ') = '\0';
+			if ((p = strrchr(base, '/')))
+				base = p + 1;
+			if ((p = strrchr(base, '.')))
+				*p = '\0';
+			inames[i++] = base;
+			DPRINTF("Choice %d for icon name: %s\n", i, base);
+		}
+	}
+	if (dflt1) {
+		inames[i++] = dflt1;
+		DPRINTF("Choice %d for icon name: %s\n", i, dflt1);
+	}
+	if (dflt2) {
+		inames[i++] = dflt2;
+		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
+	}
+	inames[i++] = NULL;
+	if ((theme = gtk_icon_theme_get_default())) {
+		for (iname = inames; *iname; iname++) {
+			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
+				if ((name = gtk_icon_info_get_filename(info)))
+					file = strdup(name);
+				gtk_icon_info_free(info);
+			}
+			if (file)
+				break;
+		}
+	}
+	g_free(icon);
+	g_free(wmcl);
+	g_free(tryx);
+	g_free(exec);
+	return (file);
+}
+
 static char **
 xde_get_xsession_dirs(int *np)
 {
@@ -640,6 +726,20 @@ xde_free_xsessions(GList *list)
 	g_list_free_full(list, &xde_xsession_free);
 }
 
+int
+xde_reset_indent(MenuContext *ctx, int level)
+{
+	int old = ctx->level, i, chars;
+
+	ctx->level = level;
+	chars = ctx->level << 1;
+	ctx->indent = realloc(ctx->indent, chars + 1);
+	for (i = 0; i < chars; i++)
+		ctx->indent[i] = ' ';
+	ctx->indent[chars] = '\0';
+	return old;
+}
+
 char *
 xde_increase_indent(MenuContext *ctx)
 {
@@ -867,6 +967,7 @@ xde_create_simple(MenuContext *ctx, Style style, const char *name)
 		break;
 	}
 	result = g_list_concat(ctx->output, result);
+	ctx->output = NULL;
 	return (result);
 }
 
@@ -1266,7 +1367,10 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 			free(xscr->wmname);
 			xscr->wmname = strdup("uwm");
 		}
-		xscr->context = wm_menu_context(xscr->wmname);
+		if (!strcasecmp(xscr->wmname, "openbox"))
+			xscr->context = wm_menu_context("openbox3");
+		else
+			xscr->context = wm_menu_context(xscr->wmname);
 		xscr->goodwm = xscr->context ? True : False;
 	}
 	DPRINTF("window manager is '%s'\n", xscr->wmname);
