@@ -37,13 +37,54 @@ following command options:
 Specifies that B<xde-menu> is not to exit after successfully
 generating the menu, but to monitor pertinent directories for changes,
 and regenerate the menu when changes are detected.  This option implies
-the B<--output> option.  This option requires L<libinotify(3)>.
+the B<--output> option, without an argument.
+
+When changes are detected in the application database, the menu is
+regenerated after an interval of no changes.  When changes are detected
+to the active window manager, the menu is regenerated, to the location
+and in the format of the new window manager, after an interval of no
+changes.
 
 =item B<--replace>, B<-R>
 
 Replace a currently running instance (that was invoked with the
 B<--monitor> option).  It is not an error if no other instance is
 running.  This option implies the B<--monitor> option.
+
+=item B<--refresh>, B<-r>
+
+Asks a running instance of B<xde-menu> to refresh the meu.  This is
+normally not required as B<xde-menu> detects when desktop files, icons,
+themes or window managers have changed and automatically regenerates the
+menus.
+
+This is the default when B<xde-menu> is invoked as B<xde-meu-refresh>.
+This option causes an error when no current instance of B<xde-menu> is
+running.
+
+=item B<--restart>
+
+Asks a running instance of B<xde-menu> to restart (re-execute itself
+with the same arguments).  This is useful when the B<xde-menu>
+executables have been upgraded.
+
+This is the default when B<xde-menu> is invoked as B<xde-menu-restart>.
+This option causes an error when no current instance of B<xde-menu> is
+running.
+
+=item B<--popup>, B<-p>
+
+Asks a running instance of B<xde-menu> to pop up the menu.  Depending on
+the setting of the B<--button> option, this will either pop up the menu
+at the current pointer posotion, or will popup the menu at the center of
+the active screeen.  When multiple monitors are present, the menu will
+pop up at the center of the monitor in which the pointer currently
+resides (which is used by most tiling winow managers as the "current"
+monitor.
+
+This is the default when B<xde-menu> is invoked as B<xde-menu-popup>.
+This option causes an error when on current instance of B<xde-menu> is
+running.
 
 =item B<--quit>, B<-q>
 
@@ -119,6 +160,9 @@ window) is examined to determine the format.  This is accomplished by
 converting the value of either property to all lower case.  See also,
 L</ENVIRONMENT>.
 
+When the program is run in monitoring mode, the format should not be
+specified explicitly.
+
 =item B<--fullmenu>, B<-F>, B<--nofullmenu>, B<-N>
 
 When specified, output a full menu and not only the application
@@ -140,7 +184,7 @@ the character set in use by the current local.
 Specify the output language for the menu.  Defaults to the language in
 the current locale.
 
-=item B<--rooo-menu>, B<-r> I<MENU>
+=item B<--root-menu>, B<-r> I<MENU>
 
 Specify the location of the root menu file.  The default is calculated
 using XDG denvironment variables (see L</ENVIRONMENT>), and defaults to
@@ -151,7 +195,7 @@ F<$XDG_CONFIG_HOME:$XDG_CONFIG_DIRS> search path.
 
 Abort execution on any error.
 
-=item B<--output>, B<-o> I<FILENAME>
+=item B<--output>, B<-o> [I<FILENAME>]
 
 Write output to the file, I<FILENAME>.  This is particularly useful with
 option B<--die-on-error> as the output will not be written at all if an
@@ -180,18 +224,18 @@ following:
 
 =over
 
-=item fullmenu
+=item I<fullmenu>
 
 The default: output a full menu suitable for use as the root menu
 specification for the window manager.
 
-=item appmen
+=item I<appmen>
 
 Output a complete menu; however, only output the applications portion of
 the menu (no styles, window manager controls, logout, etc), suitable to
 reference as an "Appications" menu.
 
-=item entries
+=item I<entries>
 
 Only output the entires for the menu but not the enclosing menu itself:
 this is useful for some pipe menu commands.
@@ -200,9 +244,33 @@ this is useful for some pipe menu commands.
 
 =item B<--launch>, B<-L>, B<--nolaunch>
 
-Specifies whether to use B<xde-launch(1)> to launch the desktop files
+Specifies whether to use L<xdg-launch(1)> to launch the desktop files
 directly or not.  This option will only be honored when the
-L<xde-launch(1)> program is available and accessible.
+L<xdg-launch(1)> program is available and accessible.  Also, some window
+managers (e.g. L<openbox(1)>) provide their own desktop startup
+launching and some don't.  So, the default setting may depend on the
+active window manager.
+
+=item B<--menu>, B<-M> I<MENUNAME>
+
+Set the stem of the filename used for the root menu.  This defaults to
+"F<applications>."  Other possible values include "F<information>" and
+"F<settings>."  The special value "F<all>" specifies that menus are to
+be generated for all known stems.
+
+=item B<--button>, B<-b> I<BUTTON>
+
+Only for use in conjunction with the B<--popup> option.  Specifies the
+button that was used to invoke the popup.  Defaults to zero (0).  This
+shoule be the button that was used to pop the menu.  A window manaer
+that invokes this command in response to a button press should release
+its passive grab on the button before invoking the menu to that the
+popped up menu can grab the button.  A I<BUTTON> of zero (0) means that
+the program was invoked with a key-press instead of a button.
+
+=item B<--timestamp>, B<-T> I<TIMESTAMP>
+
+Provides the X11 server time-stamp of the event that vaused the popup.
 
 =back
 
@@ -319,7 +387,8 @@ Brian Bidulock L<mailto:bidulock@openss7.org>.
 
 =head1 SEE ALSO
 
-L<xde-style(1)>
+L<xde-style(1)>,
+L<inotify(7)>
 
 =cut
 
