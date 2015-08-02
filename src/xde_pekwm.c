@@ -44,6 +44,22 @@
 
 #include "xde-menu.h"
 
+char *
+xde_wrap_icon(char *file)
+{
+	char *icon;
+
+	if (file) {
+		icon = calloc(strlen(file) + 12, sizeof(*icon));
+		strcpy(icon, "Icon = \"");
+		strcat(icon, file);
+		strcat(icon, "\"; ");
+	} else
+		icon = strdup("");
+	free(file);
+	return (icon);
+}
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
@@ -53,19 +69,195 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 static GList *
 xde_wmmenu(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	GList *xsessions, *xsession;
+	char *icon, *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%sSubmenu = \"Window Managers\" { %s\n", ctx->indent, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *esc1;
+
+		esc1 = xde_character_escape(xsess->name, '"');
+		if (strncasecmp(xsess->key, "pekwm", 5) == 0)
+			continue;
+		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+					  "metacity",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+		s = g_strdup_printf
+		    ("%s  Entry = \"Start %s\" { %sActions = \"RestartOther xdg-launch -X %s\" }\n",
+		     ctx->indent, esc1, icon, xsess->key);
+		text = g_list_append(text, s);
+		free(esc1);
+		free(icon);
+	}
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+	s = g_strdup_printf("%s  Entry = \"Reload\" { %sActions = \"Reload\" }\n", ctx->indent,
+			    icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s  Entry = \"Restart\" { %sActions = \"Restart\" }\n", ctx->indent,
+			    icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s  Entry = \"Exit\" { %sActions = \"Exit\" }\n", ctx->indent, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
-	return NULL;
+	GList *text = NULL;
+	char *esc1, *icon, *s;
+
+	esc1 = xde_character_escape(name, '"');
+	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
+	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, esc1, icon);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
-	return NULL;
+	GList *text = NULL;
+	char *icon, *s;
+
+	s = strdup("# Menu config for pekwm\n\n");
+	text = g_list_append(text, s);
+	s = strdup("# Variables\n");
+	text = g_list_append(text, s);
+	s = strdup("INCLUDE = \"vars\"\n\n");
+	text = g_list_append(text, s);
+	s = strdup("RootMenu = \"Pekwm\" {\n");
+	xde_increase_indent(ctx);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "pekwm"));
+	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Pekwm", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
+			    ctx->indent, "Run Command...", icon, "ShowCmdDialog");
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
+	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Workspace List", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "",
+			    "Dynamic $_PEKWM_SCRIPT_PATH/pekwm_ws_menu.sh goto dynamic");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
+	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
+			    ctx->indent, "Window List", icon, "ShowMenu GotoClient True");
+	text = g_list_append(text, s);
+	free(icon);
+	text = g_list_concat(text, ctx->themes(ctx));
+	text = g_list_concat(text, ctx->styles(ctx));
+	s = g_strdup_printf("%sSubmenu = \"%s\" {\n", ctx->indent, "Layout");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Smart", "SetLayouter Smart");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Mouse Not Under", "SetLayouter MouseNotUnder");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Mouse Centered", "SetLayouter MouseCentered");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Mouse Top Left", "SetLayouter MouseTopLeft");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Horizontal", "SetLayouter TILE_Horizontal");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Vertical", "SetLayouter TILE_Vertical");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Dwindle", "SetLayouter TILE_Dwindle");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Stacked", "SetLayouter TILE_Stacked");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Center One", "SetLayouter TILE_CenterOne");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Boxed", "SetLayouter TILE_Boxed");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
+			    ctx->indent, "Layout Fib", "SetLayouter TILE_Fib");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->wmmenu(ctx));
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	if (options.filename) {
+		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+		s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s%s\" }\n",
+				    ctx->indent, "Refresh Menu", icon,
+				    "Exec xdg-menugen -format pekwm -desktop PEKWM -launch -o ",
+				    options.filename);
+		text = g_list_append(text, s);
+		free(icon);
+	}
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
+			    ctx->indent, "Reload", icon, "Reload");
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
+			    ctx->indent, "Restart", icon, "Restart");
+	text = g_list_append(text, s);
+	free(icon);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "qtk-quit"));
+	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
+			    ctx->indent, "Exit", icon, "Exit");
+	text = g_list_append(text, s);
+	free(icon);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n\n", ctx->indent);
+	text = g_list_append(text, s);
+	s = strdup("INCLUDE = \"window\"\n\n");
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
@@ -83,25 +275,124 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 static GList *
 xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
-	return NULL;
+	GList *text = NULL;
+	char *s;
+
+	s = g_strdup_printf("%sSeparator {}\n", ctx->indent);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	return NULL;
+	GMenuTreeDirectory *dir;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *icon = NULL, *s;
+
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
+		return (text);
+
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '"');
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	}
+	if (icon)
+		s = g_strdup_printf("%sEntry = \"%s\" { Icon = \"%s\" }\n", ctx->indent, esc1,
+				    icon);
+	else
+		s = g_strdup_printf("%sEntry = \"%s\" { }\n", ctx->indent, esc1);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *icon = NULL, *s;
+
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '"');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG|
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	}
+	s = g_strdup_printf("%sSubmenu = \"%s\" { \n", ctx->indent, esc1);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name, *exec, *path;
+	char *esc1, *esc2, *cmd;
+	char *icon = NULL, *s;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+	esc1 = xde_character_escape(name, '"');
+	if (options.launch) {
+		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+
+		if ((p = strstr(str, ".desktop")))
+			*p = '\0';
+		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
+		free(str);
+	} else {
+		exec = g_app_info_get_commandline(G_APP_INFO(info));
+		cmd = g_strdup(exec);
+	}
+	esc2 = xde_character_escape(cmd, '"');
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"Exec %s\" }\n",
+			    ctx->indent, esc1, icon, esc2);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	free(esc2);
+	free(cmd);
+	return (text);
 }
 
 static GList *
@@ -113,13 +404,40 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 static GList *
 xde_themes(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	char *icon = NULL, *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Themes", icon);
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%sEntry { Actions = \"%s\" }\n",
+			    ctx->indent, "Dynamic xde-style -m -t");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
 }
 
 static GList *
 xde_styles(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	char *icon = NULL, *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Styles", icon);
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%sEntry { Actions = \"%s\" }\n", ctx->indent, "Dynamic xde-style -m");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
 }
 
 MenuContext xde_menu_ops = {
