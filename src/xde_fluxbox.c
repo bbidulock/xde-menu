@@ -288,7 +288,8 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 
 		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
 		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
-				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG|
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 		icon = xde_wrap_icon(icon);
 		g_key_file_unref(file);
 	} else

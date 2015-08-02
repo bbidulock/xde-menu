@@ -221,7 +221,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	name = gmenu_tree_directory_get_name(dir);
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
-	icon = strdup("");
+	icon = xde_wrap_icon(icon);
 	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
 	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
 	text = g_list_append(text, g_strdup_printf("%s[end]\n", ctx->indent));
