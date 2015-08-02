@@ -171,7 +171,7 @@ xde_twmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("{\n");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"TWM Menu\"", "f.title");
+	s = g_strdup_printf("    %-32s  %s\n", "\"CTWM Menu\"", "f.title");
 	text = g_list_append(text, s);
 	if (1) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"Icons List\"", "f.menu \"TwmIcons\"");
@@ -261,12 +261,12 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 
 	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n", "defops");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Twm\"", "f.title");
+	s = g_strdup_printf("    %-32s  %s\n", "\"Ctwm\"", "f.title");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, xde_pin(ctx));
 	text = g_list_concat(text, entries);
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
-	s = g_strdup_printf("    %-32s  %s\n", "\"TWM Menu\"", "f.menu \"twmmenu\"");
+	s = g_strdup_printf("    %-32s  %s\n", "\"CTWM Menu\"", "f.menu \"twmmenu\"");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
 	s = g_strdup_printf("    %-32s  %s\n", "\"Refresh\"", "f.refresh");
