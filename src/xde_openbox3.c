@@ -69,7 +69,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	ctx->output = g_list_append(ctx->output, s);
 
 	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
-		EPRINTF("could not get root directory");
+		EPRINTF("could not get root directory\n");
 		return (result);
 	}
 	xde_reset_indent(ctx, 0);

@@ -2417,6 +2417,8 @@ show_style(Style style)
 		return ("appmenu");
 	case StyleEntries:
 		return ("entries");
+	case StyleSubmenu:
+		return ("submenu");
 	}
 	return ("(unknown)");
 }

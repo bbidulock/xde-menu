@@ -193,6 +193,7 @@ typedef enum {
 typedef enum {
 	StyleFullmenu,
 	StyleAppmenu,
+	StyleSubmenu,
 	StyleEntries,
 } Style;
 
