@@ -91,7 +91,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 		/* FIXME: free other entries */
 		entries = g_list_append(NULL, s);
 	}
-	if (style == StyleAppmenu) {
+	if (style != StyleAppmenu) {
 		result = ctx->rootmenu(ctx, entries);
 		ctx->output = g_list_concat(ctx->output, entries);
 	}

@@ -91,7 +91,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 		/* FIXME: free other entries */
 		entries = g_list_append(NULL, s);
 	}
-	if (style == StyleAppmenu) {
+	if (style != StyleAppmenu) {
 		result = ctx->rootmenu(ctx, entries);
 		ctx->output = g_list_concat(ctx->output, entries);
 	}
@@ -139,6 +139,7 @@ xde_wmmenu(MenuContext *ctx)
 						     G_KEY_FILE_DESKTOP_KEY_EXEC, NULL);
 			exec = exec ? strdup(exec) : strdup("/usr/bin/true");
 		}
+
 		esc2 = xde_character_escape(exec, '"');
 		s = g_strdup_printf("    %-32s  f.exec \"exec %s &\"\n", qname, esc2);
 		text = g_list_append(text, s);

@@ -44,28 +44,231 @@
 
 #include "xde-menu.h"
 
+char *
+xde_wrap_icon(char *file)
+{
+	char *icon;
+
+	if (file) {
+		icon = calloc(strlen(file) + 3, sizeof(*icon));
+		strcpy(icon, "%");
+		strcat(icon, file);
+		strcat(icon, "%");
+	} else
+		icon = strdup("");
+	free(file);
+	return (icon);
+}
+
+static GList *xde_fvwmmenu(MenuContext *ctx);
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
-	return xde_create_simple(ctx, style, name);
+	GMenuTreeDirectory *dir;
+	GList *result = NULL;
+	GList *entries = NULL;
+
+	ctx->output = NULL;
+
+	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
+		EPRINTF("could not get root directory\n");
+		return (result);
+	}
+	xde_reset_indent(ctx, 0);
+	xde_increase_indent(ctx);
+	entries = ctx->ops.menu(ctx, dir);
+	xde_decrease_indent(ctx);
+
+	if (!name)
+		name = gmenu_tree_directory_get_name(dir);
+
+	if (style == StyleFullmenu) {
+		result = ctx->wmmenu(ctx);
+		ctx->output = g_list_concat(ctx->output, result);
+		result = xde_fvwmmenu(ctx);
+		ctx->output = g_list_concat(ctx->output, result);
+	}
+	result = ctx->appmenu(ctx, entries, name);
+	ctx->output = g_list_concat(ctx->output, result);
+
+	if (style == StyleEntries) {
+		ctx->output = g_list_concat(ctx->output, entries);
+		return (ctx->output);
+	}
+	if (style == StyleSubmenu)
+		entries = NULL;
+	if (style != StyleAppmenu) {
+		result = ctx->rootmenu(ctx, entries);
+		ctx->output = g_list_concat(ctx->output, result);
+	}
+	result = ctx->output;
+	ctx->output = NULL;
+	return (result);
 }
 
 static GList *
 xde_wmmenu(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	GList *xsessions, *xsession;
+	int gotone = FALSE;
+	char *icon;
+	char *s;
+
+	s = strdup("DestroyMenu WindowManagers\n");
+	text = g_list_append(text, s);
+	s = strdup("AddToMenu WindowManagers \"Window Managers\" Title\n");
+	text = g_list_append(text, s);
+
+	xde_increase_indent(ctx);
+
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *esc1, *exec;
+
+		if (strncasecmp(xsess->key, "fvwm", 4) == 0)
+			continue;
+
+		esc1 = xde_character_escape(xsess->name, '"');
+		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+					  "metacity",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+
+		if (options.launch) {
+			exec = g_strdup_printf("xdg-launch -X %s", xsess->key);
+		} else {
+			exec = g_key_file_get_string(xsess->entry,
+						     G_KEY_FILE_DESKTOP_GROUP,
+						     G_KEY_FILE_DESKTOP_KEY_EXEC, NULL);
+			exec = exec ? strdup(exec) : strdup("/usr/bin/true");
+		}
+		s = g_strdup_printf("+ \"%s%s\" Restart %s\n", esc1, icon, exec);
+		text = g_list_append(text, s);
+		gotone = TRUE;
+		free(exec);
+		free(icon);
+		free(esc1);
+	}
+	if (gotone)
+		text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("+ \"%s%s\" Restart\n", "Restart", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("+ \"%s%s\" Quit\n", "Quit", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
+}
+
+static GList *
+xde_fvwmmenu(MenuContext *ctx)
+{
+	GList *text = NULL;
+	char *s;
+
+	s = strdup("DestroyMenu FVWMmenu\n");
+	text = g_list_append(text, s);
+	s = strdup("AddToMenu FVWMmenu \"FVWM\" Title\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Modules%mini.modules.xpm%\" Popup Module-Popup\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Settings%mini.desktop.xpm%\" Popup Settings\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Documents%mini.books.xpm%\" Popup Documents\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Screen Saver%mini.display.xpm%\" Popup Screen\n");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	if (options.filename) {
+		s = g_strdup_printf
+		    ("+ \"Refresh &Menu%%mini.turn.xpm%%\" Exec xdg-menugen -format fvwm -desktop FVWM -o %s\n",
+		     options.filename);
+		text = g_list_append(text, s);
+	}
+	s = strdup("+ \"&Restart%mini.turn.xpm%\" Popup Restart\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Quit FVWM%mini.stop.xpm%\" FvwmForm FvwmForm-QuitVerify\n\n");
+	text = g_list_append(text, s);
+
+	s = strdup("DestroyMenu StartMenu\n");
+	text = g_list_append(text, s);
+	s = strdup("AddToMenu StartMenu@side.fvwm2.xpm@^black^\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Applications%programs.xpm%\" Popup xdg_menu\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Shells%shells.xpm%\" Popup Shells\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Programs%programs.xpm%\" Popup Programs\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Documents%documents.xpm%\" Popup Documents\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Settings%settings.xpm%\" Popup Settings\n");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	s = strdup("+ \"&Modules%modules.xpm%\" Popup Module-Popup\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Find%find1.xpm%\" FvwmScript FvwmScript-Find\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Help%help.xpm%\" Exec exec xman\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"&Run%run.xpm%\" Exec exec xde-run\n");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	s = strdup("+ \"&Screen Saver%screen.xpm%\" Popup Screen\n");
+	text = g_list_append(text, s);
+	s = strdup("+ \"Shut &Down%shutdown.xpm%\" Module FvwmScript FvwmScript-Quit\n");
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
-	return NULL;
+	GList *text = NULL;
+	char *s, *esc;
+
+	esc = xde_character_escape(name, '"');
+	s = strdup("DestroyMenu xdg_menu\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("AddToMenu xdg_menu \"%s\" Title\n", esc);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	free(esc);
+	return (text);
 }
 
 static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
-	return NULL;
+	GList *text = NULL;
+	char *icon, *s;
+
+	s = strdup("DestroyMenu Utilities\n");
+	text = g_list_append(text, s);
+	s = strdup("AddToMenu Utilities \"Root Menu\" Title\n");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "fvwm"));
+	s = g_strdup_printf("+ \"FVWM%s\" Popup FVWMmenu\n", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("+ \"Restart%s\" Restart\n", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("+ \"Quit%s\" Quit\n", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
 }
 
 static GList *
@@ -83,25 +286,128 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 static GList *
 xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
-	return NULL;
+	GList *text = NULL;
+	char *s;
+
+	s = strdup("+ \"\" Nop\n");
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	return NULL;
+	GMenuTreeDirectory *dir;
+	GList *text = NULL;
+	const char *name, *path;
+	char *icon = NULL, *s, *esc1;
+
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
+		return (text);
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '"');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else {
+		icon = xde_wrap_icon(icon);
+	}
+	s = g_strdup_printf("+ \"%s%s\" Nop\n", esc1, icon);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *icon = NULL, *s, *id, *p, *q;
+
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '"');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else {
+		icon = xde_wrap_icon(icon);
+	}
+
+	id = g_strdup_printf("/XDG/%s", name);
+	for (p = q = id; *p; p++)
+		if (!isspace(*p))
+			*q++ = *p;
+	*q = '\0';
+	s = g_strdup_printf("DestroyMenu %s\n", id);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("AddToMenu %s \"%s\" Title\n", id, esc1);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	ctx->output = g_list_concat(ctx->output, text);
+	text = NULL;
+	s = g_strdup_printf("+ \"%s%s\" Popup %s\n", esc1, icon, id);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name, *exec, *path;
+	char *esc1, *cmd;
+	char *icon = NULL, *s;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+	esc1 = xde_character_escape(name, '"');
+	if (options.launch) {
+		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+
+		if ((p = strstr(str, ".desktop")))
+			*p = '\0';
+		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
+		free(str);
+	} else {
+		exec = g_app_info_get_commandline(G_APP_INFO(info));
+		cmd = g_strdup(exec);
+	}
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else {
+		icon = xde_wrap_icon(icon);
+	}
+	s = g_strdup_printf("+ \"%s%s\" Exec exec %s\n", esc1, icon, cmd);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	free(cmd);
+	return (text);
 }
 
 static GList *
