@@ -44,6 +44,22 @@
 
 #include "xde-menu.h"
 
+char *
+xde_wrap_icon(char *file)
+{
+	char *icon;
+
+	if (file) {
+		icon = calloc(strlen(file) + 11, sizeof(*icon));
+		strcpy(icon, "icon = \"");
+		strcat(icon, file);
+		strcat(icon, "\" ");
+	} else
+		icon = strdup("");
+	free(file);
+	return (icon);
+}
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
@@ -53,19 +69,131 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 static GList *
 xde_wmmenu(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	GList *xsessions, *xsession;
+	char *icon, *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s[ %stext = \"%s\" menu = [\n", ctx->indent, icon, "Window Managers");
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%slabel = \"%s\"\n", ctx->indent, "Window Managers");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s[ %stext = \"%s\" restart = true ]\n", ctx->indent, icon, "Restart");
+	text = g_list_append(text, s);
+	free(icon);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *esc1;
+
+		if (strncasecmp(xsess->key, "uwm", strlen("uwm")) == 0 ||
+		    strncasecmp(xsess->key, "μWM", strlen("μWM")) == 0)
+			continue;
+		icon =
+		    xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows", "metacity",
+				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		icon = xde_wrap_icon(icon);
+		esc1 = xde_character_escape(xsess->name, '"');
+		s = g_strdup_printf("xdg-launch -X %s", xsess->key);
+		s = g_strdup_printf("%s[ %stext = \"%s\" exit = \"%s\" ]\n",
+				    ctx->indent, icon, esc1, s);
+		text = g_list_append(text, s);
+		free(esc1);
+		free(icon);
+	}
+	s = g_strdup_printf("%s] ; menu Window Managers\n", ctx->indent);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s]\n", ctx->indent);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
-	return NULL;
+	GList *text = NULL;
+	char *esc1, *icon, *s;
+
+	esc1 = xde_character_escape(name, '"');
+	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
+	s = g_strdup_printf("%s[ %stext = \"%s\" menu = [\n", ctx->indent, icon, esc1);
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%slabel = \"%s\"\n", ctx->indent, esc1);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	s = g_strdup_printf("%s] ; menu %s\n", ctx->indent, esc1);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s]\n", ctx->indent);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
-	return NULL;
+	GList *text = NULL;
+	char *icon, *s;
+
+	s = strdup("root-menu = [\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("  opacity = 1.0\n");
+	text = g_list_append(text, s);
+	s = strdup("  [0] = [\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("    label = \"μWM \" ~ UWM-VERSION\n");
+	text = g_list_append(text, s);
+	s = strdup("    height = 18\n");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	s = strdup("    [ icon = \"uwm16x16.xpm\" text = \"μWM Menu\" menu = [\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("      label = \"μWM Menu\"\n");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->wmmenu(ctx));
+	s = strdup("      ] ; μWM Menu\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("    ]\n");
+	text = g_list_append(text, s);
+	if (options.filename) {
+		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+		s = g_strdup_printf("xdg-menugen -format uwm -desktop UWM -launch -o %s",
+				    options.filename);
+		s = g_strdup_printf("%s[ %stext = \"%s\", execute = \"%s\" ]\n", ctx->indent, icon,
+				    "Refresh Menu", s);
+		text = g_list_append(text, s);
+		free(icon);
+	}
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s[ %stext = \"%s\" restart = true ]\n", ctx->indent, icon, "Restart");
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s[ %stext = \"%s\" exit = true ]\n",
+			ctx->indent, icon, "Exit");
+	text = g_list_append(text, s);
+	free(icon);
+	s = strdup("\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("  ] ; 0\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("] ; root-menu\n");
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
@@ -83,25 +211,124 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 static GList *
 xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
-	return NULL;
+	GList *text = NULL;
+	char *s;
+
+	s = g_strdup_printf("%s[ separator = true ]\n", ctx->indent);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	return NULL;
+	GMenuTreeDirectory *dir;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *icon = NULL, *s;
+
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
+		return (text);
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '"');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	}
+	if (icon) {
+		s = g_strdup_printf("%sicon = \"%s\"\n", ctx->indent, icon);
+		text = g_list_append(text, s);
+	}
+	s = g_strdup_printf("%slabel = \"%s\"\n", ctx->indent, esc1);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *icon = NULL, *s;
+
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '"');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%s[ %stext = \"%s\" menu = [\n", ctx->indent, icon, esc1);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	s = g_strdup_printf("%s  ] ; menu %s\n", ctx->indent, esc1);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s]\n", ctx->indent);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name, *exec, *path;
+	char *esc1, *esc2, *cmd;
+	char *icon = NULL, *s;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+
+	esc1 = xde_character_escape(name, '"');
+
+	if (options.launch) {
+		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+
+		if ((p = strstr(str, ".desktop")))
+			*p = '\0';
+		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
+		free(str);
+	} else {
+		exec = g_app_info_get_commandline(G_APP_INFO(info));
+		cmd = g_strdup(exec);
+	}
+
+	esc2 = xde_character_escape(cmd, '"');
+
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		g_key_file_unref(file);
+	} else
+		icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%s[ %stext = \"%s\" execute = \"%s\" ]\n",
+			    ctx->indent, icon, esc1, esc2);
+	text = g_list_append(text, s);
+	free(icon);
+	free(esc1);
+	free(esc2);
+	free(cmd);
+	return (text);
 }
 
 static GList *
@@ -113,13 +340,17 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 static GList *
 xde_themes(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GList *
 xde_styles(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 MenuContext xde_menu_ops = {
