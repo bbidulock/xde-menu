@@ -1367,10 +1367,7 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 			free(xscr->wmname);
 			xscr->wmname = strdup("uwm");
 		}
-		if (!strcasecmp(xscr->wmname, "openbox"))
-			xscr->context = wm_menu_context("openbox3");
-		else
-			xscr->context = wm_menu_context(xscr->wmname);
+		xscr->context = wm_menu_context(xscr->wmname);
 		xscr->goodwm = xscr->context ? True : False;
 	}
 	DPRINTF("window manager is '%s'\n", xscr->wmname);

@@ -32,7 +32,7 @@ xdemod_LTLIBRARIES = \
 	xde-menu-metacity.la \
 	xde-menu-mwm.la \
 	xde-menu-openbox.la \
-	xde-menu-openbox3.la \
+	xde-menu-openboxold.la \
 	xde-menu-pekwm.la \
 	xde-menu-spectrwm.la \
 	xde-menu-twm.la \
@@ -168,11 +168,11 @@ xde_menu_openbox_la_SOURCES = xde-menu.h xde_openbox.c
 xde_menu_openbox_la_LIBADD = $(AM_LDFLAGS)
 xde_menu_openbox_la_LDFLAGS = $(module_ldflags)
 
-xde_menu_openbox3_la_CPPFLAGS = -DNAME=\"xde-openbox3\"
-xde_menu_openbox3_la_CFLAGS = $(AM_CFLAGS)
-xde_menu_openbox3_la_SOURCES = xde-menu.h xde_openbox3.c
-xde_menu_openbox3_la_LIBADD = $(AM_LDFLAGS)
-xde_menu_openbox3_la_LDFLAGS = $(module_ldflags)
+xde_menu_openboxold_la_CPPFLAGS = -DNAME=\"xde-openboxold\"
+xde_menu_openboxold_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_openboxold_la_SOURCES = xde-menu.h xde_openboxold.c
+xde_menu_openboxold_la_LIBADD = $(AM_LDFLAGS)
+xde_menu_openboxold_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_pekwm_la_CPPFLAGS = -DNAME=\"xde-pekwm\"
 xde_menu_pekwm_la_CFLAGS = $(AM_CFLAGS)
