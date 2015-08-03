@@ -41,6 +41,7 @@ xdemod_LTLIBRARIES = \
 	xde-menu-waimea.la \
 	xde-menu-wind.la \
 	xde-menu-wmaker.la \
+	xde-menu-wmakerold.la \
 	xde-menu-wmx.la \
 	xde-menu-yeahwm.la
 
@@ -220,6 +221,12 @@ xde_menu_wmaker_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_wmaker_la_SOURCES = xde-menu.h xde_wmaker.c
 xde_menu_wmaker_la_LIBADD = $(AM_LDFLAGS)
 xde_menu_wmaker_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_wmakerold_la_CPPFLAGS = -DNAME=\"xde-wmakerold\"
+xde_menu_wmakerold_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_wmakerold_la_SOURCES = xde-menu.h xde_wmakerold.c
+xde_menu_wmakerold_la_LIBADD = $(AM_LDFLAGS)
+xde_menu_wmakerold_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_wmx_la_CPPFLAGS = -DNAME=\"xde-wmx\"
 xde_menu_wmx_la_CFLAGS = $(AM_CFLAGS)
