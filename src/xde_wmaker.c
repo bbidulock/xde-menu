@@ -53,19 +53,333 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 static GList *
 xde_wmmenu(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+	GList *xsessions, *xsession;
+	char *s;
+
+	s = strdup(",\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s(\n", ctx->indent);
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s\"● Window Managers\",\n", ctx->indent);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s(\"Restart\", RESTART)", ctx->indent);
+	text = g_list_append(text, s);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *esc1, *esc2;
+
+		if (strncasecmp(xsess->key, "wmaker", strlen("wmaker")) == 0 ||
+		    strncasecmp(xsess->key, "windowmaker", strlen("windowmaker")) == 0)
+			continue;
+		esc1 = xde_character_escape(xsess->name, '\\');
+		esc2 = xde_character_escape(esc1, '"');
+
+		s = strdup(",\n");
+		text = g_list_append(text, s);
+		s = g_strdup_printf("%s(\"Start %s\", RESTART, \"xdg-launch --pointer -X %s\")",
+				    ctx->indent, esc2, xsess->key);
+		text = g_list_append(text, s);
+
+		free(esc1);
+		free(esc2);
+	}
+	xde_free_xsessions(xsessions);
+	xde_decrease_indent(ctx);
+	s = strdup("\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s)", ctx->indent);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
-	return NULL;
+	GList *text = NULL;
+	char *esc1, *esc2;
+	char *s;
+
+	esc1 = xde_character_escape(name, '\\');
+	esc2 = xde_character_escape(name, '"');
+
+	s = strdup("(\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("  \"● %s\"", esc2);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	s = strdup("\n");
+	text = g_list_append(text, s);
+	s = strdup(")\n");
+	text = g_list_append(text, s);
+
+	free(esc1);
+	free(esc2);
+	return (text);
 }
 
 static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
-	return NULL;
+	GList *text = NULL;
+	const char *genv;
+	char *gdir;
+	char *s;
+
+	if ((genv = getenv("GNUSTEP_USER_ROOT"))) {
+		gdir = strdup(genv);
+	} else {
+		const char *home = getenv("HOME") ? : "~";
+
+		gdir = calloc(strlen(home) + 10, sizeof(*gdir));
+		strcpy(gdir, home);
+		strcat(gdir, "/GNUstep");
+	}
+	s = strdup("(\n");
+	text = g_list_append(text, s);
+	s = strdup("● Window Maker\"");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, entries);
+	s = strdup(",\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("  (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("    \"● Screen\",\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("      \"● Locking\",\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Lock Screen (XScreenSaver)\", SHEXEC, \"/usr/bin/screensaver-command -lock\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Lock Screen (slock)\", SHEXEC, \"/usr/bin/slock\")\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("    ),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("      \"● Saving\",\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Activate ScreenSaver (Next)\", SHEXEC, \"/usr/bin/screensaver-command -next\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Activate ScreenSaver (Prev)\", SHEXEC, \"/usr/bin/screensaver-command -prev\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Activate ScreenSaver (Rand)\", SHEXEC, \"/usr/bin/screensaver-command -activate\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Demo Screen Hacks\", SHEXEC, \"/usr/bin/xscreensaver-command -demo\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Disable XScreenSaver\", SHEXEC, \"/usr/bin/xscreensaver-command -exit\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Enable XScreenSaver\", SHEXEC, \"/usr/bin/xscreensaver\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Reinitialize XScreenSaver\", SHEXEC, \"/usr/bin/xscreensaver-command -restart\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"ScreenSaver Preferences\", SHEXEC, \"/usr/bin/xscreensaver-command -prefs\")\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("    )\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("  ),\n");
+	text = g_list_append(text, s);
+	s = strdup("  (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("    \"● Window Maker\",\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Info Panel\", INFO_PANEL),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Legal Panel\", LEGAL_PANEL),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Preferences\", EXEC, /usr/lib/GNUstep/Applications/WPrefs.app/WPrefs),\n");
+	text = g_list_append(text, s);
+	if (options.filename) {
+		s = g_strdup_printf("    (\"Refresh Menu\", EXEC, xde-menugen -format wmaker -desktop WMAKER -launch -o %s),\n)", options.filename);
+		text = g_list_append(text, s);
+	}
+	s = strdup("    (\"Refresh Screen\", REFRESH),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Restart\", RESTART)\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("  )");
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->wmmenu(ctx));
+	s = strdup(",\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("  (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("    \"● WorkSpace\",\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("      \"● Appearance\",\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("        \"● Background\",\n");
+	text = g_list_append(text, s);
+	s = strdup("        (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("          \"● Solid\",\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Black\",         EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"black\\\"  )'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Blue\",          EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"#505075\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Indigo\",        EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"#243e6c\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Deep Blue\",     EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"#180090\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Purple\",        EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"#554466\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Wheat\",         EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"wheat4\\\" )'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Dark Gray\",     EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"#333340\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Wine\",          EXEC, \"wdwrite WindowMaker WorkspaceBack '(solid, \\\"#400020\\\")'\")\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("        ),\n");
+	text = g_list_append(text, s);
+	s = strdup("        (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("          \"● Gradient\",\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Sunset\",        EXEC, \"wdwrite WindowMaker WorkspaceBack '(mvgradient, deepskyblue4, black deepskyblue4, tomato4)'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Sky\",           EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, blue4, white)'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Blue Shades\",   EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, \\\"#7080a5\\\", \\\"#101020\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Indigo Shades\", EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, \\\"#746ebc\\\", \\\"#242e4c\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Purple Shades\", EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, \\\"#654c66\\\", \\\"#151426\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Wheat Shades\",  EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, \\\"#a09060\\\", \\\"#302010\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Grey Shades\",   EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, \\\"#636380\\\", \\\"#131318\\\")'\"),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\"Wine Shades\",   EXEC, \"wdwrite WindowMaker WorkspaceBack '(vgradient, \\\"#600050\\\", \\\"#180010\\\")'\")\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("        ),\n");
+	text = g_list_append(text, s);
+	s = strdup("        (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("          \"● Images\",\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("            \"● Tiled\",\n");
+	text = g_list_append(text, s);
+	s = strdup("            OPEN_MENU,\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("            \"-noext /usr/share/WindowMaker/Backgrounds %s/Library/WindowMaker/Backgrounds WITH wmsetbg -u -t\"\n", gdir);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("          ),\n");
+	text = g_list_append(text, s);
+	s = strdup("          (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("            \"● Scaled\",\n");
+	text = g_list_append(text, s);
+	s = strdup("            OPEN_MENU,\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("            \"-noext /usr/share/WindowMaker/Backgrounds %s/Library/WindowMaker/Backgrounds WITH wmsetbg -u -s\"\n", gdir);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("          )\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("        )\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("      ),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("        \"● Styles\",\n");
+	text = g_list_append(text, s);
+	s = strdup("        OPEN_MENU,\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("        \"-noext /usr/share/WindowMaker/Styles %s/Library/WindowMaker/Styles WITH setstyle\"\n", gdir);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("      ),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("        \"● Themes\",\n");
+	text = g_list_append(text, s);
+	s = strdup("        OPEN_MENU,\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("        \"-noext /usr/share/WindowMaker/Themes %s/Library/WindowMaker/Themes WITH setstyle\"\n", gdir);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("      ),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\n");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = strdup("        \"● Icon Sets\",\n");
+	text = g_list_append(text, s);
+	s = strdup("        OPEN_MENU,\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("        \"-noext /usr/share/WindowMaker/IconSets %s/Library/WindowMaker/IconSets WITH seticons\"\n", gdir);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("      ),\n");
+	text = g_list_append(text, s);
+	s = strdup("      (\"Save Theme\", EXEC, \"getstyle -p \\\"%a(Theme name, Name to save theme as)\\\"\"),\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("      (\"Save IconSet\", SHEXEC, \"geticonset %s/Library/WindowMaker/IconSets/\\\"%%a(IconSet name,Name to save iconset as)\\\"\")\n", gdir);
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("    ),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Arrange Icons\", ARRANGE_ICONS),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Clear Session\", CLEAR_SESSION),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Hide Others\", HIDE_OTHERS),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Save Session\", SAVE_SESSION),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"Show All\", SHOW_ALL),\n");
+	text = g_list_append(text, s);
+	s = strdup("    (\"● Workspaces\", WORKSPACE_MENU)\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup("  ),\n");
+	text = g_list_append(text, s);
+	s = strdup("  (\"Exit\", EXIT),\n");
+	text = g_list_append(text, s);
+	s = strdup("  (\"Exit Session\", SHUTDOWN)\n");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = strdup(")\n");
+	text = g_list_append(text, s);
+	free(gdir);
+	return (text);
 }
 
 static GList *
@@ -95,13 +409,62 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GList *text = NULL;
+	const char *name;
+	char *esc1, *esc2;
+	char *s;
+
+	name = gmenu_tree_directory_get_name(dir);
+	esc1 = xde_character_escape(name, '\\');
+	esc2 = xde_character_escape(esc1, '"');
+	s = strdup(",\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s(\n", ctx->indent);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s  \"● %s\"", ctx->indent, esc2);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	s = strdup("\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s)", ctx->indent);
+	text = g_list_append(text, s);
+	free(esc2);
+	free(esc1);
+	return (text);
 }
 
 static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name, *exec;
+	char *esc1, *esc2, *cmd;
+	char *s;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+	esc1 = xde_character_escape(name, '\\');
+	esc2 = xde_character_escape(esc1, '"');
+	if (options.launch) {
+		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+
+		if ((p = strstr(str, ".desktop")))
+			*p = '\0';
+		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
+		free(str);
+	} else {
+		exec = g_app_info_get_commandline(G_APP_INFO(info));
+		cmd = g_strdup(exec);
+	}
+	s = strdup(",\n");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s(\"%s\", SHEXEC, \"%s\")", ctx->indent, esc2, cmd);
+	text = g_list_append(text, s);
+	free(cmd);
+	free(esc2);
+	free(esc1);
+	return (text);
 }
 
 static GList *
