@@ -34,6 +34,7 @@ xdemod_LTLIBRARIES = \
 	xde-menu-openbox.la \
 	xde-menu-openboxold.la \
 	xde-menu-pekwm.la \
+	xde-menu-perlpanel.la \
 	xde-menu-spectrwm.la \
 	xde-menu-twm.la \
 	xde-menu-uwm.la \
@@ -179,6 +180,12 @@ xde_menu_pekwm_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_pekwm_la_SOURCES = xde-menu.h xde_pekwm.c
 xde_menu_pekwm_la_LIBADD = $(AM_LDFLAGS)
 xde_menu_pekwm_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_perlpanel_la_CPPFLAGS = -DNAME=\"xde-perlpanel\"
+xde_menu_perlpanel_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_perlpanel_la_SOURCES = xde-menu.h xde_perlpanel.c
+xde_menu_perlpanel_la_LIBADD = $(AM_LDFLAGS)
+xde_menu_perlpanel_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_spectrwm_la_CPPFLAGS = -DNAME=\"xde-spectrwm\"
 xde_menu_spectrwm_la_CFLAGS = $(AM_CFLAGS)

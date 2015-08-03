@@ -89,7 +89,7 @@ xde_wmmenu(MenuContext *ctx)
 		XdeXsession *xsess = xsession->data;
 		char *esc1;
 
-		if (strncasecmp(xsess->key, "openbox", strlen("openbox")) == 0)
+		if (strncasecmp(xsess->key, "perlpanel", strlen("perlpanel")) == 0) /* XXX */
 			continue;
 		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
 				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
@@ -136,13 +136,15 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	char *icon;
 	char *s;
 
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[begin] (Menu)");
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[begin] (Fluxbox)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[encoding] {UTF-8}");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
 	xde_increase_indent(ctx);
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "openbox"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Openbox menu)", icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "perlpanel"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (PerlPanel menu)", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
@@ -186,12 +188,30 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Arrange Windows)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindows] (Arrange Windows)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowshorizontal] (Arrange Windows Horizontal)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowsvertical] (Arrange Windows Vertical)");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->wmmenu(ctx));
 	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (Openbox menu)");
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (PerlPanel menu)");
 	text = g_list_append(text, s);
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gnome-lockscreen"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Lock screen) {xlock}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[commanddialog] (Fluxbox Command)", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
@@ -202,13 +222,26 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[restart] (Restart) {}", icon);
 	text = g_list_append(text, s);
 	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "help-about"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (About) {(fluxbox -v; fluxbox -info | sed 1d) | gxmessage -file - -center}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	if (options.filename) {
+		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+		s = g_strdup_printf("%s%s%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format fluxbox -desktop FLUXBOX -o ",
+				options.filename, "}", icon);
+		text = g_list_append(text, s);
+		free(icon);
+	}
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exit] (Exit)", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (Menu)");
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[endencoding]");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end] # (Fluxbox)");
 	text = g_list_append(text, s);
 	return (text);
 }
@@ -469,8 +502,8 @@ static GList *
 xde_themes(MenuContext *ctx)
 {
 	static const char *sysdir = "/usr/share/themes";
-	static const char *usr = "/.config/openbox/styles";
-	static const char *fname = "/openbox-3/themerc";
+	static const char *usr = "/.config/perlpanel/styles";
+	static const char *fname = "/xde/themerc";
 	char *usrdir, *s;
 	GList *text = NULL, *sysent, *usrent;
 	const char *home;
@@ -593,17 +626,12 @@ xde_style_entries(MenuContext *ctx, const char *dname, Which which, const char *
 	return (text);
 }
 
-/**
- * There are two styles divided by a separator: user styles and system styles.  For user styles, the
- * styles are contained in the ${_XDE_WM_SYSDIR:-/usr/share/openbox}/styles directory and the  user
- * styles are contained in the ${_XDE_SM_USRDIR:-~/.config/openbox/styles.
- */
 static GList *
 xde_styles(MenuContext *ctx)
 {
 	static const char *sysdir = "/usr/share/themes";
-	static const char *usr = "/.config/openbox/styles";
-	static const char *fname = "/openbox-3/themerc";
+	static const char *usr = "/.config/perlpanel/styles";
+	static const char *fname = "/xde/themerc";
 	char *usrdir, *s;
 	GList *text = NULL, *sysent, *usrent;
 	const char *home;
@@ -643,7 +671,7 @@ xde_styles(MenuContext *ctx)
 }
 
 MenuContext xde_menu_ops = {
-	.name = "openbox",
+	.name = "perlpanel",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

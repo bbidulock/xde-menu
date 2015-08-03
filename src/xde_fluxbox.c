@@ -383,7 +383,7 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 }
 
 static GList *
-xde_theme_entries(MenuContext *ctx, const char *dname, Which which)
+xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *fname)
 {
 	GList *text = NULL;
 	DIR *dir;
@@ -431,7 +431,7 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which)
 			switch (which) {
 			case XdeStyleMixed:
 			{
-				static const char *fname = "/xde/themerc";
+				fname = "/xde/themerc";
 
 				if (!S_ISDIR(st.st_mode)) {
 					DPRINTF("%s: not file or directory\n", file);
@@ -455,8 +455,6 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which)
 			case XdeStyleUser:
 			default:
 			{
-				static const char *fname = "/theme.cfg";
-
 				if (!S_ISLNK(st.st_mode)) {
 					DPRINTF("%s: not symbolic link\n", file);
 					free(file);
@@ -505,13 +503,14 @@ xde_themes(MenuContext *ctx)
 {
 	static const char *sysdir = "/usr/share/fluxbox/styles";
 	static const char *usr = "/.fluxbox/styles";
+	static const char *fname = "/theme.cfg";
 	char *usrdir, *s;
 	GList *text = NULL, *sysent, *usrent;
 	const char *home;
 	char *icon;
 	int len;
 
-	sysent = xde_theme_entries(ctx, sysdir, XdeStyleSystem);
+	sysent = xde_theme_entries(ctx, sysdir, XdeStyleSystem, fname);
 
 	home = getenv("HOME") ?: "~";
 	len = strlen(home) + 1 + strlen(usr) + 1;
@@ -519,7 +518,7 @@ xde_themes(MenuContext *ctx)
 	strcpy(usrdir, home);
 	strcat(usrdir, usr);
 
-	usrent = xde_theme_entries(ctx, usrdir, XdeStyleUser);
+	usrent = xde_theme_entries(ctx, usrdir, XdeStyleUser, fname);
 
 	if (!sysent && !usrent) {
 		free(usrdir);
@@ -545,7 +544,7 @@ xde_themes(MenuContext *ctx)
 }
 
 static GList *
-xde_style_entries(MenuContext *ctx, const char *dname, Which which)
+xde_style_entries(MenuContext *ctx, const char *dname, Which which, const char *fname)
 {
 	GList *text = NULL;
 	DIR *dir;
@@ -568,7 +567,6 @@ xde_style_entries(MenuContext *ctx, const char *dname, Which which)
 	}
 
 	if ((dir = opendir(dname))) {
-		static const char *fname = "/theme.cfg";
 		struct dirent *d;
 		struct stat st;
 		char *file, *path;
@@ -638,13 +636,14 @@ xde_styles(MenuContext *ctx)
 {
 	static const char *sysdir = "/usr/share/fluxbox/styles";
 	static const char *usr = "/.fluxbox/styles";
+	static const char *fname = "/theme.cfg";
 	char *usrdir, *s;
 	GList *text = NULL, *sysent, *usrent;
 	const char *home;
 	char *icon;
 	int len;
 
-	sysent = xde_style_entries(ctx, sysdir, XdeStyleSystem);
+	sysent = xde_style_entries(ctx, sysdir, XdeStyleSystem, fname);
 
 	home = getenv("HOME") ? : "~";
 	len = strlen(home) + 1 + strlen(usr) + 1;
@@ -652,7 +651,7 @@ xde_styles(MenuContext *ctx)
 	strcpy(usrdir, home);
 	strcat(usrdir, usr);
 
-	usrent = xde_style_entries(ctx, usrdir, XdeStyleUser);
+	usrent = xde_style_entries(ctx, usrdir, XdeStyleUser, fname);
 
 	if (!sysent && !usrent) {
 		free(usrdir);
