@@ -112,7 +112,7 @@ xde_wmmenu(MenuContext *ctx)
 
 	s = g_strdup_printf("%s\n", "Menu \"managers\" twm_MenuColor");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("%s\n", "{");
+	s = strdup("{\n");
 	text = g_list_append(text, s);
 
 	xde_increase_indent(ctx);
@@ -125,7 +125,7 @@ xde_wmmenu(MenuContext *ctx)
 		XdeXsession *xsess = xsession->data;
 		char *esc1, *esc2, *qname, *exec;
 
-		if (strncasecmp(xsess->key, "twm", 3) == 0)
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
 
 		esc1 = xde_character_escape(xsess->name, '"');
@@ -140,7 +140,12 @@ xde_wmmenu(MenuContext *ctx)
 			exec = exec ? strdup(exec) : strdup("/usr/bin/true");
 		}
 		esc2 = xde_character_escape(exec, '"');
-		s = g_strdup_printf("    %-32s  f.startwm \"%s\"\n", qname, esc2);
+		if (!strcmp(ctx->name, "mwm"))
+			s = g_strdup_printf("    %-32s  %s \"%s\"\n", qname, "f.restart -", esc2);
+		else if (!strcmp(ctx->name, "twm")||!strcmp(ctx->name, "vtwm"))
+			s = g_strdup_printf("    %-32s  %s \"%s\"\n", qname, "f.startwm", esc2);
+		else
+			s = g_strdup_printf("    %-32s  %s \"exec %s &\"\n", qname, "f.exec", esc2);
 		text = g_list_append(text, s);
 
 		gotone = TRUE;
@@ -153,9 +158,12 @@ xde_wmmenu(MenuContext *ctx)
 		text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Quit\"", "f.quit");
+	if (!strcmp(ctx->name, "mwm"))
+		s = g_strdup_printf("    %-32s  %s\n", "\"Quit\"", "f.quit_mwm");
+	else
+		s = g_strdup_printf("    %-32s  %s\n", "\"Quit\"", "f.quit");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("%s\n", "}");
+	s = strdup("}\n");
 	text = g_list_append(text, s);
 
 	return (text);
@@ -165,15 +173,17 @@ static GList *
 xde_twmmenu(MenuContext *ctx)
 {
 	GList *text = NULL;
-	char *s;
+	char *s, *menu;
 
 	s = g_strdup_printf("%s\n", "Menu \"twmmenu\" twm_MenuColor");
 	text = g_list_append(text, s);
 	s = g_strdup_printf("{\n");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"TWM Menu\"", "f.title");
+	menu = g_strdup_printf("\"%s Menu\"", ctx->desktop);
+	s = g_strdup_printf("    %-32s  %s\n", menu, "f.title");
 	text = g_list_append(text, s);
-	if (0) {
+	free(menu);
+	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"Icons List\"", "f.menu \"TwmIcons\"");
 		text = g_list_append(text, s);
 	}
@@ -185,17 +195,23 @@ xde_twmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Window Managers\"", "f.menu \"managers\"");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Hide Icon Manager\"", "f.hideiconmgr");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Show Icon Manager\"", "f.showiconmgr");
-	text = g_list_append(text, s);
-	if (0) {
+	if (!strcmp(ctx->name, "mwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Pack Icons\"", "f.pack_icons");
+		text = g_list_append(text, s);
+	}
+	if (strcmp(ctx->name, "mwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Icon Manager\"", "f.hideiconmgr");
+		text = g_list_append(text, s);
+		s = g_strdup_printf("    %-32s  %s\n", "\"Show Icon Manager\"", "f.showiconmgr");
+		text = g_list_append(text, s);
+	}
+	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Workspace Manager\"", "f.hideworkspacemgr");
 		text = g_list_append(text, s);
 		s = g_strdup_printf("    %-32s  %s\n", "\"Show Workspace Manager\"", "f.showworkspacemgr");
 		text = g_list_append(text, s);
 	}
-	if (0) {
+	if (!strcmp(ctx->name, "vtwm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Desktop Display\"", "f.hidedesktopdisplay");
 		text = g_list_append(text, s);
 		s = g_strdup_printf("    %-32s  %s\n", "\"Show Desktop Display\"", "f.showdesktopdisplay");
@@ -205,7 +221,7 @@ xde_twmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s %s\n", "\"Refresh Menu\"", "f.exec \"exec xde-menugen -format twm -desktop TWM -o", options.filename);
+	s = g_strdup_printf("    %-32s  \"f.exec \"exec xde-menugen -format %s -desktop %s -o %s\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.filename);
 	text = g_list_append(text, s);
 	s = g_strdup_printf("}\n");
 	text = g_list_append(text, s);
@@ -219,7 +235,7 @@ xde_pin(MenuContext *ctx)
 	GList *text = NULL;
 	char *s;
 
-	if (0) {
+	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"--------> pin <--------\"", "f.pin");
 		text = g_list_append(text, s);
 	}
@@ -240,13 +256,15 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	if (!name)
 		name = gmenu_tree_directory_get_name(dir);
 	esc = xde_character_escape(name, '"');
-	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n{\n", esc);
+	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n", esc);
+	text = g_list_append(text, s);
+	s = strdup("{\n");
 	text = g_list_append(text, s);
 	qname = g_strdup_printf("\"%s\"", esc);
 	s = g_strdup_printf("    %-32s  %s\n", qname, "f.title");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
-	s = g_strdup_printf("}\n");
+	s = strdup("}\n");
 	text = g_list_append(text, s);
 	g_free(qname);
 	free(esc);
@@ -257,17 +275,23 @@ static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
 	GList *text = NULL;
-	char *s;
+	char *s, *menu;
 
 	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n", "defops");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Twm\"", "f.title");
+	s = strdup("{\n");
 	text = g_list_append(text, s);
+	menu = g_strdup_printf("\"%s\"", ctx->desktop);
+	s = g_strdup_printf("    %-32s  %s\n", menu, "f.title");
+	text = g_list_append(text, s);
+	free(menu);
 	text = g_list_concat(text, xde_pin(ctx));
 	text = g_list_concat(text, entries);
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
-	s = g_strdup_printf("    %-32s  %s\n", "\"TWM Menu\"", "f.menu \"twmmenu\"");
+	menu = g_strdup_printf("\"%s Menu\"", ctx->desktop);
+	s = g_strdup_printf("    %-32s  %s\n", menu, "f.menu \"twmmenu\"");
 	text = g_list_append(text, s);
+	free(menu);
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
 	s = g_strdup_printf("    %-32s  %s\n", "\"Refresh\"", "f.refresh");
 	text = g_list_append(text, s);
@@ -276,6 +300,8 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Exit\"", "f.quit");
+	text = g_list_append(text, s);
+	s = strdup("}\n");
 	text = g_list_append(text, s);
 
 	return (text);
@@ -299,7 +325,7 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 	GList *text = NULL;
 	char *s;
 
-	if (0) {
+	if (strcmp(ctx->name, "twm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"\"", "f.separator");
 		text = g_list_append(text, s);
 	} else {
@@ -324,6 +350,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	qname = g_strdup_printf("\"%s\"", esc);
 	s = g_strdup_printf("    %-32s  %s\n", qname, "f.title");
 	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
 
 	g_free(qname);
 	g_free(esc);
@@ -409,6 +436,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "twm",
+	.desktop = "TWM",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

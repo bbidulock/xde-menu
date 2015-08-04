@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "matwm2",
+	.desktop = "MATWM2",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

@@ -567,6 +567,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "blackbox",
+	.desktop = "BLACKBOX",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

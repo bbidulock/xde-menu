@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "wmx",
+	.desktop = "WMX",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

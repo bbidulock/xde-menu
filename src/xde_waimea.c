@@ -596,6 +596,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "waimea",
+	.desktop = "WAIMEA",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

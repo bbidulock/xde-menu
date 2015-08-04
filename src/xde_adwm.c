@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "adwm",
+	.desktop = "ADWM",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

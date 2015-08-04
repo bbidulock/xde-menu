@@ -355,6 +355,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "uwm",
+	.desktop = "UWM",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,

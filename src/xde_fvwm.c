@@ -430,6 +430,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "fvwm",
+	.desktop = "FVWM",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,
