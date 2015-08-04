@@ -141,7 +141,7 @@ L<icewm(1)>,
 L<jwm(1)>,
 L<matwm2(1)>,
 L<metacity(1)>,
-L<mwmw(1)>,
+L<mwm(1)>,
 L<openbox(1)>,
 L<pekwm(1)>,
 L<spectrwm(1)>,
@@ -271,6 +271,218 @@ the program was invoked with a key-press instead of a button.
 =item B<--timestamp>, B<-T> I<TIMESTAMP>
 
 Provides the X11 server time-stamp of the event that vaused the popup.
+
+=back
+
+=head1 SUPPORTED WINDOW MANAGERS
+
+The following window managers and menuing environments are supported by
+B<xde-menu>:
+
+=over
+
+=item B<--format=>I<2bwm>
+
+Like L<dwm(1)>, L<2bwm(1)> does not provide a root menu; however, it
+does provide a mechanism for invoking an external root menu.  This is
+used to invoke the GTK+ version of the root menu.
+
+=item B<--format=>I<adwm>
+
+Like L<dwm(1)>, L<adwm(1)> does not provide a root menu; however, it
+does provide a mechanism for invoking an external root menu.  This is
+used to invoke the GTK+ version of the root menu.
+
+=item B<--format=>I<afterstep>
+
+No support has yet been included for L<afterstep(1)>.
+
+=item B<--format=>I<awesome>
+
+No support has yet been included for L<awesome(1)>.
+
+=item B<--format=>I<blackbox>
+
+L<blackbox(1)> provides a root menu that is formatted similar to
+L<fluxbox(1)> and the older L<openbox(1)> menu style.  The primary
+difference is that L<blackbox(1)> does not support the display of icons.
+
+=item B<--format=>I<ctwm>
+
+L<ctwm(1)> provides a root menu that is formatted similar to L<twm(1)>.
+This root menu format does not support the display of icons.
+
+=item B<--format=>I<cwm>
+
+L<cwm(1)> only provides a rudimentary root menu (with no ability to
+generate sub-menus); however, it has the ability to specify command
+actions in response to key bindings or mouse buttons and can easily be
+configured to launch the GTK+ menu.
+
+=item B<--format=>I<dtwm>
+
+L<dtwm(1)>
+
+=item B<--format=>I<dwm>
+
+L<dwm(1)> does not provide a root menu; however, it does provide a
+mechanism for invoking an external root menu.  This is used to invoke
+the GTK+ version of the root menu.
+
+=item B<--format=>I<echinus>
+
+Like L<dwm(1)>, L<echinus(1)> does not provide a root menu; however, it
+does provide a mechanism for invoking an external root menu.  This is
+used to invoke the GTK+ version of the root menu.
+
+=item B<--format=>I<etwm>
+
+L<etwm(1)> provides a root menu that is formatted similar to L<twm(1)>.
+This root menu format does not support the display of icons.
+
+=item B<--format=>I<fluxbox>
+
+L<fluxbox(1)> provides a root menu that is formatted similar to
+L<blackbox(1)>.  This root menu, however, provides additional support
+for the display of icons.
+
+=item B<--format=>I<flwm>
+
+L<flwm(1)> uses a directory of executables instead of a file format in
+the identical fashion to the L<wmx(1)> window manager on which it is
+based.  It does not support the use of icons in menu items.  In fact,
+this is an alias for I<wmx> as the two formats are completely compatible
+and interoperable.
+
+=item B<--format=>I<fvwm>
+
+L<fvwm(1)> provides a root menu using its own unique menu format.
+Although at one time L<fvwm(1)> used a L<dtwm(1)>-like menu format, it
+now uses its own unique L<perl(1)> interface.  L<fvwm(1)> supports the
+use of icons in menu items.
+
+=item B<--format=>I<icewm>
+
+L<icewm(1)> provides a programs menu using its own unique menu format.
+It support the display of icons in menu items.  L<icewm(1)> does not
+provide the ability to specify the entire root menu: some items in the
+root menu are fixed by window manager and do not appear in the menu
+file.
+
+=item B<--format=>I<jwm>
+
+L<jwm(1)> provides a root menu using its own XML-based menu format.  It
+support the display of icons in menu items.  L<jwm(1)> recently had a
+rework of its configuration files.  Unless you are on the most current
+versions, your mileage may vary.
+
+=item B<--format=>I<matwm2>
+
+Like L<dwm(1)>, L<matwm2(1)> does not provide a root menu; however, it
+does provide a mechanism for invoking an external root menu.  This is
+used to invoke the GTK+ version of the root menu.
+
+=item B<--format=>I<metacity>
+
+L<metacity(1)> does not provide a root menu; however, it has ample
+facility for launching the GTK+ menu.
+
+=item B<--format=>I<mwm>
+
+L<mwm(1)> is the old pre-openmotify window manager that was intended on
+providing the capabilities of the L<dtwm(1)> OSF/Motif/CDE window
+manager.  It provides a root menu following a similar configuration file
+format to L<twm(1)>, L<ctwm(1)>, L<etwm(1)> and L<vtwm(1)>.  It does not
+have the ability to display icons in menu items.
+
+=item B<--format=>I<openbox>
+
+=item B<--format=>I<openboxold>
+
+Two formats are supported for the L<openbox(1)> window manager: the
+newer openbox-3 XML format (I<openbox>) and the older
+L<fluxbox(1)>-like menu format (I<openboxold>). The default for the
+L<openbox(1)> window manager is the newer style; however, it still
+supports both formats.  Both formats support the use of icons in menu
+items.
+
+=item B<--format=>I<pekwm>
+
+L<pekwm(1)> provides a root menu that is formatted using its own file
+format.  It supports dynamic menus and provides support for displaying
+icons in menu elements.
+
+=item B<--format=>I<perlpanel>
+
+L<perlpanel(1)> can read a L<fluxbox(1)> or L<blackbox(1)> style menu
+and generate a GTK+ menu from it.  This format generates a
+L<fluxbox(1)>-like menu for use by L<perlpanel(1)>.  (Note that this
+format can be specified in addition to other formats, in which case,
+this format will be generated as well.)  The menu file is typically
+stored in F<~/.perlpanel/menu>, F<~/.config/perlpanel/menu> or
+F</usr/share/perlpanel/menu>, independent of which window manager is
+currently running.
+
+=item B<--format=>I<spectrwm>
+
+Like L<dwm(1)>, L<spectrwm(1)> does not provide a root menu; however, it
+does provide a mechanism for invoking an external root menu.  This is
+used to invoke the GTK+ version of the root menu.
+
+=item B<--format=>I<twm>
+
+L<twm(1)> provides a root menu that uses its own format.  L<ctwm(1)>,
+L<etwm(1)> and L<vtwm(1)> share this format.  The format does not
+support the display of icons in the root menu.
+
+=item B<--format=>I<uwm>
+
+L<uwm(1)> provides a root menu that uses its own format.  The format
+supports the use of icons in menu items.
+
+=item B<--format=>I<vtwm>
+
+L<vtwm(1)> provides a root menu that is formatted similar to L<twm(1)>.
+This root menu format does not support the display of icons.
+
+=item B<--format=>I<waimea>
+
+L<waimea(1)> provides a root menu that is formatted similar to
+L<blackbox(1)>.  As with L<blackbox(1)>, this root menu does not support
+the display of icons.
+
+=item B<--format=>I<wind>
+
+L<wind(1)> does not have a root menu: it doesn't have any menus at all.
+L<wind(1)> window manager is difficult to support: the window manager
+has no mechanism for launching a menu.  However, an external key-binder
+such as L<bbkeys(1)> can be used to launch the menu.  Also, it appears
+that L<wind(1)> does not grab button clicks on the root window.
+
+=item B<--format=>I<wmaker>
+
+=item B<--format=>I<wmakerold>
+
+Two formats are supported for the L<wmaker(1)> window manager: the newer
+window maker lisp-based menu (I<wmaker>) and the older line-based menu
+(I<wmakerold>).  The default for the L<wmaker(1)> window manager is the
+newer style; however, it still supports both formats.  Neither format
+supports the use of icons in menu items.
+
+=item B<--format=>I<wmx>
+
+L<wmx(1)> uses a directory of executables instead of a file format in
+the identical fashion to L<flwm(1)>.  It does not support the use of
+icons in menu items.  In fact, this is an alias for I<flwm> as the two
+formats are completely compatible and interoperable.
+
+=item B<--format=>I<yeahwm>
+
+L<yeahwm(1)> does not have a root menu: it doesn't have any menus at
+all.  Therefore, the GTK+ menu must be used.   L<yeahwm(1)> is another
+window manager that is difficult to support without an external key
+binder (such as L<bbkeys(1)>).  Mouse button clicks on the root window
+are intercepted by the window manager.  Support is unlikely.
 
 =back
 
