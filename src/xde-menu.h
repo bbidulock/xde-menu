@@ -228,6 +228,7 @@ typedef struct {
 	char *recent;
 	char *keep;
 	char *menu;
+	char *display;
 } Options;
 
 extern Options options;

@@ -79,6 +79,13 @@ Atom _XA_XDE_WM_VERSION;
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
 
+Options current = {
+	.debug = 0,
+	.output = 1,
+	.command = CommandDefault,
+	.launch = True,
+};
+
 Options options = {
 	.debug = 0,
 	.output = 1,
@@ -111,6 +118,7 @@ Options defaults = {
 	.recent = NULL,
 	.keep = "10",
 	.menu = "applications",
+	.display = NULL,
 };
 
 XdeScreen *screens;
@@ -133,6 +141,8 @@ char *xdg_config_home = NULL;
 char *xdg_config_dirs = NULL;
 char *xdg_config_path = NULL;
 char *xdg_config_last = NULL;
+
+GMainLoop *loop = NULL;
 
 GMenuTree *tree = NULL;
 
@@ -1344,6 +1354,10 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 	XdeScreen *xscr = user;
 	const char *name;
 
+	/* I suppose that what we should do here is set a timer and wait before doing
+	   anything; however, I think that libwnck++ already does this (waits before even 
+	   giving us the signal). */
+
 	if (!xscr) {
 		EPRINTF("xscr is NULL\n");
 		exit(EXIT_FAILURE);
@@ -1372,6 +1386,16 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 	}
 	DPRINTF("window manager is '%s'\n", xscr->wmname);
 	DPRINTF("window manager is %s\n", xscr->goodwm ? "usable" : "unusable");
+	if (xscr->goodwm) {
+		char *p;
+
+		free(options.format);
+		defaults.format = options.format = strdup(xscr->wmname);
+		free(options.desktop);
+		defaults.desktop = options.desktop = strdup(xscr->wmname);
+		for (p = options.desktop; *p; p++)
+			*p = toupper(*p);
+	}
 }
 
 static void
@@ -1452,7 +1476,7 @@ do_generate(int argc, char *argv[])
 }
 
 static void
-do_run(int argc, char *argv[], Bool replace)
+setup_x11(Bool replace)
 {
 	GdkDisplay *disp = gdk_display_get_default();
 	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
@@ -1495,8 +1519,20 @@ do_run(int argc, char *argv[], Bool replace)
 		update_theme(xscr, None);
 		update_icon_theme(xscr, None);
 	}
+}
+
+static void
+do_run(int argc, char *argv[], Bool replace)
+{
+	if (options.display)
+		setup_x11(replace);
+
 	make_menu(argc, argv);
-	gtk_main();
+
+	if (options.display)
+		gtk_main();
+	else
+		g_main_loop_run(loop);
 }
 
 static void
@@ -2087,7 +2123,10 @@ clientDieCB(SmcConn smcConn, SmPointer data)
 {
 	SmcCloseConnection(smcConn, 0, NULL);
 	shutting_down = False;
-	gtk_main_quit();
+	if (options.display)
+		gtk_main_quit();
+	else
+		g_main_loop_quit(loop);
 }
 
 static void
@@ -2095,7 +2134,10 @@ clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
 {
 	if (saving_yourself) {
 		saving_yourself = False;
-		gtk_main_quit();
+		if (options.display)
+			gtk_main_quit();
+		else
+			g_main_loop_quit(loop);
 	}
 
 }
@@ -2115,7 +2157,10 @@ static void
 clientShutdownCancelledCB(SmcConn smcConn, SmPointer data)
 {
 	shutting_down = False;
-	gtk_main_quit();
+	if (options.display)
+		gtk_main_quit();
+	else
+		g_main_loop_quit(loop);
 }
 
 /* *INDENT-OFF* */
@@ -2190,6 +2235,11 @@ init_smclient(void)
 	g_io_add_watch(chan, mask, on_ifd_watch, smcConn);
 }
 
+/*
+ *  This startup function starts up the X11 protocol connection and initializes GTK+.  Note that the
+ *  program can still be run from a console, in which case the "DISPLAY" environment variables should
+ *  not be defined: in which case, we will not start up X11 at all.
+ */
 static void
 startup(int argc, char *argv[])
 {
@@ -2204,6 +2254,16 @@ startup(int argc, char *argv[])
 	char *file;
 	int len;
 
+	/* We can start session management without a display; however, we then need to
+	   run a GLIB event loop instead of a GTK event loop.  */
+	init_smclient();
+
+	/* do not start up X11 connection unless DISPLAY is defined */
+	if (!options.display) {
+		loop = g_main_loop_new(NULL, FALSE);
+		return;
+	}
+
 	home = getenv("HOME") ? : ".";
 	len = strlen(home) + strlen(suffix);
 	file = calloc(len + 1, sizeof(*file));
@@ -2211,8 +2271,6 @@ startup(int argc, char *argv[])
 	strncat(file, suffix, len);
 	gtk_rc_add_default_file(file);
 	free(file);
-
-	init_smclient();
 
 	gtk_init(&argc, &argv);
 
@@ -2475,6 +2533,8 @@ Options:\n\
         fullmenu, appmenu or entries [default: %13$s]\n\
     -M, --menu MENU\n\
         filename stem of root menu filename [default: %16$s]\n\
+    --display DISPLAY\n\
+        specify the X11 display [default: %17$s]\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: %14$d]\n\
     -v, --verbose [LEVEL]\n\
@@ -2496,6 +2556,7 @@ Options:\n\
 	, defaults.debug
 	, defaults.output
 	, defaults.menu
+	, defaults.display
 );
 	/* *INDENT-ON* */
 }
@@ -2642,11 +2703,21 @@ set_default_files()
 	return;
 }
 
+/*
+ * Set options in the "defaults" structure.  These "defaults" are determined by preset defaults,
+ * environment variables and other startup information, but not information from the X Server.  All
+ * options are set in this way, only the ones that depend on environment variables or other startup
+ * information.
+ */
 static void
 set_defaults(void)
 {
 	char *env;
 
+	if ((env = getenv("DISPLAY"))) {
+		free(options.display);
+		defaults.display = options.display = strdup(env);
+	}
 	if ((env = getenv("XDG_CURRENT_DESKTOP"))) {
 		free(options.desktop);
 		defaults.desktop = options.desktop = strdup(env);
@@ -2964,10 +3035,20 @@ get_default_root()
 }
 
 static void
-get_defaults(void)
+get_defaults()
 {
 	get_default_locale();
 	get_default_root();
+
+	if (!options.format)
+		get_default_format();
+
+	if (!options.filename)
+		get_default_output();
+
+	if (!options.theme)
+		get_default_theme();
+
 }
 
 int
@@ -3008,6 +3089,7 @@ main(int argc, char *argv[])
 			{"nolaunch",	no_argument,		NULL,	'0'},
 			{"style",	required_argument,	NULL,	's'},
 			{"menu",	required_argument,	NULL,	'M'},
+			{"display",	required_argument,	NULL,	 1 },
 
 			{"quit",	no_argument,		NULL,	'q'},
 			{"replace",	no_argument,		NULL,	'R'},
@@ -3110,6 +3192,10 @@ main(int argc, char *argv[])
 			free(options.menu);
 			defaults.menu = options.menu = strdup(optarg);
 			break;
+		case 1:		/* --display DISPLAY */
+			free(options.display);
+			defaults.display = options.display = strdup(optarg);
+			break;
 
 		case 'q':	/* -q, --quit */
 			if (options.command != CommandDefault)
@@ -3203,16 +3289,8 @@ main(int argc, char *argv[])
 		usage(argc, argv);
 		exit(EXIT_SYNTAXERR);
 	}
-	get_defaults();
-
 	startup(argc, argv);
-
-	if (!options.format)
-		get_default_format();
-	if (!options.filename)
-		get_default_output();
-	if (!options.theme)
-		get_default_theme();
+	get_defaults();
 
 	switch (command) {
 	default:
@@ -3225,6 +3303,10 @@ main(int argc, char *argv[])
 		do_run(argc, argv, False);
 		break;
 	case CommandQuit:
+		if (!options.display) {
+			EPRINTF("%s: cannot ask instance to quit without DISPLAY\n", argv[0]);
+			exit(EXIT_FAILURE);
+		}
 		DPRINTF("%s: asking existing instance to quit\n", argv[0]);
 		do_quit(argc, argv);
 		break;
