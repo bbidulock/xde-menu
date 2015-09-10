@@ -119,9 +119,11 @@ Options defaults = {
 	.keep = "10",
 	.menu = "applications",
 	.display = NULL,
+	.button = 3,
+	.keypress = NULL,
 };
 
-XdeScreen *screens;
+XdeScreen *screens = NULL;
 
 char *xdg_data_home = NULL;
 char *xdg_data_dirs = NULL;
@@ -2496,6 +2498,8 @@ Usage:\n\
 Command options:\n\
     -m, --monitor\n\
         generate a menu and monitor for changes\n\
+    -p, --popmenu\n\
+        pop the menu (on running or new instance)\n\
     -R, --replace\n\
         replace a running instance\n\
     -q, --quit\n\
@@ -2535,6 +2539,10 @@ Options:\n\
         filename stem of root menu filename [default: %16$s]\n\
     --display DISPLAY\n\
         specify the X11 display [default: %17$s]\n\
+    -b, --button [BUTTON]\n\
+        specify the button pressed when popping menu [default: %18$u]\n\
+    -k, --keypress [KEYSPEC]\n\
+        specify the key sequence active whne popping menu [default: %19$s]\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: %14$d]\n\
     -v, --verbose [LEVEL]\n\
@@ -2557,6 +2565,8 @@ Options:\n\
 	, defaults.output
 	, defaults.menu
 	, defaults.display
+	, defaults.button
+	, defaults.keypress
 );
 	/* *INDENT-ON* */
 }
@@ -2786,6 +2796,31 @@ get_default_format()
 				XGetAtomName(dpy, prop));
 	} else
 		DPRINTF("could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+}
+
+static void
+get_default_desktop()
+{
+	XdeScreen *xscr = screens;
+	const char *env;
+	char *p;
+
+	if ((env = getenv("XDG_CURRENT_DESKTOP"))) {
+		free(options.desktop);
+		defaults.desktop = options.desktop = strdup(env);
+	} else if (options.format) {
+		free(options.desktop);
+		defaults.desktop = options.desktop = strdup(options.format);
+		for (p = options.desktop; *p; p++)
+			*p = toupper(*p);
+	} else if (xscr && xscr->wmname) {
+		free(options.desktop);
+		defaults.desktop = options.desktop = strdup(xscr->wmname);
+		for (p = options.desktop; *p; p++)
+			*p = toupper(*p);
+	} else if (!options.desktop) {
+		defaults.desktop = options.desktop = strdup("XDE");
+	}
 }
 
 static void
@@ -3043,6 +3078,10 @@ get_defaults()
 	if (!options.format)
 		get_default_format();
 
+	if (!options.desktop || !strcmp(options.desktop, "XDE") || !options.format
+	    || strcasecmp(options.format, options.desktop))
+		get_default_desktop();
+
 	if (!options.filename)
 		get_default_output();
 
@@ -3090,6 +3129,9 @@ main(int argc, char *argv[])
 			{"style",	required_argument,	NULL,	's'},
 			{"menu",	required_argument,	NULL,	'M'},
 			{"display",	required_argument,	NULL,	 1 },
+			{"popmenu",	no_argument,		NULL,	'p'},
+			{"button",	required_argument,	NULL,	'b'},
+			{"keyboard",	optional_argument,	NULL,	'k'},
 
 			{"quit",	no_argument,		NULL,	'q'},
 			{"replace",	no_argument,		NULL,	'R'},
@@ -3104,10 +3146,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "f:FNd:c:l:r:eo::nt:mL0s:M:qRD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "f:FNd:c:l:r:eo::nt:mL0s:M:pb::k::qRD::v::hVCH?",
 				     long_options, &option_index);
 #else
-		c = getopt(argc, argv, "f:FNd:c:l:r:eo:nt:mL0s:M:qRD:vhVC?");
+		c = getopt(argc, argv, "f:FNd:c:l:r:eo:nt:mL0s:M:pb:kqRD:vhVC?");
 #endif
 		if (c == -1) {
 			if (options.debug)
@@ -3192,9 +3234,31 @@ main(int argc, char *argv[])
 			free(options.menu);
 			defaults.menu = options.menu = strdup(optarg);
 			break;
-		case 1:		/* --display DISPLAY */
+		case 1:	/* --display DISPLAY */
 			free(options.display);
 			defaults.display = options.display = strdup(optarg);
+			break;
+		case 'p':	/* -p, --popmenu */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandPopMenu;
+			defaults.command = options.command = CommandPopMenu;
+			break;
+		case 'b':	/* -b, --button BUTTON */
+			if (options.command != CommandPopMenu)
+				goto bad_option;
+			if (!optarg)
+				break;
+			defaults.button = options.button = strtoul(optarg, NULL, 0);
+			break;
+		case 'k':	/* -k, --keyboard */
+			if (options.command != CommandPopMenu)
+				goto bad_option;
+			if (!optarg)
+				break;
+			free(options.keypress);
+			defaults.keypress = options.keypress = strdup(optarg);
 			break;
 
 		case 'q':	/* -q, --quit */

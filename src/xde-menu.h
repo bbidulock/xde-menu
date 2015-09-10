@@ -185,6 +185,7 @@ typedef enum {
 	CommandRun,
 	CommandQuit,
 	CommandReplace,
+	CommandPopMenu,
 	CommandHelp,
 	CommandVersion,
 	CommandCopying,
@@ -229,6 +230,8 @@ typedef struct {
 	char *keep;
 	char *menu;
 	char *display;
+	unsigned button;
+	char *keypress;
 } Options;
 
 extern Options options;
