@@ -53,7 +53,7 @@ running.  This option implies the B<--monitor> option.
 
 =item B<--refresh>, B<-r>
 
-Asks a running instance of B<xde-menu> to refresh the meu.  This is
+Asks a running instance of B<xde-menu> to refresh the menu.  This is
 normally not required as B<xde-menu> detects when desktop files, icons,
 themes or window managers have changed and automatically regenerates the
 menus.
@@ -76,10 +76,10 @@ running.
 
 Asks a running instance of B<xde-menu> to pop up the menu.  Depending on
 the setting of the B<--button> option, this will either pop up the menu
-at the current pointer posotion, or will popup the menu at the center of
-the active screeen.  When multiple monitors are present, the menu will
-pop up at the center of the monitor in which the pointer currently
-resides (which is used by most tiling winow managers as the "current"
+at the current pointer position, or will pop-up the menu at the centre of
+the active screen.  When multiple monitors are present, the menu will
+pop up at the centre of the monitor in which the pointer currently
+resides (which is used by most tiling window managers as the "current"
 monitor.
 
 This is the default when B<xde-menu> is invoked as B<xde-menu-popup>.
@@ -187,7 +187,7 @@ the current locale.
 =item B<--root-menu>, B<-r> I<MENU>
 
 Specify the location of the root menu file.  The default is calculated
-using XDG denvironment variables (see L</ENVIRONMENT>), and defaults to
+using XDG environment variables (see L</ENVIRONMENT>), and defaults to
 the file F<${XDG_MEU_PREFIX}applications.menu> in the
 F<$XDG_CONFIG_HOME:$XDG_CONFIG_DIRS> search path.
 
@@ -213,7 +213,7 @@ capable generated menus.
 
 =item B<--theme>, B<-t> I<THEME>
 
-Specify the icon theme name ot use when generating icons.  The default
+Specify the icon theme name to use when generating icons.  The default
 is to obtain the icon theme name from the default locations (such as
 the F<$HOME/.gtk2rc-2.0> file).
 
@@ -232,8 +232,8 @@ specification for the window manager.
 =item I<appmen>
 
 Output a complete menu; however, only output the applications portion of
-the menu (no styles, window manager controls, logout, etc), suitable to
-reference as an "Appications" menu.
+the menu (no styles, window manager controls, logout, etc.), suitable to
+reference as an "Applications" menu.
 
 =item I<entries>
 
@@ -245,7 +245,7 @@ this is useful for some pipe menu commands.
 =item B<--launch>, B<-L>, B<--nolaunch>
 
 Specifies whether to use L<xdg-launch(1)> to launch the desktop files
-directly or not.  This option will only be honored when the
+directly or not.  This option will only be honoured when the
 L<xdg-launch(1)> program is available and accessible.  Also, some window
 managers (e.g. L<openbox(1)>) provide their own desktop startup
 launching and some don't.  So, the default setting may depend on the
@@ -261,8 +261,8 @@ be generated for all known stems.
 =item B<--button>, B<-b> I<BUTTON>
 
 Only for use in conjunction with the B<--popup> option.  Specifies the
-button that was used to invoke the popup.  Defaults to zero (0).  This
-shoule be the button that was used to pop the menu.  A window manaer
+button that was used to invoke the pop-up.  Defaults to zero (0).  This
+should be the button that was used to pop the menu.  A window manager
 that invokes this command in response to a button press should release
 its passive grab on the button before invoking the menu to that the
 popped up menu can grab the button.  A I<BUTTON> of zero (0) means that
@@ -270,13 +270,13 @@ the program was invoked with a key-press instead of a button.
 
 =item B<--timestamp>, B<-T> I<TIMESTAMP>
 
-Provides the X11 server time-stamp of the event that vaused the popup.
+Provides the X11 server time-stamp of the event that caused the pop-up.
 
 =back
 
 =head1 SUPPORTED WINDOW MANAGERS
 
-The following window managers and menuing environments are supported by
+The following window managers and menu environments are supported by
 B<xde-menu>:
 
 =over
@@ -548,7 +548,7 @@ F<$HOME/.local/share> in accordance with XDG specifications.
 
 Specifies the system XDG data directory search path.  When unspecified,
 defaults to F</usr/local/share:/usr/share> in accordance with XDG
-specific ations.
+specific actions.
 
 =item C<$XDG_ICON_THEME>
 
