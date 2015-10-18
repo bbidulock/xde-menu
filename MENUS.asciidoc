@@ -1,0 +1,473 @@
+xde-menu -- notes file.  2015-08-06
+
+== Notes on Menu Functions ==
+
+=== MWM-style Functions ===
+
+.All MWM-style Functions
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.action+			|	|	|	|	|	|	|+Y+	|	
+|+f.addtoworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.adoptwindow+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.altcontext+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.altkeymap+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.autolower+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.autopan+			|	|	|	|+Y+	|	|	|	|	
+|+f.autoraise+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.backiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.backmapiconmgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.beep+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.bindbuttons+		|	|	|	|+Y+	|	|	|	|	
+|+f.bindkeys+			|	|	|	|+Y+	|	|	|	|	
+|+f.bottomzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.changepriority+		|	|+Y+	|	|	|	|	|	|	
+|+f.changesize+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.circle_down+		|[1]	|[1]	|[1]	|[1]	|+Y+	|+Y+	|+Y+	|<=[1]	
+|+f.circledown+			|+Y+	|+Y+	|+Y+	|+Y+	|[1]	|[1]	|[1]	|<=[1]	
+|+f.circle_up+			|[1]	|[1]	|[1]	|[1]	|+Y+	|+Y+	|+Y+	|<=[1]	
+|+f.circleup+			|+Y+	|+Y+	|+Y+	|+Y+	|[1]	|[1]	|[1]	|<=[1]	
+|+f.colormap+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.create_workspace+		|	|	|-	|	|	|	|+Y+	|	
+|+f.cutfile+			|	|	|	|+Y+	|	|	|	|	
+|+f.cut+			|	|	|	|+Y+	|	|	|	|	
+|+f.deiconify+			|+Y+	|+Y+	|+Y+	|+Y+	|[2]	|[2]	|[2]	|<=[2]	
+|+f.deletedoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.deleteordestroy+		|	|+Y+	|+Y+	|	|[3]	|[3]	|[3]	|<=[3]	
+|+f.delete_workspace+		|	|	|	|	|	|	|+Y+	|	
+|+f.delete+			|+Y+	|+Y+	|+Y+	|+Y+	|[3]	|[3]	|[3]	|<=[3]	
+|+f.deltastop+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.desk+			|	|	|	|	|	|+Y+	|	|	
+|+f.destroy+			|+Y+	|+Y+	|+Y+	|+Y+	|[3]	|[3]	|[3]	|<=[3]	
+|+f.downiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.downworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.enterdoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.exec+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.file+			|	|	|	|+Y+	|	|	|	|	
+|+f.fill+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.fittocontent+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.focus_color+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.focus_key+			|[4]	|[4]	|[4]	|[4]	|+Y+	|+Y+	|+Y+	|<=[4]	
+|+f.focus+			|+Y+	|+Y+	|+Y+	|+Y+	|[4]	|[4]	|[4]	|<=[4]	
+|+f.forcemove+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.forwiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.forwmapiconmgr+		|	|	|+Y+	|	|	|	|	|	
+|+f.function+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.goto_page+			|	|[6]	|[6]	|	|	|+Y+	|[6]	|	
+|+f.goto_workspace+		|	|[6]	|[6]	|	|	|[6]	|+Y+	|	
+|+f.gotoworkspace+		|	|+Y+	|+Y+	|	|	|[6]	|[6]	|	
+|+f.hbzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.help_mode+			|	|	|	|	|	|	|+Y+	|	
+|+f.help+			|	|	|	|	|	|	|+Y+	|	
+|+f.hidedesktopdisplay+		|	|	|	|+Y+	|	|	|	|	
+|+f.hideiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.hideworkspacemgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.horizoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.htzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.hypermove+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.hzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.iconify+			|+Y+	|+Y+	|+Y+	|+Y+	|[5]	|[5]	|[5]	|<=[5]	
+|+f.identify+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.initsize+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpdown+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpleft+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpright+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpup+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.kill+			|[3]	|[3]	|[3]	|[3]	|+Y+	|+Y+	|+Y+	|<=[3]	
+|+f.lefticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.leftworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.leftzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.lower+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|	
+|+f.marquee_selection+		|	|	|	|	|	|	|+Y+	|	
+|+f.maximize+			|-	|-	|-	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.menu+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.minimize+			|[5]	|[5]	|[5]	|[5]	|+Y+	|+Y+	|+Y+	|<=[5]	
+|+f.movepack+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movepush+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.moveresize+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movescreen+			|	|	|	|+Y+	|	|	|	|	
+|+f.movetitlebar+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetonextworkspaceandfollow+ |	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetonextworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetoprevworkspaceandfollow+ |	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetoprevworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.move+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.nailedabove+		|	|	|	|+Y+	|	|	|	|	
+|+f.nail+			|	|	|	|+Y+	|	|	|	|	
+|+f.namedoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.newdoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.next_cmap+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.nexticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.next_key+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.next_workspace+		|	|	|	|	|	|	|+Y+	|	
+|+f.nextworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.nop+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.normalize_and_raise+	|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.normalize+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.occupy_all+			|	|	|	|	|	|	|+Y+	|	
+|+f.occupyall+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.occupy+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.pack_icons+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.pack+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.pandown+			|	|	|	|+Y+	|	|	|	|	
+|+f.panelmove+			|	|	|	|+Y+	|	|	|	|	
+|+f.panelzoom+			|	|	|	|+Y+	|	|	|	|	
+|+f.panleft+			|	|	|	|+Y+	|	|	|	|	
+|+f.panright+			|	|	|	|+Y+	|	|	|	|	
+|+f.panup+			|	|	|	|+Y+	|	|	|	|	
+|+f.pass_keys+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.pin+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.playsound+			|	|	|	|+Y+	|	|	|	|	
+|+f.post_wmenu+			|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=	
+|+f.prev_cmap+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.previconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.prev_key+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.prev_workspace+		|	|	|	|	|	|	|+Y+	|	
+|+f.prevworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.priorityswitching+		|	|+Y+	|	|	|	|	|	|	
+|+f.priority+			|+Y+	|	|	|	|	|	|	|	
+|+f.quit_mwm+			|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=	
+|+f.quit+			|+Y+	|+Y+	|+Y+	|+Y+	|-	|-	|-	|<=	
+|+f.raiseicons+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.raise_lower+		|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=	
+|+f.raiselower+			|+Y+	|+Y+	|+Y+	|+Y+	|-	|-	|-	|<=	
+|+f.raiseorsqueeze+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.raise+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.refresh_win+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.refresh+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.removefromworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.remove+			|	|	|	|	|	|	|+Y+	|	
+|+f.rereadsounds+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.rescuewindows+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.resetdesktop+		|	|	|	|+Y+	|	|	|	|	
+|+f.resizeto+			|	|	|	|+Y+	|	|	|	|	
+|+f.resize+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.restart+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.restore_and_raise+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.restoregeometry+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.restore+			|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=[2]	
+|+f.righticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.rightworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.rightzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.ring+			|	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.savegeometry+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.saveyourself+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.screen+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.send_msg+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.separator+			|	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.set_behavior+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.setbuttonstate+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.setmapstate+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.setpriority+		|	|+Y+	|	|	|	|	|	|	
+|+f.setrealscreen+		|	|	|	|+Y+	|	|	|	|	
+|+f.showbackground+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.showdesktopdisplay+		|	|	|	|+Y+	|	|	|	|	
+|+f.showiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.showworkspacemgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.sloppyfocus+		|	|	|	|+Y+	|	|	|	|	
+|+f.slowdownanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.snaprealscreen+		|	|	|	|+Y+	|	|	|	|	
+|+f.snap+			|	|	|	|+Y+	|	|	|	|	
+|+f.snugdesktop+		|	|	|	|+Y+	|	|	|	|	
+|+f.snugwindow+			|	|	|	|+Y+	|	|	|	|	
+|+f.sorticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.sounds+			|	|	|	|+Y+	|	|	|	|	
+|+f.speedupanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.squeezecenter+		|	|	|	|+Y+	|	|	|	|	
+|+f.squeezeleft+		|	|	|	|+Y+	|	|	|	|	
+|+f.squeezeright+		|	|	|	|+Y+	|	|	|	|	
+|+f.squeeze+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.startanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.startwm+			|+Y+	|	|	|+Y+	|	|	|	|	
+|+f.staticiconposition+		|	|	|	|+Y+	|	|	|	|	
+|+f.stick+			|	|	|	|+Y+	|	|	|	|	
+|+f.stickyabove+		|	|	|	|+Y+	|	|	|	|	
+|+f.stopanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.stricticonmgr+		|	|	|	|+Y+	|	|	|	|	
+|+f.switchpriority+		|	|+Y+	|	|	|	|	|	|	
+|+f.tinylower+			|	|+Y+	|	|	|	|	|	|	
+|+f.tinyraise+			|	|+Y+	|	|	|	|	|	|	
+|+f.title+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.toggle_frontpanel+		|	|	|	|	|	|	|+Y+	|	
+|+f.toggleoccupation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.toggle_page+		|	|	|	|	|	|+Y+	|	|	
+|+f.togglesound+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.togglestate+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.toggleworkspacemgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.topzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.twmrc+			|	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.unbindbuttons+		|	|	|	|+Y+	|	|	|	|	
+|+f.unbindkeys+			|	|	|	|+Y+	|	|	|	|	
+|+f.unfocus+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.unsqueeze+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.upiconmgr+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.upworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.vanish+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.version+			|	|	|	|+Y+	|+Y+	|+Y+	|+Y+	|	
+|+f.virtualgeometries+		|	|	|	|+Y+	|	|	|	|	
+|+f.vlzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.vrzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.warpclassnext+		|	|	|	|+Y+	|	|	|	|	
+|+f.warpclassprev+		|	|	|	|+Y+	|	|	|	|	
+|+f.warphere+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.warpring+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.warpsnug+			|	|	|	|+Y+	|	|	|	|	
+|+f.warptoiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.warptonewest+		|	|	|	|+Y+	|	|	|	|	
+|+f.warptoscreen+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.warpto+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.warpvisible+		|	|	|	|+Y+	|	|	|	|	
+|+f.warp+			|	|	|	|+Y+	|	|	|	|	
+|+f.window_list+		|	|	|	|	|	|+Y+	|	|	
+|+f.winrefresh+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.workspace_presence+		|	|	|	|	|	|	|+Y+	|	
+|+f.zoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.zoomzoom+			|	|	|	|+Y+	|	|	|	|	
+|===
+
+.Notes
+
+[L]::
+    Note that [L] identifies the LessTif version of MWM.  The LessTif version of MWM
+    has a few capabilities for desktops that are not supported by the original Motif
+    version of MWM.
+<=::
+    The arrow in the notes column indicates that the function for the row is
+    essentially supported by all versions.
+[1]::
+    All versions support circle up and down (window stack cycling) but the Motif
+    versions have an underscore in the name.
+[2]::
+    The Motif *+f.restore+* function is equivalent to the TWM *+f.deiconify+*
+    function.
+[3]::
+    The Motif *+f.kill+* function is equivalent to the TWM *+f.delete+*,
+    *+f.destroy+* or *+f.deleteordestroy+* functions.
+[4]::
+    The Motif *+f.focus_key+* function is roughly equivalent to the TWM *+f.focus+*
+    function except that Motif must be under an explicity focus model and the TWM
+    function is a toggle.
+
+=== Menu Functions by Functional Group ===
+
+.Functions that act on the icon manager
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.hideiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.showiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.sorticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.warptoiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.stricticonmgr+		|	|	|	|+Y+	|	|	|	|	
+|+f.backiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.backmapiconmgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.forwiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.forwmapiconmgr+		|	|	|+Y+	|	|	|	|	|	
+|+f.nexticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.previconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.upiconmgr+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.downiconmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.lefticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.righticonmgr+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|===
+
+.Functions that act on the workspace or workspace manager
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.hideworkspacemgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.showworkspacemgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.create_workspace+		|	|	|-	|	|	|	|+Y+	|	
+|+f.delete_workspace+		|	|	|	|	|	|	|+Y+	|	
+
+|+f.next_workspace+		|	|	|	|	|	|	|+Y+	|	
+|+f.nextworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.prev_workspace+		|	|	|	|	|	|	|+Y+	|	
+|+f.prevworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+
+|+f.upworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.downworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.leftworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.rightworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+
+|+f.goto_page+			|	|[6]	|[6]	|	|	|+Y+	|[&]	|	
+|+f.goto_workspace+		|	|	|	|	|	|	|+Y+	|	
+|+f.gotoworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+
+|+f.workspace_presence+		|	|	|	|	|	|	|+Y+	|	
+|+f.addtoworkspace+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetonextworkspaceandfollow+ |	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetonextworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetoprevworkspaceandfollow+ |	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetoprevworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.removefromworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.toggle_page+		|	|	|	|	|	|+Y+	|	|	
+|+f.desk+			|	|	|	|	|	|+Y+	|	|	
+
+|+f.deletedoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.enterdoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.namedoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.newdoor+			|	|	|	|+Y+	|	|	|	|	
+|+f.hidedesktopdisplay+		|	|	|	|+Y+	|	|	|	|	
+|+f.resetdesktop+		|	|	|	|+Y+	|	|	|	|	
+
+|+f.setbuttonstate+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.setmapstate+		|	|+Y+	|+Y+	|	|	|	|	|	
+
+|+f.showbackground+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.showdesktopdisplay+		|	|	|	|+Y+	|	|	|	|	
+|===
+
+.Functions used direclty for menus:
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.nop+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.separator+			|	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.menu+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.post_wmenu+			|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=	
+|+f.exec+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.pin+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.title+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|===
+
+.Functions for window cycling
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.circle_down+		|[1]	|[1]	|[1]	|[1]	|+Y+	|+Y+	|+Y+	|<=[1]	
+|+f.circledown+			|+Y+	|+Y+	|+Y+	|+Y+	|[1]	|[1]	|[1]	|<=[1]	
+|+f.circle_up+			|[1]	|[1]	|[1]	|[1]	|+Y+	|+Y+	|+Y+	|<=[1]	
+|+f.circleup+			|+Y+	|+Y+	|+Y+	|+Y+	|[1]	|[1]	|[1]	|<=[1]	
+|+f.warpclassnext+		|	|	|	|+Y+	|	|	|	|	
+|+f.warpclassprev+		|	|	|	|+Y+	|	|	|	|	
+|+f.warphere+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.warpring+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|===
+
+.Functions that act on the current window:
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.bottomzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.changepriority+		|	|+Y+	|	|	|	|	|	|	
+|+f.changesize+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.deiconify+			|+Y+	|+Y+	|+Y+	|+Y+	|[2]	|[2]	|[2]	|<=[2]	
+|+f.deleteordestroy+		|	|+Y+	|+Y+	|	|[3]	|[3]	|[3]	|<=[3]	
+|+f.delete+			|+Y+	|+Y+	|+Y+	|+Y+	|[3]	|[3]	|[3]	|<=[3]	
+|+f.destroy+			|+Y+	|+Y+	|+Y+	|+Y+	|[3]	|[3]	|[3]	|<=[3]	
+|+f.fill+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.fittocontent+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.focus+			|+Y+	|+Y+	|+Y+	|+Y+	|[4]	|[4]	|[4]	|<=[4]	
+|+f.forcemove+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.hbzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.horizoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.htzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.hypermove+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.hzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.iconify+			|+Y+	|+Y+	|+Y+	|+Y+	|[5]	|[5]	|[5]	|<=[5]	
+|+f.identify+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.initsize+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpdown+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpleft+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpright+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.jumpup+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.kill+			|[3]	|[3]	|[3]	|[3]	|+Y+	|+Y+	|+Y+	|<=[3]	
+|+f.leftzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.lower+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|	
+|+f.maximize+			|-	|-	|-	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.minimize+			|[5]	|[5]	|[5]	|[5]	|+Y+	|+Y+	|+Y+	|<=[5]	
+|+f.movepack+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movepush+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.moveresize+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movescreen+			|	|	|	|+Y+	|	|	|	|	
+|+f.movetitlebar+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetonextworkspaceandfollow+ |	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetonextworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetoprevworkspaceandfollow+ |	|+Y+	|+Y+	|	|	|	|	|	
+|+f.movetoprevworkspace+	|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.move+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.nailedabove+		|	|	|	|+Y+	|	|	|	|	
+|+f.nail+			|	|	|	|+Y+	|	|	|	|	
+|+f.normalize_and_raise+	|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.normalize+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.occupy_all+			|	|	|	|	|	|	|+Y+	|	
+|+f.occupyall+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.occupy+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.pack+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.priority+			|+Y+	|	|	|	|	|	|	|	
+|+f.raise_lower+		|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=	
+|+f.raiselower+			|+Y+	|+Y+	|+Y+	|+Y+	|-	|-	|-	|<=	
+|+f.raiseorsqueeze+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.raise+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.refresh_win+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.remove+			|	|	|	|	|	|	|+Y+	|	
+|+f.resizeto+			|	|	|	|+Y+	|	|	|	|	
+|+f.resize+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.restore_and_raise+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.restoregeometry+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.restore+			|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=[2]	
+|+f.ring+			|	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.savegeometry+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.saveyourself+		|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.setpriority+		|	|+Y+	|	|	|	|	|	|	
+|+f.squeezecenter+		|	|	|	|+Y+	|	|	|	|	
+|+f.squeezeleft+		|	|	|	|+Y+	|	|	|	|	
+|+f.squeezeright+		|	|	|	|+Y+	|	|	|	|	
+|+f.squeeze+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.stick+			|	|	|	|+Y+	|	|	|	|	
+|+f.stickyabove+		|	|	|	|+Y+	|	|	|	|	
+|+f.tinylower+			|	|+Y+	|	|	|	|	|	|	
+|+f.tinyraise+			|	|+Y+	|	|	|	|	|	|	
+|+f.toggleoccupation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.topzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.unfocus+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.unsqueeze+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.vanish+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.vlzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.vrzoom+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.winrefresh+			|+Y+	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|===
+
+.Functions that set the modes of the window manager
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.autolower+			|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.autopan+			|	|	|	|+Y+	|	|	|	|	
+|+f.priorityswitching+		|	|+Y+	|	|	|	|	|	|	
+|+f.quit_mwm+			|-	|-	|-	|-	|+Y+	|+Y+	|+Y+	|<=	
+|+f.quit+			|+Y+	|+Y+	|+Y+	|+Y+	|-	|-	|-	|<=	
+|+f.rereadsounds+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.restart+			|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|+Y+	|<=	
+|+f.screen+			|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.set_behavior+		|	|	|	|	|+Y+	|+Y+	|+Y+	|	
+|+f.setrealscreen+		|	|	|	|+Y+	|	|	|	|	
+|+f.sloppyfocus+		|	|	|	|+Y+	|	|	|	|	
+|+f.slowdownanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.speedupanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.startanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.startwm+			|+Y+	|	|	|+Y+	|	|	|	|	
+|+f.stopanimation+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.stricticonmgr+		|	|	|	|+Y+	|	|	|	|	
+|+f.togglesound+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.togglestate+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.toggleworkspacemgr+		|	|+Y+	|+Y+	|	|	|	|	|	
+|+f.twmrc+			|	|+Y+	|+Y+	|+Y+	|	|	|	|	
+|+f.version+			|	|	|	|+Y+	|+Y+	|+Y+	|+Y+	|	
+|+f.virtualgeometries+		|	|	|	|+Y+	|	|	|	|	
+|===
+
+.Functions that affect the screen
+[width="100%",options="header"]
+|===
+|Function			|TWM	|CTWM	|ETWM	|VTWM	|MWM	|MWM[L]	|DTWM	|Notes
+|+f.snaprealscreen+		|	|	|	|+Y+	|	|	|	|	
+|+f.snap+			|	|	|	|+Y+	|	|	|	|	
+|+f.snugdesktop+		|	|	|	|+Y+	|	|	|	|	
+|+f.snugwindow+			|	|	|	|+Y+	|	|	|	|	
+|===
+
+
+

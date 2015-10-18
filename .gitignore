@@ -31,6 +31,7 @@ m4/
 Makefile
 Makefile.in
 *.man
+MENUS.html
 NEWS
 .nfs*
 *.o

@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src man data
 
-EXTRA_DIST = INSTALL COPYING AUTHORS AUTHORS.in NEWS NEWS.in README README.in THANKS THANKS.in TODO TODO.in ChangeLog
+EXTRA_DIST = INSTALL COPYING AUTHORS AUTHORS.in NEWS NEWS.in README README.in THANKS THANKS.in TODO TODO.in ChangeLog MENUS.html MENUS.asciidoc
 
 ChangeLog:
 	( \
@@ -32,6 +32,9 @@ THANKS: THANKS.in
 
 TODO: TODO.in
 	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
+
+MENUS.html: MENUS.asciidoc
+	asciidoc -o - $< >$@
 
 dist_noinst_SCRIPTS = autogen.sh configure.sh rebuild.sh
 
