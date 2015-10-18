@@ -31,6 +31,9 @@ m4/
 Makefile
 Makefile.in
 *.man
+!dtwmrc.man
+!mwm.man
+!mwmrc.man
 MENUS.html
 NEWS
 .nfs*
