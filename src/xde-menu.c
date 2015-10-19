@@ -49,7 +49,7 @@
 int saveArgc;
 char **saveArgv;
 
-Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
+Atom _XA_XDE_ICON_THEME_NAME;		/* XXX */
 Atom _XA_XDE_THEME_NAME;
 Atom _XA_XDE_WM_CLASS;
 Atom _XA_XDE_WM_CMDLINE;
@@ -59,7 +59,7 @@ Atom _XA_XDE_WM_HOST;
 Atom _XA_XDE_WM_HOSTNAME;
 Atom _XA_XDE_WM_ICCCM_SUPPORT;
 Atom _XA_XDE_WM_ICON;
-Atom _XA_XDE_WM_ICONTHEME;	/* XXX */
+Atom _XA_XDE_WM_ICONTHEME;		/* XXX */
 Atom _XA_XDE_WM_INFO;
 Atom _XA_XDE_WM_MENU;
 Atom _XA_XDE_WM_NAME;
@@ -78,6 +78,10 @@ Atom _XA_XDE_WM_VERSION;
 
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
+
+Atom _XA_XDE_MENU_REFRESH;
+Atom _XA_XDE_MENU_RESTART;
+Atom _XA_XDE_MENU_POPMENU;
 
 Options current = {
 	.debug = 0,
@@ -172,7 +176,7 @@ display_invalid(FILE *file, int level)
 }
 
 char *
-xde_get_icons(MenuContext *ctx, const char *inames[])
+xde_get_icons(MenuContext * ctx, const char *inames[])
 {
 	GtkIconTheme *theme;
 	GtkIconInfo *info;
@@ -195,7 +199,7 @@ xde_get_icons(MenuContext *ctx, const char *inames[])
 }
 
 char *
-xde_get_icon(MenuContext *ctx, const char *iname)
+xde_get_icon(MenuContext * ctx, const char *iname)
 {
 	GtkIconTheme *theme;
 	GtkIconInfo *info;
@@ -213,7 +217,7 @@ xde_get_icon(MenuContext *ctx, const char *iname)
 }
 
 char *
-xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2)
+xde_get_icon2(MenuContext * ctx, const char *iname1, const char *iname2)
 {
 	GtkIconTheme *theme;
 	GtkIconInfo *info;
@@ -245,7 +249,7 @@ xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2)
 }
 
 gboolean
-xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
+xde_test_icon_ext(MenuContext * ctx, const char *path, int flags)
 {
 	char *p;
 
@@ -276,7 +280,7 @@ xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
  * any leading path elements and look for the icon by name.  The flags above are used.
  */
 char *
-xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
+xde_get_entry_icon(MenuContext * ctx, GKeyFile *entry, const char *dflt1,
 		   const char *dflt2, int flags)
 {
 	GtkIconTheme *theme;
@@ -308,12 +312,12 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 		DPRINTF("Choice %d for icon name: %s\n", i, base);
 	} else {
 		if ((wmcl = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-						G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS, NULL))) {
+						  G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS, NULL))) {
 			inames[i++] = wmcl;
 			DPRINTF("Choice %d for icon name: %s\n", i, wmcl);
 		}
 		if ((tryx = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-						G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
+						  G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
 			char *base, *p;
 
 			base = tryx;
@@ -325,7 +329,7 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 			inames[i++] = base;
 			DPRINTF("Choice %d for icon name: %s\n", i, base);
 		} else if ((exec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-						G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
+							 G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
 			char *base, *p;
 
 			base = exec;
@@ -366,8 +370,8 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 }
 
 char *
-xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, const char *dflt1,
-		   const char *dflt2, int flags)
+xde_get_app_icon(MenuContext * ctx, GDesktopAppInfo * app, const char *dflt1,
+		 const char *dflt2, int flags)
 {
 	GtkIconTheme *theme;
 	GtkIconInfo *info;
@@ -396,7 +400,8 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, const char *dflt1,
 		inames[i++] = base;
 		DPRINTF("Choice %d for icon name: %s\n", i, base);
 	} else {
-		if ((wmcl = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS))) {
+		if ((wmcl =
+		     g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS))) {
 			inames[i++] = wmcl;
 			DPRINTF("Choice %d for icon name: %s\n", i, wmcl);
 		}
@@ -541,9 +546,9 @@ xde_bad_xsession(const char *appid, GKeyFile *entry)
 		return TRUE;
 	}
 #if 0
-	/* NoDisplay is often used to hide XSession desktop entries from the
-	   application menu and does not indicate that it should not be
-	   displayed as an XSession entry. */
+	/* NoDisplay is often used to hide XSession desktop entries from the application
+	   menu and does not indicate that it should not be displayed as an XSession
+	   entry. */
 
 	if (g_key_file_get_boolean(entry, G_KEY_FILE_DESKTOP_GROUP,
 				   G_KEY_FILE_DESKTOP_KEY_NO_DISPLAY, NULL)) {
@@ -558,8 +563,8 @@ xde_bad_xsession(const char *appid, GKeyFile *entry)
 	} else {
 		char *p;
 
-		/* parse the first word of the exec statement and see whether
-		   it is executable or can be found in PATH */
+		/* parse the first word of the exec statement and see whether it is
+		   executable or can be found in PATH */
 		binary = g_strdup(exec);
 		if ((p = strpbrk(binary, " \t")))
 			*p = '\0';
@@ -701,7 +706,7 @@ xde_get_xsessions(void)
 	const char *file;
 
 	g_hash_table_iter_init(&xiter, xsessions);
-	while (g_hash_table_iter_next(&xiter, (gpointer *)&key, (gpointer *)&file)) {
+	while (g_hash_table_iter_next(&xiter, (gpointer *) &key, (gpointer *) &file)) {
 		GKeyFile *entry;
 		XdeXsession *xsession;
 
@@ -714,7 +719,7 @@ xde_get_xsessions(void)
 		xsession = calloc(1, sizeof(*xsession));
 		xsession->key = g_strdup(key);
 		xsession->name = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-				G_KEY_FILE_DESKTOP_KEY_NAME, NULL);
+						       G_KEY_FILE_DESKTOP_KEY_NAME, NULL);
 		xsession->entry = g_key_file_ref(entry);
 		result = g_list_prepend(result, xsession);
 	}
@@ -740,7 +745,7 @@ xde_free_xsessions(GList *list)
 }
 
 int
-xde_reset_indent(MenuContext *ctx, int level)
+xde_reset_indent(MenuContext * ctx, int level)
 {
 	int old = ctx->level, i, chars;
 
@@ -754,7 +759,7 @@ xde_reset_indent(MenuContext *ctx, int level)
 }
 
 char *
-xde_increase_indent(MenuContext *ctx)
+xde_increase_indent(MenuContext * ctx)
 {
 	int i, chars;
 
@@ -768,14 +773,14 @@ xde_increase_indent(MenuContext *ctx)
 }
 
 char *
-xde_decrease_indent(MenuContext *ctx)
+xde_decrease_indent(MenuContext * ctx)
 {
 	int chars;
 
 	ctx->level--;
 	if (ctx->level < 0)
 		ctx->level = 0;
-	chars = ctx->level <<1;
+	chars = ctx->level << 1;
 	ctx->indent = realloc(ctx->indent, chars + 1);
 	ctx->indent[chars] = '\0';
 	return ctx->indent;
@@ -805,7 +810,6 @@ xde_string_compare(gconstpointer a, gconstpointer b)
 {
 	return strcasecmp(a, b);
 }
-
 
 #ifdef HAVE_GNOME_MENUS_3
 
@@ -894,7 +898,7 @@ display_alias(FILE *file, GMenuTreeAlias *alias, int level)
 }
 
 static void
-display_directory(FILE* file, GMenuTreeDirectory *directory, int level)
+display_directory(FILE *file, GMenuTreeDirectory *directory, int level)
 {
 	GMenuTreeIter *iter;
 	GMenuTreeItemType type;
@@ -952,7 +956,7 @@ print_line(gpointer string, gpointer file)
 }
 
 GList *
-xde_create_simple(MenuContext *ctx, Style style, const char *name)
+xde_create_simple(MenuContext * ctx, Style style, const char *name)
 {
 	GMenuTreeDirectory *directory;
 	GList *result = NULL;
@@ -985,7 +989,7 @@ xde_create_simple(MenuContext *ctx, Style style, const char *name)
 }
 
 GList *
-xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
+xde_build_simple(MenuContext * ctx, GMenuTreeItemType type, gpointer item)
 {
 	GList *text = NULL;
 
@@ -1017,7 +1021,7 @@ xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 }
 
 GList *
-xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
+xde_menu_simple(MenuContext * ctx, GMenuTreeDirectory *menu)
 {
 	GMenuTreeItemType type;
 	GMenuTreeIter *iter;
@@ -1026,25 +1030,37 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 	iter = gmenu_tree_directory_iter(menu);
 
 	xde_increase_indent(ctx);
-	while((type = gmenu_tree_iter_next(iter)) != GMENU_TREE_ITEM_INVALID) {
+	while ((type = gmenu_tree_iter_next(iter)) != GMENU_TREE_ITEM_INVALID) {
 		switch (type) {
 		case GMENU_TREE_ITEM_INVALID:
 		default:
 			break;
 		case GMENU_TREE_ITEM_DIRECTORY:
-			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_directory(iter)));
+			text =
+			    g_list_concat(text,
+					  ctx->build(ctx, type,
+						     gmenu_tree_iter_get_directory(iter)));
 			continue;
 		case GMENU_TREE_ITEM_ENTRY:
-			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_entry(iter)));
+			text =
+			    g_list_concat(text,
+					  ctx->build(ctx, type, gmenu_tree_iter_get_entry(iter)));
 			continue;
 		case GMENU_TREE_ITEM_SEPARATOR:
-			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_separator(iter)));
+			text =
+			    g_list_concat(text,
+					  ctx->build(ctx, type,
+						     gmenu_tree_iter_get_separator(iter)));
 			continue;
 		case GMENU_TREE_ITEM_HEADER:
-			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_header(iter)));
+			text =
+			    g_list_concat(text,
+					  ctx->build(ctx, type, gmenu_tree_iter_get_header(iter)));
 			continue;
 		case GMENU_TREE_ITEM_ALIAS:
-			text = g_list_concat(text, ctx->build(ctx, type, gmenu_tree_iter_get_alias(iter)));
+			text =
+			    g_list_concat(text,
+					  ctx->build(ctx, type, gmenu_tree_iter_get_alias(iter)));
 			continue;
 		}
 		break;
@@ -1054,7 +1070,7 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 }
 
 GList *
-xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
+xde_alias_simple(MenuContext * ctx, GMenuTreeAlias *als)
 {
 	GMenuTreeItemType type;
 	GList *text = NULL;
@@ -1081,20 +1097,16 @@ xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
 static void
 make_menu(int argc, char *argv[])
 {
-	GList *menu;
-	MenuContext *ctx;
-
 	if (options.desktop)
 		setenv("XDG_CURRENT_DESKTOP", options.desktop, TRUE);
 
 	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, 0
-//					     | GMENU_TREE_FLAGS_INCLUDE_EXCLUDED
-//					     | GMENU_TREE_FLAGS_INCLUDE_NODISPLAY
-//					     | GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
-//					     | GMENU_TREE_FLAGS_SHOW_EMPTY
-//					     | GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS
-					     | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
-					     ))) {
+//                                           | GMENU_TREE_FLAGS_INCLUDE_EXCLUDED
+//                                           | GMENU_TREE_FLAGS_INCLUDE_NODISPLAY
+//                                           | GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
+//                                           | GMENU_TREE_FLAGS_SHOW_EMPTY
+//                                           | GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS
+					     | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME))) {
 		EPRINTF("could not look up menu %s\n", options.rootmenu);
 		exit(EXIT_FAILURE);
 	}
@@ -1106,25 +1118,31 @@ make_menu(int argc, char *argv[])
 	{
 		GMenuTreeDirectory *directory;
 
+		(void) print_line;
 		fprintf(stdout, "Path=%s\n", gmenu_tree_get_canonical_menu_path(tree));
 		if ((directory = gmenu_tree_get_root_directory(tree))) {
 			display_directory(stdout, directory, 0);
 		}
 	}
 #else
-	(void) display_directory;
-#endif
-	if (!(ctx = screens[0].context)) {
-		EPRINTF("no menu context for screen 0\n");
-		exit(EXIT_FAILURE);
+	{
+		GList *menu;
+		MenuContext *ctx;
+
+		(void) display_directory;
+		if (!(ctx = screens[0].context)) {
+			EPRINTF("no menu context for screen 0\n");
+			exit(EXIT_FAILURE);
+		}
+		ctx->tree = tree;
+		ctx->level = 0;
+		ctx->indent = calloc(64, sizeof(*ctx->indent));
+		DPRINTF("calling create!\n");
+		menu = ctx->create(ctx, options.style, NULL);
+		DPRINTF("done create!\n");
+		g_list_foreach(menu, print_line, stdout);
 	}
-	ctx->tree = tree;
-	ctx->level = 0;
-	ctx->indent = calloc(64, sizeof(*ctx->indent));
-	DPRINTF("calling create!\n");
-	menu = ctx->create(ctx, options.style, NULL);
-	DPRINTF("done create!\n");
-	g_list_foreach(menu, print_line, stdout);
+#endif
 }
 
 #else				/* HAVE_GNOME_MENUS_3 */
@@ -1147,7 +1165,8 @@ display_entry(FILE *file, GMenuTreeEntry *entry, int level)
 	display_level(file, level + 1);
 	fprintf(file, "Exec=%s\n", gmenu_tree_entry_get_exec(entry));
 	display_level(file, level + 1);
-	fprintf(file, "Terminal=%s\n", gmenu_tree_entry_get_launch_in_terminal(entry) ? "true" : "false");
+	fprintf(file, "Terminal=%s\n",
+		gmenu_tree_entry_get_launch_in_terminal(entry) ? "true" : "false");
 	display_level(file, level + 1);
 	fprintf(file, "Path=%s\n", gmenu_tree_entry_get_desktop_file_path(entry));
 	display_level(file, level + 1);
@@ -1155,7 +1174,8 @@ display_entry(FILE *file, GMenuTreeEntry *entry, int level)
 	display_level(file, level + 1);
 	fprintf(file, "Excluded=%s\n", gmenu_tree_entry_get_is_excluded(entry) ? "true" : "false");
 	display_level(file, level + 1);
-	fprintf(file, "NoDisplay=%s\n", gmenu_tree_entry_get_is_nodisplay(entry) ? "true" : "false");
+	fprintf(file, "NoDisplay=%s\n",
+		gmenu_tree_entry_get_is_nodisplay(entry) ? "true" : "false");
 }
 
 static void
@@ -1216,6 +1236,7 @@ static void
 display_directory(FILE *file, GMenuTreeDirectory *directory, int level)
 {
 	GSList *contents;
+
 	struct display_context ctx = {
 		.level = level,
 		.file = file,
@@ -1234,7 +1255,8 @@ display_directory(FILE *file, GMenuTreeDirectory *directory, int level)
 	display_level(file, level + 1);
 	fprintf(file, "Id=%s\n", gmenu_tree_directory_get_menu_id(directory));
 	display_level(file, level + 1);
-	fprintf(file, "NoDisplay=%s\n", gmenu_tree_directory_get_is_nodisplay(directory) ? "true" : "false");
+	fprintf(file, "NoDisplay=%s\n",
+		gmenu_tree_directory_get_is_nodisplay(directory) ? "true" : "false");
 	contents = gmenu_tree_directory_get_contents(directory);
 	g_slist_foreach(contents, display_item, &ctx);
 }
@@ -1418,7 +1440,7 @@ static void update_theme(XdeScreen *xscr, Atom prop);
 static void update_icon_theme(XdeScreen *xscr, Atom prop);
 
 static void
-do_generate(int argc, char *argv[])
+setup_x11(Bool replace)
 {
 	GdkDisplay *disp;
 	Display *dpy;
@@ -1442,10 +1464,12 @@ do_generate(int argc, char *argv[])
 	selwin = XCreateSimpleWindow(dpy, GDK_WINDOW_XID(root), 0, 0, 1, 1, 0, 0, 0);
 
 	DPRINTF("checking for selection\n");
-	if ((owner = get_selection(False, selwin))) {
-		XDestroyWindow(dpy, selwin);
-		EPRINTF("%s: an instance 0x%08lx is running\n", argv[0], owner);
-		exit(EXIT_FAILURE);
+	if ((owner = get_selection(replace, selwin))) {
+		if (!replace) {
+			XDestroyWindow(dpy, selwin);
+			EPRINTF("%s: instance 0x%08lx is already running\n", NAME, owner);
+			exit(EXIT_FAILURE);
+		}
 	}
 	DPRINTF("selecting inputs on 0x%08lx\n", selwin);
 	XSelectInput(dpy, selwin,
@@ -1475,57 +1499,19 @@ do_generate(int argc, char *argv[])
 		update_theme(xscr, None);
 		update_icon_theme(xscr, None);
 	}
+}
+
+static void
+do_generate(int argc, char *argv[])
+{
+	if (options.display)
+		setup_x11(False);
+
 	make_menu(argc, argv);
 }
 
 static void
-setup_x11(Bool replace)
-{
-	GdkDisplay *disp = gdk_display_get_default();
-	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
-	GdkScreen *scrn = gdk_display_get_default_screen(disp);
-	GdkWindow *root = gdk_screen_get_root_window(scrn), *sel;
-	char selection[64] = { 0, };
-	Window selwin, owner;
-	XdeScreen *xscr;
-	int s, nscr;
-
-	selwin = XCreateSimpleWindow(dpy, GDK_WINDOW_XID(root), 0, 0, 1, 1, 0, 0, 0);
-
-	if ((owner = get_selection(replace, selwin))) {
-		if (!replace) {
-			XDestroyWindow(dpy, selwin);
-			EPRINTF("%s: instance already running\n", NAME);
-			exit(EXIT_FAILURE);
-		}
-	}
-	XSelectInput(dpy, selwin,
-		     StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask);
-
-	nscr = gdk_display_get_n_screens(disp);
-	screens = calloc(nscr, sizeof(*screens));
-
-	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
-	gdk_window_add_filter(sel, selwin_handler, screens);
-
-	DPRINTF("initializing %d screens\n", nscr);
-	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		xscr->index = s;
-		xscr->atom = XInternAtom(dpy, selection, False);
-		xscr->disp = disp;
-		xscr->scrn = gdk_display_get_screen(disp, s);
-		xscr->root = gdk_screen_get_root_window(xscr->scrn);
-		xscr->selwin = selwin;
-		gdk_window_add_filter(xscr->root, root_handler, xscr);
-		init_wnck(xscr);
-		update_theme(xscr, None);
-		update_icon_theme(xscr, None);
-	}
-}
-
-static void
-do_run(int argc, char *argv[], Bool replace)
+do_monitor(int argc, char *argv[], Bool replace)
 {
 	if (options.display)
 		setup_x11(replace);
@@ -1536,6 +1522,156 @@ do_run(int argc, char *argv[], Bool replace)
 		gtk_main();
 	else
 		g_main_loop_run(loop);
+}
+
+static void
+do_refresh(int argc, char *argv[])
+{
+	char selection[64] = { 0, };
+	GdkDisplay *disp;
+	Display *dpy;
+	int s, nscr;
+	Atom atom;
+	Window owner, gotone = None;
+
+	if (!options.display) {
+		EPRINTF("%s: need display to refresh instance\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XEvent ev;
+
+			ev.xclient.type = ClientMessage;
+			ev.xclient.serial = 0;
+			ev.xclient.send_event = False;
+			ev.xclient.display = dpy;
+			ev.xclient.window = RootWindow(dpy, s);
+			ev.xclient.message_type = _XA_XDE_MENU_REFRESH;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = CurrentTime;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = owner;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+
+			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+			XFlush(dpy);
+
+			gotone = owner;
+		}
+	}
+	if (!gotone) {
+		EPRINTF("%s: need running instance to refresh\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void
+do_restart(int argc, char *argv[])
+{
+	char selection[64] = { 0, };
+	GdkDisplay *disp;
+	Display *dpy;
+	int s, nscr;
+	Atom atom;
+	Window owner, gotone = None;
+
+	if (!options.display) {
+		EPRINTF("%s: need display to restart instance\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XEvent ev;
+
+			ev.xclient.type = ClientMessage;
+			ev.xclient.serial = 0;
+			ev.xclient.send_event = False;
+			ev.xclient.display = dpy;
+			ev.xclient.window = RootWindow(dpy, s);
+			ev.xclient.message_type = _XA_XDE_MENU_RESTART;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = CurrentTime;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = owner;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+
+			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+			XFlush(dpy);
+
+			gotone = owner;
+		}
+	}
+	if (!gotone) {
+		EPRINTF("%s: need running instance to restart\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void
+do_popmenu(int argc, char *argv[])
+{
+	char selection[64] = { 0, };
+	GdkDisplay *disp;
+	Display *dpy;
+	int s, nscr;
+	Atom atom;
+	Window owner, gotone = None;
+
+	if (!options.display) {
+		EPRINTF("%s: need display to pop menu instance\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XEvent ev;
+
+			ev.xclient.type = ClientMessage;
+			ev.xclient.serial = 0;
+			ev.xclient.send_event = False;
+			ev.xclient.display = dpy;
+			ev.xclient.window = RootWindow(dpy, s);
+			ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = CurrentTime;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = owner;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+
+			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+			XFlush(dpy);
+
+			gotone = owner;
+		}
+	}
+	if (!gotone) {
+		EPRINTF("%s: need running instance to pop menu\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void
@@ -2364,6 +2500,15 @@ startup(int argc, char *argv[])
 
 	atom = gdk_atom_intern_static_string("MANAGER");
 	_XA_MANAGER = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_MENU_REFRESH");
+	_XA_XDE_MENU_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_MENU_RESTART");
+	_XA_XDE_MENU_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_MENU_POPMENU");
+	_XA_XDE_MENU_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
@@ -3412,32 +3557,29 @@ main(int argc, char *argv[])
 	switch (command) {
 	default:
 	case CommandDefault:
-		DPRINTF("%s: running without monitoring\n", argv[0]);
-		do_generate(argc, argv);
-		break;
 	case CommandGenerate:
 		DPRINTF("%s: just generating window manager root menu\n", argv[0]);
-		/* FIXME */
-		break;
-	case CommandPopMenu:
-		DPRINTF("%s: asking existing instance to pop menu\n", argv[0]);
-		/* FIXME */
+		do_generate(argc, argv);
 		break;
 	case CommandMonitor:
 		DPRINTF("%s: running a new instance\n", argv[0]);
-		do_run(argc, argv, False);
+		do_monitor(argc, argv, False);
 		break;
 	case CommandReplace:
 		DPRINTF("%s: replacing existing instance\n", argv[0]);
-		do_run(argc, argv, True);
+		do_monitor(argc, argv, True);
 		break;
 	case CommandRefresh:
 		DPRINTF("%s: asking existing instance to refresh\n", argv[0]);
-		/* FIXME */
+		do_refresh(argc, argv);
 		break;
 	case CommandRestart:
 		DPRINTF("%s: asking existing instance to restart\n", argv[0]);
-		/* FIXME */
+		do_restart(argc, argv);
+		break;
+	case CommandPopMenu:
+		DPRINTF("%s: asking existing instance to pop menu\n", argv[0]);
+		do_popmenu(argc, argv);
 		break;
 	case CommandQuit:
 		if (!options.display) {

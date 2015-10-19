@@ -184,6 +184,10 @@ extern Atom _XA_XDE_WM_VERSION;
 extern Atom _XA_GTK_READ_RCFILES;
 extern Atom _XA_MANAGER;
 
+extern Atom _XA_XDE_MENU_REFRESH;
+extern Atom _XA_XDE_MENU_RESTART;
+extern Atom _XA_XDE_MENU_POPMENU;
+
 typedef enum {
 	CommandDefault,	    /* just generate WM root menu */
 	CommandGenerate,    /* just generate WM root menu */
@@ -242,9 +246,6 @@ typedef struct {
 	char *keypress;
 } Options;
 
-extern Options options;
-extern Options defaults;
-
 typedef struct MenuContext MenuContext;
 
 struct MenuContext {
@@ -288,6 +289,9 @@ typedef struct {
 	Bool goodwm;
 	MenuContext *context;
 } XdeScreen;
+
+extern Options options;
+extern Options defaults;
 
 extern XdeScreen *screens;
 
