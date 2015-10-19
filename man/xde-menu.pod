@@ -8,7 +8,7 @@ xde-menu - XDG compliant menus for XDE
 
  xde-menu [ COMMAND ] [ OPTIONS ]
  xde-menugen [ OPTIONS ]
- xde-menu-popup [ OPTIONS ]
+ xde-menu-popmenu [ OPTIONS ]
  xde-menu-monitor [ OPTIONS ]
  xde-menu-replace [ OPTIONS ]
  xde-menu-refresh [ OPTIONS ]
@@ -66,7 +66,7 @@ sequence of a particular window manager or panel.  The B<--wmname>,
 B<--format>, B<--output> and B<--die-on-error> options are normally
 specified in this case.
 
-=item B<--popup>, B<-P>
+=item B<--popmenu>, B<-P>
 
 Specifies that B<xde-menu> is to request a running instance to pop-up a
 menu.  The menu to pop up, the location and invocation of the pop-up is
@@ -78,10 +78,10 @@ of the monitor in which the pointer currently resides (which is used by
 most tiling window managers as the "current" monitor).
 This option does not cause an error when no current instance of
 B<xde-menu> is running.
-This is the default when B<xde-menu> is invoked as B<xde-menu-popup>.
+This is the default when B<xde-menu> is invoked as B<xde-menu-popmenu>.
 
 For pop-up menu operation, an background instance of B<xde-menu> can be
-asked to pop up an applications or other menu using the B<--popup>
+asked to pop up an applications or other menu using the B<--popmenu>
 command option.  The major use of this operation is to pop a menu from
 another program (such as a panel), or to pop a menu as a result of a
 button click or button press using window manager bindings.
@@ -205,7 +205,7 @@ or when the B<--generate> option is specified.
 Do not generate window manager root menus.  This option is invalid when
 no command option is specified, or when the program is invoked as
 B<xde-menugen>.  When combined with the B<--notray> option, the program
-will background itself and service B<--popup> requests only.
+will background itself and service B<--popmenu> requests only.
 
 =item B<--verbose>, B<-v> [I<LEVEL>]
 
@@ -466,9 +466,9 @@ filename is determined verbatim.
 
 =head3 POP-UP MENU OPTIONS
 
-The following options are only valid when the B<--popup> command option
-has been specified or implied.  These options only affect the pop-up
-menu.
+The following options are only valid when the B<--popmenu> command
+option has been specified or implied.  These options only affect the
+pop-up menu.
 
 =over
 

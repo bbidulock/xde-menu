@@ -97,6 +97,7 @@ Options defaults = {
 	.debug = 1,
 	.output = 1,
 	.command = CommandDefault,
+	.wmname = NULL,
 	.format = NULL,
 	.style = StyleFullmenu,
 	.desktop = "XDE",
@@ -3094,7 +3095,7 @@ int
 main(int argc, char *argv[])
 {
 	Command command = CommandDefault;
-	char *loc;
+	char *loc, *p;
 
 	if ((loc = setlocale(LC_ALL, ""))) {
 		free(options.locale);
@@ -3105,6 +3106,21 @@ main(int argc, char *argv[])
 	saveArgc = argc;
 	saveArgv = argv;
 
+	if ((p = strstr(argv[0], "-menugen")) && !p[8])
+		defaults.command = options.command = CommandGenerate;
+	else if ((p = strstr(argv[0], "-popmenu")) && !p[6])
+		defaults.command = options.command = CommandPopMenu;
+	else if ((p = strstr(argv[0], "-monitor")) && !p[8])
+		defaults.command = options.command = CommandMonitor;
+	else if ((p = strstr(argv[0], "-replace")) && !p[8])
+		defaults.command = options.command = CommandReplace;
+	else if ((p = strstr(argv[0], "-refresh")) && !p[8])
+		defaults.command = options.command = CommandRefresh;
+	else if ((p = strstr(argv[0], "-restart")) && !p[8])
+		defaults.command = options.command = CommandRestart;
+	else if ((p = strstr(argv[0], "-quit")) && !p[5])
+		defaults.command = options.command = CommandQuit;
+
 	while (1) {
 		int c, val;
 
@@ -3112,6 +3128,7 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
+			{"wmname",	required_argument,	NULL,	'w'},
 			{"format",	required_argument,	NULL,	'f'},
 			{"fullmenu",	no_argument,		NULL,	'F'},
 			{"nofullmenu",	no_argument,		NULL,	'N'},
@@ -3119,25 +3136,35 @@ main(int argc, char *argv[])
 			{"charset",	required_argument,	NULL,	'c'},
 			{"language",	required_argument,	NULL,	'l'},
 			{"root-menu",	required_argument,	NULL,	'r'},
-			{"die-on-error",no_argument,		NULL,	'e'},
 			{"output",	optional_argument,	NULL,	'o'},
 			{"noicons",	no_argument,		NULL,	'n'},
 			{"theme",	required_argument,	NULL,	't'},
-			{"monitor",	no_argument,		NULL,	'm'},
 			{"launch",	no_argument,		NULL,	'L'},
 			{"nolaunch",	no_argument,		NULL,	'0'},
 			{"style",	required_argument,	NULL,	's'},
 			{"menu",	required_argument,	NULL,	'M'},
-			{"display",	required_argument,	NULL,	 1 },
-			{"popmenu",	no_argument,		NULL,	'p'},
+
 			{"button",	required_argument,	NULL,	'b'},
 			{"keyboard",	optional_argument,	NULL,	'k'},
+			{"timestamp",	required_argument,	NULL,	'T'},
+			{"where",	required_argument,	NULL,	'W'},
 
-			{"quit",	no_argument,		NULL,	'q'},
-			{"replace",	no_argument,		NULL,	'R'},
-
-			{"debug",	optional_argument,	NULL,	'D'},
+			{"display",	required_argument,	NULL,	 1 },
+			{"screen",	required_argument,	NULL,	's'},
+			{"die-on-error",no_argument,		NULL,	'e'},
+			{"notray",	no_argument,		NULL,	 2 },
+			{"nogenerate",	no_argument,		NULL,	 3 },
 			{"verbose",	optional_argument,	NULL,	'v'},
+			{"debug",	optional_argument,	NULL,	'D'},
+
+			{"generate",	no_argument,		NULL,	'G'},
+			{"popmenu",	no_argument,		NULL,	'P'},
+			{"monitor",	no_argument,		NULL,	'm'},
+			{"refresh",	no_argument,		NULL,	'F'},
+			{"restart",	no_argument,		NULL,	'S'},
+			{"replace",	no_argument,		NULL,	'R'},
+			{"quit",	no_argument,		NULL,	'q'},
+
 			{"help",	no_argument,		NULL,	'h'},
 			{"version",	no_argument,		NULL,	'V'},
 			{"copying",	no_argument,		NULL,	'C'},
@@ -3160,6 +3187,10 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
+		case 'w':	/* --wmname, -w WMNAME */
+			free(options.wmname);
+			defaults.wmname = options.wmname = strdup(optarg);
+			break;
 		case 'f':	/* --format, -f FORMAT */
 			free(options.format);
 			defaults.format = options.format = strdup(optarg);
@@ -3203,13 +3234,6 @@ main(int argc, char *argv[])
 			free(options.theme);
 			defaults.theme = options.theme = strdup(optarg);
 			break;
-		case 'm':	/* -m, --monitor */
-			if (options.command != CommandDefault)
-				goto bad_option;
-			if (command == CommandDefault)
-				command = CommandRun;
-			defaults.command = options.command = CommandRun;
-			break;
 		case 'L':	/* -L, --launch */
 			defaults.launch = options.launch = True;
 			break;
@@ -3234,16 +3258,60 @@ main(int argc, char *argv[])
 			free(options.menu);
 			defaults.menu = options.menu = strdup(optarg);
 			break;
-		case 1:	/* --display DISPLAY */
-			free(options.display);
-			defaults.display = options.display = strdup(optarg);
+
+		case 'G':	/* -G, --generate */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandGenerate;
+			defaults.command = options.command = CommandGenerate;
 			break;
-		case 'p':	/* -p, --popmenu */
+		case 'P':	/* -P, --popmenu */
 			if (options.command != CommandDefault)
 				goto bad_option;
 			if (command == CommandDefault)
 				command = CommandPopMenu;
 			defaults.command = options.command = CommandPopMenu;
+			break;
+		case 'm':	/* -m, --monitor */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandMonitor;
+			defaults.command = options.command = CommandMonitor;
+			break;
+		case 'R':	/* -R, --replace */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandReplace;
+			defaults.command = options.command = CommandReplace;
+			break;
+		case 'E':	/* -F, --refresh */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandRefresh;
+			defaults.command = options.command = CommandRefresh;
+			break;
+		case 'S':	/* -S, --restart */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandRefresh;
+			defaults.command = options.command = CommandRestart;
+			break;
+		case 'q':	/* -q, --quit */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault)
+				command = CommandQuit;
+			defaults.command = options.command = CommandQuit;
+			break;
+
+		case 1:	/* --display DISPLAY */
+			free(options.display);
+			defaults.display = options.display = strdup(optarg);
 			break;
 		case 'b':	/* -b, --button BUTTON */
 			if (options.command != CommandPopMenu)
@@ -3259,21 +3327,6 @@ main(int argc, char *argv[])
 				break;
 			free(options.keypress);
 			defaults.keypress = options.keypress = strdup(optarg);
-			break;
-
-		case 'q':	/* -q, --quit */
-			if (options.command != CommandDefault)
-				goto bad_option;
-			if (command == CommandDefault)
-				command = CommandQuit;
-			defaults.command = options.command = CommandQuit;
-			break;
-		case 'R':	/* -R, --replace */
-			if (options.command != CommandDefault)
-				goto bad_option;
-			if (command == CommandDefault)
-				command = CommandReplace;
-			defaults.command = options.command = CommandReplace;
 			break;
 
 		case 'D':	/* -D, --debug [LEVEL] */
@@ -3362,9 +3415,29 @@ main(int argc, char *argv[])
 		DPRINTF("%s: running without monitoring\n", argv[0]);
 		do_generate(argc, argv);
 		break;
-	case CommandRun:
+	case CommandGenerate:
+		DPRINTF("%s: just generating window manager root menu\n", argv[0]);
+		/* FIXME */
+		break;
+	case CommandPopMenu:
+		DPRINTF("%s: asking existing instance to pop menu\n", argv[0]);
+		/* FIXME */
+		break;
+	case CommandMonitor:
 		DPRINTF("%s: running a new instance\n", argv[0]);
 		do_run(argc, argv, False);
+		break;
+	case CommandReplace:
+		DPRINTF("%s: replacing existing instance\n", argv[0]);
+		do_run(argc, argv, True);
+		break;
+	case CommandRefresh:
+		DPRINTF("%s: asking existing instance to refresh\n", argv[0]);
+		/* FIXME */
+		break;
+	case CommandRestart:
+		DPRINTF("%s: asking existing instance to restart\n", argv[0]);
+		/* FIXME */
 		break;
 	case CommandQuit:
 		if (!options.display) {
@@ -3373,10 +3446,6 @@ main(int argc, char *argv[])
 		}
 		DPRINTF("%s: asking existing instance to quit\n", argv[0]);
 		do_quit(argc, argv);
-		break;
-	case CommandReplace:
-		DPRINTF("%s: replacing existing instance\n", argv[0]);
-		do_run(argc, argv, True);
 		break;
 	case CommandHelp:
 		DPRINTF("%s: printing help message\n", argv[0]);

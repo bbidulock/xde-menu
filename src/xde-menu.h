@@ -114,6 +114,8 @@
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-tree.h>
 
+#include <pwd.h>
+
 #ifdef _GNU_SOURCE
 #include <getopt.h>
 #endif
@@ -146,6 +148,8 @@
 #define EXIT_SUCCESS	0
 #define EXIT_FAILURE	1
 #define EXIT_SYNTAXERR	2
+
+#define XA_SELECTION_NAME	"_XDE_MENU_S%d"
 
 extern int saveArgc;
 extern char **saveArgv;
@@ -181,14 +185,17 @@ extern Atom _XA_GTK_READ_RCFILES;
 extern Atom _XA_MANAGER;
 
 typedef enum {
-	CommandDefault,
-	CommandRun,
-	CommandQuit,
-	CommandReplace,
-	CommandPopMenu,
-	CommandHelp,
-	CommandVersion,
-	CommandCopying,
+	CommandDefault,	    /* just generate WM root menu */
+	CommandGenerate,    /* just generate WM root menu */
+	CommandMonitor,	    /* run a new instance with monitoring */
+	CommandQuit,	    /* ask running instance to quit */
+	CommandPopMenu,	    /* ask running instance to pop menu */
+	CommandRefresh,	    /* ask running instance to refresh menu */
+	CommandRestart,	    /* ask running instance to restart */
+	CommandReplace,	    /* replace a running instance */
+	CommandHelp,	    /* print usage info and exit */
+	CommandVersion,	    /* print version info and exit */
+	CommandCopying,	    /* print copying info and exit */
 } Command;
 
 typedef enum {
@@ -208,6 +215,7 @@ typedef struct {
 	int debug;
 	int output;
 	Command command;
+	char *wmname;
 	char *format;
 	Style style;
 	char *desktop;
