@@ -1708,7 +1708,7 @@ do_popmenu(int argc, char *argv[])
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
 			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[3] = options.button;
 			ev.xclient.data.l[4] = 0;
 
 			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
@@ -1857,6 +1857,29 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 	}
 }
 
+static void
+menu_refresh(XEvent *xev)
+{
+	/* asked to refresh the menu (as though there was a change) */
+	DPRINTF("%s: refreshing the menus\n", NAME);
+}
+
+static void
+menu_restart(XEvent *xev)
+{
+	/* asked to restart the menu (as though we were re-executed) */
+	DPRINTF("%s: restarting the menus\n", NAME);
+}
+
+static void
+menu_popmenu(XEvent *xev)
+{
+	int button = xev->xclient.data.l[3];
+
+	/* asked to popup the GTK+ menu */
+	DPRINTF("%s: popping up the menu for button %d\n", NAME, button);
+}
+
 static GdkFilterReturn
 event_handler_PropertyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
 {
@@ -1927,6 +1950,15 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 	if (xscr && xev->xclient.message_type == _XA_GTK_READ_RCFILES) {
 		update_theme(xscr, xev->xclient.message_type);
 		update_icon_theme(xscr, xev->xclient.message_type);
+		return GDK_FILTER_REMOVE;
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_REFRESH) {
+		menu_refresh(xev);
+		return GDK_FILTER_REMOVE;
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_RESTART) {
+		menu_restart(xev);
+		return GDK_FILTER_REMOVE;
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_POPMENU) {
+		menu_popmenu(xev);
 		return GDK_FILTER_REMOVE;
 	}
 	return GDK_FILTER_CONTINUE;
@@ -3593,6 +3625,7 @@ main(int argc, char *argv[])
 		case 'k':	/* -k, --keypress [KEYSPEC] */
 			if (options.command != CommandPopMenu)
 				goto bad_option;
+			defaults.button = options.button = 0;
 			if (!optarg)
 				break;
 			free(options.keypress);
