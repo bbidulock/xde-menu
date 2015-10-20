@@ -51,14 +51,15 @@ system tray.
 
 =over
 
-=item B<--menugen>, B<-G>
+=item [B<--menugen>, B<-G>]
 
 Specifies that B<xde-menu> is to generate a window manager root-menu and
 then exit.  No new instance is created: only the root-menu is generated
 and then the program exits.
 This option does not cause an error when an instance of B<xde-menu> is
 running (or not).
-This is the default when B<xde-menu> is invoked as B<xde-menugen>.
+This is the default when B<xde-menu> is invoked as B<xde-menugen>, or
+when no command option is specified.
 
 B<xde-menu> is typically used with the B<--menugen> option to generate
 an initial window manager root menu as part of the initialization
@@ -116,7 +117,7 @@ status icon to the system tray can be avoided using the B<--notray>
 option.  The status icon can also be removed using the status icon
 pop-up configuration menu.
 
-=item [B<--replace>, B<-R>]
+=item B<--replace>, B<-R>
 
 Replace a currently running instance (that was invoked with the
 B<--monitor> option).
@@ -129,8 +130,7 @@ This option normally requires L<libinotify(3)>.
 This option (unlike B<--monitor>) does not cause an error when another
 instance of B<xde-menu> is already running, and simply replaces all
 other instances.
-This is the default when B<xde-menu> is invoked as B<xde-menu-replace>,
-or when no command option is specified.
+This is the default when B<xde-menu> is invoked as B<xde-menu-replace>.
 
 =item B<--refresh>, B<-E>
 
