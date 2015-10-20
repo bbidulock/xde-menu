@@ -93,10 +93,10 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	}
 	if (style != StyleAppmenu) {
 		result = ctx->rootmenu(ctx, entries);
-		ctx->output = g_list_concat(ctx->output, entries);
+		ctx->output = g_list_concat(ctx->output, result);
 	}
 
-	s = g_strdup_printf("%s\n", "changequote(`,)dnl");
+	s = g_strdup_printf("\n%s\n", "changequote(`,)dnl");
 	result = g_list_append(ctx->output, s);
 	ctx->output = NULL;
 	return (result);
@@ -110,7 +110,7 @@ xde_wmmenu(MenuContext *ctx)
 	int gotone = FALSE;
 	char *s;
 
-	s = g_strdup_printf("%s\n", "Menu \"managers\" twm_MenuColor");
+	s = g_strdup_printf("\n%s\n", "Menu \"managers\" twm_MenuColor");
 	text = g_list_append(text, s);
 	s = strdup("{\n");
 	text = g_list_append(text, s);
@@ -132,7 +132,7 @@ xde_wmmenu(MenuContext *ctx)
 		qname = g_strdup_printf("\"%s\"", esc1);
 
 		if (options.launch) {
-			exec = g_strdup_printf("xdg-launch -X %s", xsess->key);
+			exec = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
 		} else {
 			exec = g_key_file_get_string(xsess->entry,
 						     G_KEY_FILE_DESKTOP_GROUP,
@@ -175,7 +175,7 @@ xde_twmmenu(MenuContext *ctx)
 	GList *text = NULL;
 	char *s, *menu;
 
-	s = g_strdup_printf("%s\n", "Menu \"twmmenu\" twm_MenuColor");
+	s = g_strdup_printf("\n%s\n", "Menu \"twmmenu\" twm_MenuColor");
 	text = g_list_append(text, s);
 	s = g_strdup_printf("{\n");
 	text = g_list_append(text, s);
@@ -221,7 +221,7 @@ xde_twmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  \"f.exec \"exec xde-menugen -format %s -desktop %s -o %s\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.filename);
+	s = g_strdup_printf("    %-32s  f.exec \"exec xde-menugen -format %s -desktop %s -o %s\"\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.filename);
 	text = g_list_append(text, s);
 	s = g_strdup_printf("}\n");
 	text = g_list_append(text, s);
@@ -256,7 +256,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	if (!name)
 		name = gmenu_tree_directory_get_name(dir);
 	esc = xde_character_escape(name, '"');
-	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n", esc);
+	s = g_strdup_printf("\nMenu \"%s\" twm_MenuColor\n", esc);
 	text = g_list_append(text, s);
 	s = strdup("{\n");
 	text = g_list_append(text, s);
@@ -277,7 +277,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	GList *text = NULL;
 	char *s, *menu;
 
-	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n", "defops");
+	s = g_strdup_printf("\nMenu \"%s\" twm_MenuColor\n", "defops");
 	text = g_list_append(text, s);
 	s = strdup("{\n");
 	text = g_list_append(text, s);
@@ -368,7 +368,9 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	esc1 = xde_character_escape(name, '"');
 	qname = g_strdup_printf("\"%s\"", esc1);
 
-	s = g_strdup_printf("Menu \"%s\" twm_MenuColor\n{\n", esc1);
+	s = g_strdup_printf("\nMenu \"%s\" twm_MenuColor\n{\n", esc1);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("    %-32s  %s\n", qname, "f.title");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
 	s = g_strdup_printf("}\n");
@@ -391,15 +393,17 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	GDesktopAppInfo *info;
 	GList *text = NULL;
 	const char *name, *exec;
-	char *esc1, *esc2, *cmd;
+	char *esc1, *qname, *esc2, *cmd;
 	char *s;
 
 	info = gmenu_tree_entry_get_app_info(ent);
 	name = g_app_info_get_name(G_APP_INFO(info));
 	esc1 = xde_character_escape(name, '"');
+	qname = g_strdup_printf("\"%s\"", esc1);
 
 	if (options.launch) {
 		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+
 		if ((p = strstr(str, ".desktop")))
 			*p = '\0';
 		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
@@ -410,8 +414,12 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	}
 	esc2 = xde_character_escape(cmd, '"');
 
-	s = g_strdup_printf("    %-32s  f.exec \"exec %s &\"\n", esc1, esc2);
+	s = g_strdup_printf("    %-32s  f.exec \"exec %s &\"\n", qname, esc2);
 	text = g_list_append(text, s);
+
+	g_free(qname);
+	free(esc1);
+	free(esc2);
 
 	return (text);
 }
