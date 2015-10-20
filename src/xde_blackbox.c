@@ -158,7 +158,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[exit] (Exit)");
 	text = g_list_append(text, s);
 	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "");
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
 	return (text);
 }

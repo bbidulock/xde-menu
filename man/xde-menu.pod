@@ -51,7 +51,7 @@ system tray.
 
 =over
 
-=item B<--generate>, B<-G>
+=item B<--menugen>, B<-G>
 
 Specifies that B<xde-menu> is to generate a window manager root-menu and
 then exit.  No new instance is created: only the root-menu is generated
@@ -60,7 +60,7 @@ This option does not cause an error when an instance of B<xde-menu> is
 running (or not).
 This is the default when B<xde-menu> is invoked as B<xde-menugen>.
 
-B<xde-menu> is typically used with the B<--generate> option to generate
+B<xde-menu> is typically used with the B<--menugen> option to generate
 an initial window manager root menu as part of the initialization
 sequence of a particular window manager or panel.  The B<--wmname>,
 B<--format>, B<--output> and B<--die-on-error> options are normally
@@ -183,7 +183,7 @@ Specify the display to use (overriding the C<DISPLAY> environment
 variable).  The default is the value of the C<DISPLAY> environment
 variable.
 
-=item B<--screen>, B<-s> I<SCREEN>
+=item B<--screen> I<SCREEN>
 
 Specify the screen number to use when positioning the menu.  The default
 is either specified by the C<DISPLAY> environment variable (when that
@@ -192,13 +192,13 @@ variable specifies a screen); otherwise, all screens will be considered.
 =item B<--die-on-error>, B<-e>
 
 Abort execution on any error.
-Useful in conjunction with the B<--generate> option.
+Useful in conjunction with the B<--menugen> option.
 
 =item B<--notray>
 
 Run without installing the menu in the system tray.
 This is the default when the program in invoked as B<xde-menu-generate>
-or when the B<--generate> option is specified.
+or when the B<--menugen> option is specified.
 
 =item B<--nogenerate>
 
@@ -277,7 +277,7 @@ lowercase.  See also, L</ENVIRONMENT> and L</PROPERTIES>.
 
 When the program is running in monitor mode for the active window
 manager, the window manager name need not be specified explicitly.
-However, when using the program in B<--generate> mode to simply generate
+However, when using the program in B<--menugen> mode to simply generate
 a root menu, this option (or the B<--format> option) must be specified
 explicitly.
 
@@ -330,7 +330,7 @@ L</ENVIRONMENT> and L</PROPERTIES>.
 
 When the program is running in monitor mode for the active window
 manager, the format need not be specified explicitly.  However, when
-using the program in B<--generate> mode to simply generate a root menu,
+using the program in B<--menugen> mode to simply generate a root menu,
 this option (or the B<--wmname> option) must be specified explicitly.
 
 Note that L<openbox(1)> and L<wmaker(1)> support both an old and new
@@ -472,26 +472,60 @@ pop-up menu.
 
 =over
 
-=item B<--button>, B<-b> I<BUTTON>
+=item B<--button>, B<-b> [I<BUTTON>]
 
 Specifies the button that was used to invoke the pop-up.  Defaults to
-zero (0).  This should be the button that was used to pop the menu.  A
-window manager that invokes this command in response to a button press
-should release its passive grab on the button before invoking the pop-up
-menu so that the popped up menu can grab the button.  A I<BUTTON> of
-zero (0) means that the program was invoked with a key-press instead of
-a button.
+C<Button3> (3).  This should be the button that was used to pop the
+menu.  A window manager that invokes this command in response to a
+button press should release its passive grab on the button before
+invoking the pop-up menu so that the popped up menu can grab the button.
+A I<BUTTON> of zero (0) means that the program was invoked with a
+key press instead of a button.
+
+=item B<--keypress>, B<-k> [I<KEYSPEC>]
+
+Specifies the key specification that was used to invoke the pop-up.
+Defaults to none.  This should be the key that was used to pop the menu.
+A window manager that invokes this command in response to a key press
+should release its passive grab on the key before invoking the pop-up
+menu so that the popped up menu can grab the keyboard.  A I<KEYSPEC> of
+none means that the program was invoked with an unknown key press.
 
 =item B<--timestamp>, B<-T> I<TIMESTAMP>
 
-Provides the X11 server time-stamp of the event that caused the pop-up.
+Provides the X11 server time stamp of the event that caused the pop-up.
+This is the X11 server time stamp of the button or key press that
+invoked the pop-up.
 
-=item B<--where>, B<-W> {B<pointer>|B<center>|B<topleft>}
+=item B<--where>, B<-W> {B<default>|B<pointer>|B<center>|B<topleft>}
 
 Specifies the position for the pop-up menu.  This can be one of the
 following values (case insensitive, may be abbreviated):
 
 =over
+
+=item C<default>
+
+Place the menu automatically based on other information, such as the
+button or key pressed to invoke the menu.  This is the default when
+unspecified.  The default placement algorithm is as follows:
+
+=over
+
+=item 1.
+
+If B<--button> is specified and non-zero, place the menu at the pointer
+regardless of the screen and monitor currently containing the pointer.
+If the pointer is positioned outside an active monitor, fall back to the
+behaviour as if B<--button> was not specified.
+
+=item 2.
+
+If B<--button> is unspecified or zero (0), place the menu in the centre
+(considering work area) of the screen and monitor which currently
+contains the keyboard focus.
+
+=back
 
 =item C<pointer>
 
@@ -509,25 +543,6 @@ zero.
 
 Place the menu in the top-left corner of the current screen and monitor
 work area (considering panels and docks).
-
-=back
-
-When unspecified, the default placement algorithm is as follows:
-
-=over
-
-=item 1.
-
-If B<--button> is specified and non-zero, place the menu at the pointer
-regardless of the screen and monitor currently containing the pointer.
-If the pointer is positioned outside an active monitor, fall back to the
-behaviour as if B<--button> was not specified.
-
-=item 2.
-
-If B<--button> is unspecified or zero (0), place the menu in the centre
-(considering work area) of the screen and monitor which currently
-contains the keyboard focus.
 
 =back
 

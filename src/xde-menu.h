@@ -190,7 +190,7 @@ extern Atom _XA_XDE_MENU_POPMENU;
 
 typedef enum {
 	CommandDefault,	    /* just generate WM root menu */
-	CommandGenerate,    /* just generate WM root menu */
+	CommandMenugen,    /* just generate WM root menu */
 	CommandMonitor,	    /* run a new instance with monitoring */
 	CommandQuit,	    /* ask running instance to quit */
 	CommandPopMenu,	    /* ask running instance to pop menu */
@@ -214,6 +214,13 @@ typedef enum {
 	XdeStyleUser,
 	XdeStyleMixed,
 } Which;
+
+typedef enum {
+	XdePositionDefault,
+	XdePositionPointer,
+	XdePositionCenter,
+	XdePositionTopLeft,
+} Position;
 
 typedef struct {
 	int debug;
@@ -244,6 +251,11 @@ typedef struct {
 	char *display;
 	unsigned button;
 	char *keypress;
+	unsigned long int timestamp;
+	Position where;
+	int screen;
+	Bool tray;
+	Bool generate;
 } Options;
 
 typedef struct MenuContext MenuContext;
