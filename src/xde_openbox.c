@@ -357,10 +357,10 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
 		g_key_file_unref(file);
 	} else
-		icon = xde_wrap_icon(icon);
+		icon = xde_get_icon2(ctx, "folder", "unknown");
+	icon = xde_wrap_icon(icon);
 
 	s = g_strdup_printf("%s<separator label=\"%s\"%s />\n", ctx->indent, esc, icon);
 	text = g_list_append(text, s);
@@ -391,10 +391,10 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
 		g_key_file_unref(file);
 	} else
-		icon = xde_wrap_icon(icon);
+		icon = xde_get_icon2(ctx, "folder", "unknown");
+	icon = xde_wrap_icon(icon);
 
 	level = xde_reset_indent(ctx, 0);
 	s = g_strdup_printf("%s<menu id=\"%s Menu\" label=\"%s\"%s>\n", ctx->indent, esc, esc,
@@ -420,7 +420,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GDesktopAppInfo *info;
 	GList *text = NULL;
-	const char *name, *path;
+	const char *name;
 	char *esc1, *esc2, *cmd, *p;
 	char *icon = NULL, *wrap, *s;
 	gboolean notify;
@@ -431,19 +431,13 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 
 	esc1 = g_markup_escape_text(name, -1);
 
-	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
-		icon = xde_get_app_icon(ctx, info, "exec", "unknown",
-					GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-					GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		wrap = xde_wrap_icon(strdup(icon));
+	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+	wrap = xde_wrap_icon(strdup(icon));
 
-		notify = g_desktop_app_info_get_boolean(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_NOTIFY);
-		wmclass = g_desktop_app_info_get_string(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS);
-	} else {
-		wrap = xde_wrap_icon(strdup(icon));
-		notify = FALSE;
-		wmclass = NULL;
-	}
+	notify = g_desktop_app_info_get_boolean(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_NOTIFY);
+	wmclass = g_desktop_app_info_get_string(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS);
 
 	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
 	    && (p = strstr(appid, ".desktop")))

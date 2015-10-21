@@ -191,13 +191,20 @@ xde_get_icons(MenuContext *ctx, const char *inames[])
 
 	if ((theme = gtk_icon_theme_get_default())) {
 		for (iname = inames; *iname; iname++) {
+			DPRINTF("Testing icon for name: %s\n", *iname);
 			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
 				if ((name = gtk_icon_info_get_filename(info)))
 					file = strdup(name);
+				else
+					DPRINTF("No file for icon name: %s\n", *iname);
 				gtk_icon_info_free(info);
-			}
-			if (file)
+			} else
+				DPRINTF("Could not find icon name: %s\n", *iname);
+			if (file) {
+				DPRINTF("File for icon name '%s' is %s\n", *iname, file);
 				break;
+			}
+			DPRINTF("Failed to find icon name: %s\n", *iname);
 		}
 	}
 	return (file);
@@ -206,30 +213,17 @@ xde_get_icons(MenuContext *ctx, const char *inames[])
 char *
 xde_get_icon(MenuContext *ctx, const char *iname)
 {
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
-	char *file = NULL;
+	const char *inames[2];
 
-	if ((theme = gtk_icon_theme_get_default())) {
-		if ((info = gtk_icon_theme_lookup_icon(theme, iname, 16, ctx->iconflags))) {
-			if ((name = gtk_icon_info_get_filename(info)))
-				file = strdup(name);
-			gtk_icon_info_free(info);
-		}
-	}
-	return (file);
+	inames[0] = iname;
+	inames[1] = NULL;
+	return xde_get_icons(ctx, inames);
 }
 
 char *
 xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2)
 {
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
-	char *file = NULL;
 	const char *inames[3];
-	const char **iname;
 
 	if ((inames[0] = iname1)) {
 		inames[1] = iname2;
@@ -239,18 +233,7 @@ xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2)
 		inames[1] = NULL;
 		inames[2] = NULL;
 	}
-	if ((theme = gtk_icon_theme_get_default())) {
-		for (iname = inames; *iname; iname++) {
-			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
-				if ((name = gtk_icon_info_get_filename(info)))
-					file = strdup(name);
-				gtk_icon_info_free(info);
-			}
-			if (file)
-				break;
-		}
-	}
-	return (file);
+	return xde_get_icons(ctx, inames);
 }
 
 gboolean
@@ -288,12 +271,8 @@ char *
 xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 		   const char *dflt2, int flags)
 {
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
 	char *file = NULL;
 	const char *inames[8];
-	const char **iname;
 	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL;
 	int i = 0;
 
@@ -356,17 +335,7 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
 	}
 	inames[i++] = NULL;
-	if ((theme = gtk_icon_theme_get_default())) {
-		for (iname = inames; *iname; iname++) {
-			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
-				if ((name = gtk_icon_info_get_filename(info)))
-					file = strdup(name);
-				gtk_icon_info_free(info);
-			}
-			if (file)
-				break;
-		}
-	}
+	file = xde_get_icons(ctx, inames);
 	g_free(icon);
 	g_free(wmcl);
 	g_free(tryx);
@@ -378,12 +347,8 @@ char *
 xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
 		 const char *dflt2, int flags)
 {
-	GtkIconTheme *theme;
-	GtkIconInfo *info;
-	const gchar *name;
 	char *file = NULL;
 	const char *inames[8];
-	const char **iname;
 	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL;
 	int i = 0;
 
@@ -443,17 +408,7 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
 		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
 	}
 	inames[i++] = NULL;
-	if ((theme = gtk_icon_theme_get_default())) {
-		for (iname = inames; *iname; iname++) {
-			if ((info = gtk_icon_theme_lookup_icon(theme, *iname, 16, ctx->iconflags))) {
-				if ((name = gtk_icon_info_get_filename(info)))
-					file = strdup(name);
-				gtk_icon_info_free(info);
-			}
-			if (file)
-				break;
-		}
-	}
+	file = xde_get_icons(ctx, inames);
 	g_free(icon);
 	g_free(wmcl);
 	g_free(tryx);

@@ -193,10 +193,10 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		    xde_get_entry_icon(ctx, file, "folder", "unknown",
 				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
 		g_key_file_unref(file);
 	} else
-		icon = xde_wrap_icon(icon);
+		icon = xde_get_icon2(ctx, "folder", "unknown");
+	icon = xde_wrap_icon(icon);
 	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
 	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
@@ -214,7 +214,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GDesktopAppInfo *info;
 	GList *text = NULL;
-	const char *name, *path;
+	const char *name;
 	char *esc, *cmd, *s, *p;
 	char *icon = NULL;
 	char *appid;
@@ -228,18 +228,9 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	    && (p = strstr(appid, ".desktop")))
 		*p = '\0';
 
-	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
-		GKeyFile *file;
-
-		file = g_key_file_new();
-		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-
-		icon =
-		    xde_get_entry_icon(ctx, file, "exec", "unknown",
-				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		g_key_file_unref(file);
-	}
+	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 	if (options.launch) {
 		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
 	} else {

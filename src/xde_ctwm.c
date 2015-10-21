@@ -405,7 +405,9 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
 	    && (p = strstr(appid, ".desktop")))
 		*p = '\0';
-
+	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 	if (options.launch) {
 		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
 	} else {
@@ -416,11 +418,12 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	s = g_strdup_printf("    %-32s  f.exec \"exec %s &\"\n", qname, esc2);
 	text = g_list_append(text, s);
 
+	free(icon);
 	free(appid);
 	g_free(qname);
 	free(esc1);
 	free(esc2);
-
+	free(cmd);
 	return (text);
 }
 
