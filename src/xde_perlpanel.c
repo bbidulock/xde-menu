@@ -338,38 +338,36 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GDesktopAppInfo *info;
 	GList *text = NULL;
-	const char *name, *exec, *path;
-	char *esc1, *esc2, *cmd;
+	const char *name, *path;
+	char *esc1, *esc2, *cmd, *p;
 	char *s, *icon = NULL;
+	char *appid;
 
 	info = gmenu_tree_entry_get_app_info(ent);
 	name = g_app_info_get_name(G_APP_INFO(info));
 	esc1 = xde_character_escape(name, ')');
-	if (options.launch) {
-		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
-
-		if ((p = strstr(str, ".desktop")))
-			*p = '\0';
-		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
-		free(str);
-	} else {
-		exec = g_app_info_get_commandline(G_APP_INFO(info));
-		cmd = g_strdup(exec);
-	}
-	esc2 = xde_character_escape(cmd, '}');
+	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
+	    && (p = strstr(appid, ".desktop")))
+		*p = '\0';
 	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
 		GKeyFile *file = g_key_file_new();
 
 		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
 		icon = xde_get_entry_icon(ctx, file, "exec", "unknown",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
-		icon = xde_wrap_icon(icon);
 		g_key_file_unref(file);
-	} else
-		icon = xde_wrap_icon(icon);
+	}
+	if (options.launch) {
+		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
+	} else {
+		cmd = xde_get_command(info, appid, icon);
+	}
+	esc2 = xde_character_escape(cmd, '}');
+	icon = xde_wrap_icon(icon);
 	s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
 	text = g_list_append(text, s);
 	free(icon);
+	free(appid);
 	free(esc1);
 	free(esc2);
 	free(cmd);
