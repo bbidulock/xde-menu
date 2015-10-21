@@ -392,31 +392,31 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GDesktopAppInfo *info;
 	GList *text = NULL;
-	const char *name, *exec;
-	char *esc1, *qname, *esc2, *cmd;
-	char *s;
+	const char *name;
+	char *esc1, *qname, *esc2, *cmd, *p;
+	char *s, *icon = NULL;
+	char *appid;
 
 	info = gmenu_tree_entry_get_app_info(ent);
 	name = g_app_info_get_name(G_APP_INFO(info));
 	esc1 = xde_character_escape(name, '"');
 	qname = g_strdup_printf("\"%s\"", esc1);
 
-	if (options.launch) {
-		char *p, *str = strdup(gmenu_tree_entry_get_desktop_file_id(ent));
+	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
+	    && (p = strstr(appid, ".desktop")))
+		*p = '\0';
 
-		if ((p = strstr(str, ".desktop")))
-			*p = '\0';
-		cmd = g_strdup_printf("xdg-launch --pointer %s", str);
-		free(str);
+	if (options.launch) {
+		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
 	} else {
-		exec = g_app_info_get_commandline(G_APP_INFO(info));
-		cmd = g_strdup(exec);
+		cmd = xde_get_command(info, appid, icon);
 	}
 	esc2 = xde_character_escape(cmd, '"');
 
 	s = g_strdup_printf("    %-32s  f.exec \"exec %s &\"\n", qname, esc2);
 	text = g_list_append(text, s);
 
+	free(appid);
 	g_free(qname);
 	free(esc1);
 	free(esc2);
