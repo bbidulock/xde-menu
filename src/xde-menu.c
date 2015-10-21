@@ -497,6 +497,79 @@ xde_get_xsession_dirs(int *np)
 	return (xdg_dirs);
 }
 
+static void
+xde_do_subst(char *cmd, const char *chars, const char *str)
+{
+	int len = 0;
+	char *p;
+
+	DPRINTF("%s: starting %s at %s:%d (cmd %s, char %s, str %s)\n",
+			NAME, __FUNCTION__, __FILE__, __LINE__, cmd, chars, str);
+	len = str ? strlen(str) : 0;
+	for (p = cmd; (p = strchr(p, '%')); p++) {
+		if (*(p - 1) != '%' && strspn(p + 1, chars)) {
+			memmove(p + len, p + 2, strlen(p + 2) + 1);
+			memcpy(p, str, len);
+			p += len - 1;
+		}
+	}
+}
+
+static void
+xde_subst_command(char *cmd, const char *appid, const char *icon, const char *name, const char *wmclass)
+{
+	int len;
+	char *p;
+
+	xde_do_subst(cmd, "i", icon);
+	xde_do_subst(cmd, "c", name);
+	xde_do_subst(cmd, "C", wmclass);
+	xde_do_subst(cmd, "k", NULL); /* appid */
+	xde_do_subst(cmd, "uU", NULL); /* url */
+	xde_do_subst(cmd, "fF", NULL); /* file */
+	xde_do_subst(cmd, "dDnNvm", NULL);
+#if 0
+	xde_do_subst(cmd, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", NULL);
+#endif
+	xde_do_subst(cmd, "%", "%");
+	if ((len = strspn(cmd, " \t")))
+		memmove(cmd, cmd + len, strlen(cmd + len));
+	if (((p = strrchr(cmd, ' ')) && strspn(p, " \t") == strlen(p)) ||
+	    ((p = strrchr(cmd, '\t')) && strspn(p, " \t") == strlen(p)))
+		*p = '\0';
+}
+
+char *
+xde_get_command(GDesktopAppInfo * info, const char *appid, const char *icon)
+{
+	char *cmd, *wmclass;
+	const char *name, *exec;
+	gboolean terminal;
+
+	name = g_app_info_get_name(G_APP_INFO(info));
+	exec = g_app_info_get_commandline(G_APP_INFO(info));
+	wmclass = g_desktop_app_info_get_string(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS);
+	terminal = g_desktop_app_info_get_boolean(info, G_KEY_FILE_DESKTOP_KEY_TERMINAL);
+
+	if (!exec)
+		return (NULL);
+	if (!(cmd = calloc(2048, sizeof(*cmd))))
+		return (cmd);
+	if (terminal) {
+		if (wmclass) {
+			snprintf(cmd, 1024, "xterm -name \"%s\" -T \"%%c\" -e ", wmclass);
+		} else {
+			/* A little more to be done here: we should set WMCLASS to xterm
+			   to assist the DE.  SLIENT should be set to zero. */
+			strncat(cmd, "xterm -T \"%c\" -e ", 1024);
+			wmclass = "xterm";
+		}
+	}
+	strncat(cmd, exec, 1024);
+	xde_subst_command(cmd, appid, icon, name, wmclass);
+	return (cmd);
+}
+
 static GKeyFile *
 xde_get_xsession_entry(const char *key, const char *file)
 {
@@ -1111,7 +1184,7 @@ get_menu(int argc, char *argv[])
 //                                           | GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
 //                                           | GMENU_TREE_FLAGS_SHOW_EMPTY
 //                                           | GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS
-//                                           | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
+					     | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
 	      ))) {
 		EPRINTF("could not look up menu %s\n", options.rootmenu);
 		exit(EXIT_FAILURE);

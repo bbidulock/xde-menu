@@ -345,6 +345,8 @@ gboolean xde_test_icon_ext(MenuContext *ctx, const char *path, int flags);
 char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1, const char *dflt2, int flags);
 char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, const char *dflt1, const char *dflt2, int flags);
 
+char *xde_get_command(GDesktopAppInfo *app, const char *appid, const char *icon);
+
 GList *xde_get_xsessions(void);
 void xde_free_xsessions(GList *list);
 GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);
