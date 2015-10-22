@@ -317,8 +317,6 @@ extern char *xdg_config_dirs;
 extern char *xdg_config_path;
 extern char *xdg_config_last;
 
-extern GMenuTree *tree;
-
 typedef struct {
 	char *key;
 	char *name;

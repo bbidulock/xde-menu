@@ -1127,9 +1127,11 @@ xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
 	return (text);
 }
 
-static void
+static GMenuTree *
 get_menu(int argc, char *argv[])
 {
+	GMenuTree *tree;
+
 	if (options.desktop)
 		setenv("XDG_CURRENT_DESKTOP", options.desktop, TRUE);
 
@@ -1139,23 +1141,55 @@ get_menu(int argc, char *argv[])
 //                                           | GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
 //                                           | GMENU_TREE_FLAGS_SHOW_EMPTY
 //                                           | GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS
-					     | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
-	      ))) {
+//                                           | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
+	      )))
 		EPRINTF("could not look up menu %s\n", options.rootmenu);
-		exit(EXIT_FAILURE);
-	}
+	return (tree);
+}
+
+static void
+xde_menu_free(gpointer data)
+{
+	g_free(data);
+}
+
+static void
+menu_tree_changed(GMenuTree *tree, gpointer user_data)
+{
+	MenuContext *ctx = user_data;
+	GList *menu;
+	FILE *file = stdout;
+
 	if (!gmenu_tree_load_sync(tree, NULL)) {
-		EPRINTF("could not load menu %s\n", options.rootmenu);
-		exit(EXIT_FAILURE);
+		EPRINTF("could not sync menu %s\n", options.rootmenu);
+		return;
 	}
+	DPRINTF("calling create!\n");
+	menu = ctx->create(ctx, options.style, NULL);
+	DPRINTF("done create!\n");
+	if (options.filename) {
+		if (!(file = fopen(options.filename, "w"))) {
+			EPRINTF("%s: cannot open %s for writing\n", NAME, options.filename);
+			g_list_free_full(menu, &xde_menu_free);
+			return;
+		}
+	}
+	g_list_foreach(menu, print_line, file);
+	if (file && file != stdout)
+		fclose(file);
+	g_list_free_full(menu, &xde_menu_free);
 }
 
 
 static void
 make_menu(int argc, char *argv[])
 {
-	get_menu(argc, argv);
+	GMenuTree *tree;
 
+	if (!(tree = get_menu(argc, argv))) {
+		EPRINTF("%s: could not allocate menu tree\n", NAME);
+		exit(EXIT_FAILURE);
+	}
 #if 0
 	{
 		GMenuTreeDirectory *directory;
@@ -1168,7 +1202,6 @@ make_menu(int argc, char *argv[])
 	}
 #else
 	{
-		GList *menu;
 		MenuContext *ctx;
 
 		(void) display_directory;
@@ -1179,10 +1212,8 @@ make_menu(int argc, char *argv[])
 		ctx->tree = tree;
 		ctx->level = 0;
 		ctx->indent = calloc(64, sizeof(*ctx->indent));
-		DPRINTF("calling create!\n");
-		menu = ctx->create(ctx, options.style, NULL);
-		DPRINTF("done create!\n");
-		g_list_foreach(menu, print_line, stdout);
+		g_signal_connect(G_OBJECT(tree), "changed", G_CALLBACK(menu_tree_changed), ctx);
+		menu_tree_changed(tree, ctx);
 	}
 #endif
 }
@@ -1192,9 +1223,8 @@ static MenuContext *wm_menu_context(const char *name);
 static void
 generate_menu(int argc, char *argv[])
 {
-	GList *menu;
+	GMenuTree *tree;
 	MenuContext *ctx;
-	FILE *file = stdout;
 
 	if (!options.wmname) {
 		EPRINTF("%s: need window manager name for menugen option\n", argv[0]);
@@ -1204,22 +1234,14 @@ generate_menu(int argc, char *argv[])
 		EPRINTF("%s: could not get menu context for %s\n", argv[0], options.wmname);
 		exit(EXIT_FAILURE);
 	}
-	get_menu(argc, argv);
+	if (!(tree = get_menu(argc, argv))) {
+		EPRINTF("%s: could not allocat menu tree\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
 	ctx->tree = tree;
 	ctx->level = 0;
 	ctx->indent = calloc(64, sizeof(*ctx->indent));
-	DPRINTF("%s: calling create\n", argv[0]);
-	menu = ctx->create(ctx, options.style, NULL);
-	DPRINTF("%s: done create\n", argv[0]);
-	if (options.filename) {
-		if (!(file = fopen(options.filename, "w"))) {
-			EPRINTF("%s: cannot open %s for writing\n", argv[0], options.filename);
-			exit(EXIT_FAILURE);
-		}
-	}
-	g_list_foreach(menu, print_line, file);
-	if (file && file != stdout)
-		fclose(file);
+	menu_tree_changed(tree, ctx);
 }
 
 #else				/* HAVE_GNOME_MENUS_3 */
@@ -1889,14 +1911,37 @@ static void
 menu_refresh(XEvent *xev)
 {
 	/* asked to refresh the menu (as though there was a change) */
+	MenuContext *ctx;
+	GMenuTree *tree;
+
+	if (!(ctx = screens[0].context)) {
+		EPRINTF("no menu context for screen 0\n");
+		return;
+	}
+	if (!(tree = ctx->tree)) {
+		EPRINTF("no menu tree for context\n");
+		return;
+	}
 	DPRINTF("%s: refreshing the menus\n", NAME);
+	menu_tree_changed(tree, ctx);
 }
 
 static void
 menu_restart(XEvent *xev)
 {
 	/* asked to restart the menu (as though we were re-executed) */
+	char **argv;
+	int i;
+
+	argv = calloc(saveArgc + 1, sizeof(*argv));
+	for (i = 0; i < saveArgc; i++)
+		argv[i] = saveArgv[i];
+
 	DPRINTF("%s: restarting the menus\n", NAME);
+	if (execvp(argv[0], argv) == -1) {
+		EPRINTF("%s: %s\n", argv[0], strerror(errno));
+		return;
+	}
 }
 
 static void
