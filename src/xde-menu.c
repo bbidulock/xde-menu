@@ -1000,24 +1000,24 @@ xde_create_simple(MenuContext *ctx, Style style, const char *name)
 	}
 	ctx->level = 0;
 	xde_increase_indent(ctx);
-	result = ctx->ops.menu(ctx, directory);
+	result = ctx->wmm.ops.menu(ctx, directory);
 	xde_decrease_indent(ctx);
 	switch (style) {
 	case StyleFullmenu:
 	default:
-		result = ctx->rootmenu(ctx, result);
+		result = ctx->wmm.rootmenu(ctx, result);
 		break;
 	case StyleAppmenu:
 		if (!name)
 			name = gmenu_tree_directory_get_name(directory);
-		result = ctx->appmenu(ctx, result, name);
+		result = ctx->wmm.appmenu(ctx, result, name);
 		break;
 	case StyleEntries:
 		/* do nothing */
 		break;
 	}
-	result = g_list_concat(ctx->output, result);
-	ctx->output = NULL;
+	result = g_list_concat(ctx->wmm.output, result);
+	ctx->wmm.output = NULL;
 	return (result);
 }
 
@@ -1030,24 +1030,24 @@ xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 	case GMENU_TREE_ITEM_INVALID:
 		break;
 	case GMENU_TREE_ITEM_DIRECTORY:
-		if (ctx->ops.directory)
-			text = ctx->ops.directory(ctx, item);
+		if (ctx->wmm.ops.directory)
+			text = ctx->wmm.ops.directory(ctx, item);
 		break;
 	case GMENU_TREE_ITEM_ENTRY:
-		if (ctx->ops.entry)
-			text = ctx->ops.entry(ctx, item);
+		if (ctx->wmm.ops.entry)
+			text = ctx->wmm.ops.entry(ctx, item);
 		break;
 	case GMENU_TREE_ITEM_SEPARATOR:
-		if (ctx->ops.separator)
-			text = ctx->ops.separator(ctx, item);
+		if (ctx->wmm.ops.separator)
+			text = ctx->wmm.ops.separator(ctx, item);
 		break;
 	case GMENU_TREE_ITEM_HEADER:
-		if (ctx->ops.header)
-			text = ctx->ops.header(ctx, item);
+		if (ctx->wmm.ops.header)
+			text = ctx->wmm.ops.header(ctx, item);
 		break;
 	case GMENU_TREE_ITEM_ALIAS:
-		if (ctx->ops.alias)
-			text = ctx->ops.alias(ctx, item);
+		if (ctx->wmm.ops.alias)
+			text = ctx->wmm.ops.alias(ctx, item);
 		break;
 	}
 	return (text);
@@ -1071,29 +1071,29 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 		case GMENU_TREE_ITEM_DIRECTORY:
 			text =
 			    g_list_concat(text,
-					  ctx->build(ctx, type,
+					  ctx->wmm.build(ctx, type,
 						     gmenu_tree_iter_get_directory(iter)));
 			continue;
 		case GMENU_TREE_ITEM_ENTRY:
 			text =
 			    g_list_concat(text,
-					  ctx->build(ctx, type, gmenu_tree_iter_get_entry(iter)));
+					  ctx->wmm.build(ctx, type, gmenu_tree_iter_get_entry(iter)));
 			continue;
 		case GMENU_TREE_ITEM_SEPARATOR:
 			text =
 			    g_list_concat(text,
-					  ctx->build(ctx, type,
+					  ctx->wmm.build(ctx, type,
 						     gmenu_tree_iter_get_separator(iter)));
 			continue;
 		case GMENU_TREE_ITEM_HEADER:
 			text =
 			    g_list_concat(text,
-					  ctx->build(ctx, type, gmenu_tree_iter_get_header(iter)));
+					  ctx->wmm.build(ctx, type, gmenu_tree_iter_get_header(iter)));
 			continue;
 		case GMENU_TREE_ITEM_ALIAS:
 			text =
 			    g_list_concat(text,
-					  ctx->build(ctx, type, gmenu_tree_iter_get_alias(iter)));
+					  ctx->wmm.build(ctx, type, gmenu_tree_iter_get_alias(iter)));
 			continue;
 		}
 		break;
@@ -1112,10 +1112,10 @@ xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
 	case GMENU_TREE_ITEM_INVALID:
 		break;
 	case GMENU_TREE_ITEM_DIRECTORY:
-		text = ctx->build(ctx, type, gmenu_tree_alias_get_aliased_directory(als));
+		text = ctx->wmm.build(ctx, type, gmenu_tree_alias_get_aliased_directory(als));
 		break;
 	case GMENU_TREE_ITEM_ENTRY:
-		text = ctx->build(ctx, type, gmenu_tree_alias_get_aliased_entry(als));
+		text = ctx->wmm.build(ctx, type, gmenu_tree_alias_get_aliased_entry(als));
 		break;
 	case GMENU_TREE_ITEM_SEPARATOR:
 		break;
@@ -1165,7 +1165,7 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 		return;
 	}
 	DPRINTF("calling create!\n");
-	menu = ctx->create(ctx, options.style, NULL);
+	menu = ctx->wmm.create(ctx, options.style, NULL);
 	DPRINTF("done create!\n");
 	if (options.filename) {
 		if (!(file = fopen(options.filename, "w"))) {

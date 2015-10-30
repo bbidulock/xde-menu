@@ -174,7 +174,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = strdup("\"● Window Maker\" END\n");
 	text = g_list_append(text, s);
 
-	text = g_list_concat(text, ctx->wmmenu(ctx));
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 
 	s = strdup("\"● WorkSpace\" MENU\n");
 	text = g_list_append(text, s);
@@ -231,7 +231,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 
 	if (!(dir = gmenu_tree_header_get_directory(hdr)))
 		return (text);
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
 	return (text);
 }
 
@@ -246,7 +246,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	esc1 = xde_character_escape(name, '"');
 	s = g_strdup_printf("%s\"● %s\" MENU\n", ctx->indent, esc1);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	s = g_strdup_printf("%s\"● %s\" END\n", ctx->indent, esc1);
 	text = g_list_append(text, s);
 	free(esc1);
@@ -304,12 +304,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "wmakerold",
 	.desktop = "WMAKER",
@@ -323,21 +317,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

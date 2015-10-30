@@ -269,23 +269,41 @@ struct MenuContext {
 	int level;
 	char *indent;
 	GtkIconLookupFlags iconflags;
-	GList *output;
-	GList *(*create) (MenuContext *ctx, Style style, const char *name);
-	GList *(*wmmenu) (MenuContext *ctx);	/* output the window manager menu */
-	GList *(*appmenu) (MenuContext *ctx, GList *entries, const char *name);
-	GList *(*rootmenu) (MenuContext *ctx, GList *entries);
-	GList *(*build) (MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 	struct {
-		GList *(*menu) (MenuContext *ctx, GMenuTreeDirectory *menu);
-		GList *(*directory) (MenuContext *ctx, GMenuTreeDirectory *dir);
-		GList *(*header) (MenuContext *ctx, GMenuTreeHeader *hdr);
-		GList *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
-		GList *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
-		GList *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
-	} ops;
-	GList *(*themes) (MenuContext *ctx);
-	GList *(*styles) (MenuContext *ctx);
-	GtkMenu *(*submenu) (void);
+		GList *output;
+		GList *(*create) (MenuContext *ctx, Style style, const char *name);
+		GList *(*wmmenu) (MenuContext *ctx);	/* output the window manager menu */
+		GList *(*appmenu) (MenuContext *ctx, GList *entries, const char *name);
+		GList *(*rootmenu) (MenuContext *ctx, GList *entries);
+		GList *(*build) (MenuContext *ctx, GMenuTreeItemType type, gpointer item);
+		struct {
+			GList *(*menu) (MenuContext *ctx, GMenuTreeDirectory *menu);
+			GList *(*directory) (MenuContext *ctx, GMenuTreeDirectory *dir);
+			GList *(*header) (MenuContext *ctx, GMenuTreeHeader *hdr);
+			GList *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
+			GList *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
+			GList *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+		} ops;
+		GList *(*themes) (MenuContext *ctx);
+		GList *(*styles) (MenuContext *ctx);
+	} wmm;
+	struct {
+		GtkMenu *output;
+		GtkMenu *(*create) (MenuContext *ctx, Style style, const char *name);
+		GtkMenu *(*wmmenu) (MenuContext *ctx); /* output the window manager menu */
+		GtkMenu *(*appmenu) (MenuContext *ctx, GtkMenu *entries, const char *name);
+		GtkMenu *(*rootmenu) (MenuContext *ctx, GtkMenu *entries);
+		GtkMenu *(*build) (MenuContext *ctx, GMenuTreeItemType type, gpointer item);
+		struct {
+			GtkMenu *(*menu) (MenuContext *ctx, GMenuTreeDirectory *menu);
+			GtkMenu *(*directory) (MenuContext *ctx, GMenuTreeDirectory *dir);
+			GtkMenu *(*header) (MenuContext *ctx, GMenuTreeHeader *hdr);
+			GtkMenu *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
+			GtkMenu *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+		} ops;
+		GtkMenu *(*themes) (MenuContext *ctx);
+		GtkMenu *(*styles) (MenuContext *ctx);
+	} gtk;
 };
 
 typedef struct {

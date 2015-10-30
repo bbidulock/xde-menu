@@ -55,10 +55,10 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	char *qname = NULL;
 	char *s;
 
-	ctx->output = NULL;
+	ctx->wmm.output = NULL;
 
 	s = g_strdup_printf("%s\n", "changequote(`[[[',`]]]')dnl");
-	ctx->output = g_list_append(ctx->output, s);
+	ctx->wmm.output = g_list_append(ctx->wmm.output, s);
 
 	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
@@ -66,20 +66,20 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	}
 	xde_reset_indent(ctx, 0);
 	xde_increase_indent(ctx);
-	entries = ctx->ops.menu(ctx, dir);
+	entries = ctx->wmm.ops.menu(ctx, dir);
 	xde_decrease_indent(ctx);
 
 	if (!name)
 		name = gmenu_tree_directory_get_name(dir);
 
 	if (style == StyleFullmenu) {
-		result = ctx->wmmenu(ctx);
-		ctx->output = g_list_concat(ctx->output, result);
+		result = ctx->wmm.wmmenu(ctx);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 		result = xde_twmmenu(ctx);
-		ctx->output = g_list_concat(ctx->output, result);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 	}
 	if (style == StyleAppmenu || style == StyleSubmenu) {
-		result = ctx->appmenu(ctx, entries, name);
+		result = ctx->wmm.appmenu(ctx, entries, name);
 	}
 	if (style == StyleEntries) {
 		return (entries);
@@ -92,13 +92,13 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 		entries = g_list_append(NULL, s);
 	}
 	if (style != StyleAppmenu) {
-		result = ctx->rootmenu(ctx, entries);
-		ctx->output = g_list_concat(ctx->output, result);
+		result = ctx->wmm.rootmenu(ctx, entries);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 	}
 
 	s = g_strdup_printf("\n%s\n", "changequote(`,)dnl");
-	result = g_list_append(ctx->output, s);
-	ctx->output = NULL;
+	result = g_list_append(ctx->wmm.output, s);
+	ctx->wmm.output = NULL;
 	return (result);
 }
 
@@ -155,7 +155,7 @@ xde_wmmenu(MenuContext *ctx)
 		free(exec);
 	}
 	if (gotone)
-		text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
 	if (!strcmp(ctx->name, "mwm"))
@@ -287,12 +287,12 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	free(menu);
 	text = g_list_concat(text, xde_pin(ctx));
 	text = g_list_concat(text, entries);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	menu = g_strdup_printf("\"%s Menu\"", ctx->desktop);
 	s = g_strdup_printf("    %-32s  %s\n", menu, "f.menu \"twmmenu\"");
 	text = g_list_append(text, s);
 	free(menu);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = g_strdup_printf("    %-32s  %s\n", "\"Refresh\"", "f.refresh");
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Reconfigure\"", "f.function \"reconfig\"");
@@ -350,7 +350,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	qname = g_strdup_printf("\"%s\"", esc);
 	s = g_strdup_printf("    %-32s  %s\n", qname, "f.title");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
 
 	g_free(qname);
 	g_free(esc);
@@ -372,10 +372,10 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", qname, "f.title");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	s = g_strdup_printf("}\n");
 	text = g_list_append(text, s);
-	ctx->output = g_list_concat(ctx->output, text);
+	ctx->wmm.output = g_list_concat(ctx->wmm.output, text);
 	text = NULL;
 
 	s = g_strdup_printf("    %-32s  f.menu \"%s\"\n", qname, esc1);
@@ -445,12 +445,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "twm",
 	.desktop = "TWM",
@@ -464,21 +458,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

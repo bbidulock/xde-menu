@@ -122,12 +122,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "yeahwm",
 	.desktop = "YEAHWM",
@@ -141,21 +135,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

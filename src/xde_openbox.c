@@ -61,12 +61,12 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	GList *entries = NULL;
 	char *s;
 
-	ctx->output = NULL;
+	ctx->wmm.output = NULL;
 
 	s = g_strdup_printf("%s\n\n", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-	ctx->output = g_list_append(ctx->output, s);
+	ctx->wmm.output = g_list_append(ctx->wmm.output, s);
 	s = g_strdup_printf("%s\n\n", "<openbox_menu xmlns=\"http://openbox.org/3.4/menu\">");
-	ctx->output = g_list_append(ctx->output, s);
+	ctx->wmm.output = g_list_append(ctx->wmm.output, s);
 
 	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
@@ -74,24 +74,24 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	}
 	xde_reset_indent(ctx, 0);
 	xde_increase_indent(ctx);
-	entries = ctx->ops.menu(ctx, dir);
+	entries = ctx->wmm.ops.menu(ctx, dir);
 	xde_decrease_indent(ctx);
 
 	switch(style) {
 	case StyleFullmenu:
 	default:
-		result = ctx->rootmenu(ctx, entries);
+		result = ctx->wmm.rootmenu(ctx, entries);
 		break;
 	case StyleAppmenu:
 		if (!name)
 			name = gmenu_tree_directory_get_name(dir);
-		result = ctx->appmenu(ctx, entries, name);
+		result = ctx->wmm.appmenu(ctx, entries, name);
 		break;
 	case StyleEntries:
 		break;
 	}
-	result = g_list_concat(ctx->output, result);
-	ctx->output = NULL;
+	result = g_list_concat(ctx->wmm.output, result);
+	ctx->wmm.output = NULL;
 
 	s = g_strdup_printf("\n%s\n", "</openbox_menu>");
 	result = g_list_append(result, s);
@@ -177,7 +177,7 @@ xde_obmenu(MenuContext *ctx)
 	char *icon;
 	char *s;
 
-	ctx->output = g_list_concat(ctx->output, ctx->wmmenu(ctx));
+	ctx->wmm.output = g_list_concat(ctx->wmm.output, ctx->wmm.wmmenu(ctx));
 
 	icon = xde_wrap_icon(xde_get_icon(ctx, "openbox"));
 	s = g_strdup_printf("%s<menu id=\"%s\" label=\"%s\"%s>\n",
@@ -232,7 +232,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	char *icon;
 	char *s;
 
-	ctx->output = g_list_concat(ctx->output, xde_obmenu(ctx));
+	ctx->wmm.output = g_list_concat(ctx->wmm.output, xde_obmenu(ctx));
 
 	s = g_strdup_printf("%s<menu id=\"%s\" label=\"%s\">\n",
 			    ctx->indent, "root-menu", "Openbox 3");
@@ -367,7 +367,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	free(icon);
 	g_free(esc);
 
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
 	return (text);
 }
 
@@ -400,12 +400,12 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	s = g_strdup_printf("%s<menu id=\"%s Menu\" label=\"%s\"%s>\n", ctx->indent, esc, esc,
 			    icon);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	s = g_strdup_printf("%s</menu> <!-- %s Menu -->\n\n", ctx->indent, esc);
 	text = g_list_append(text, s);
 	level = xde_reset_indent(ctx, level);
 
-	ctx->output = g_list_concat(ctx->output, text);
+	ctx->wmm.output = g_list_concat(ctx->wmm.output, text);
 	s = g_strdup_printf("%s<menu id=\"%s Menu\" label=\"%s\"%s />\n", ctx->indent, esc, esc,
 			    icon);
 	text = g_list_append(NULL, s);
@@ -514,12 +514,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "openbox",
 	.desktop = "OPENBOX",
@@ -533,21 +527,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

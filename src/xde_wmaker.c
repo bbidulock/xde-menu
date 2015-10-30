@@ -211,7 +211,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = strdup("  )");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->wmmenu(ctx));
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 	s = strdup(",\n");
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
@@ -423,7 +423,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("%s  \"● %s\"", ctx->indent, esc2);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	s = strdup("\n");
 	text = g_list_append(text, s);
 	s = g_strdup_printf("%s)", ctx->indent);
@@ -488,12 +488,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "wmaker",
 	.desktop = "WMAKER",
@@ -507,21 +501,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

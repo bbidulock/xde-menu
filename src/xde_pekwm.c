@@ -98,7 +98,7 @@ xde_wmmenu(MenuContext *ctx)
 		free(esc1);
 		free(icon);
 	}
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
 	s = g_strdup_printf("%s  Entry = \"Reload\" { %sActions = \"Reload\" }\n", ctx->indent,
 			    icon);
@@ -153,7 +153,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_increase_indent(ctx);
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "pekwm"));
 	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Pekwm", icon);
 	text = g_list_append(text, s);
@@ -181,8 +181,8 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 			    ctx->indent, "Window List", icon, "ShowMenu GotoClient True");
 	text = g_list_append(text, s);
 	free(icon);
-	text = g_list_concat(text, ctx->themes(ctx));
-	text = g_list_concat(text, ctx->styles(ctx));
+	text = g_list_concat(text, ctx->wmm.themes(ctx));
+	text = g_list_concat(text, ctx->wmm.styles(ctx));
 	s = g_strdup_printf("%sSubmenu = \"%s\" {\n", ctx->indent, "Layout");
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
@@ -198,7 +198,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
 			    ctx->indent, "Mouse Top Left", "SetLayouter MouseTopLeft");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = g_strdup_printf("%sEntry = \"%s\" { Actions = \"%s\" }\n",
 			    ctx->indent, "Layout Horizontal", "SetLayouter TILE_Horizontal");
 	text = g_list_append(text, s);
@@ -223,7 +223,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->wmmenu(ctx));
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
@@ -246,7 +246,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 			    ctx->indent, "Restart", icon, "Restart");
 	text = g_list_append(text, s);
 	free(icon);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
 			    ctx->indent, "Exit", icon, "Exit");
@@ -296,7 +296,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 
 	name = gmenu_tree_directory_get_name(dir);
 	esc1 = xde_character_escape(name, '"');
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
 		GKeyFile *file;
 
@@ -314,8 +314,8 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	else
 		s = g_strdup_printf("%sEntry = \"%s\" { }\n", ctx->indent, esc1);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
 
 	free(icon);
 	free(esc1);
@@ -349,7 +349,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		s = g_strdup_printf("%sIcon = \"%s\"\n", ctx->indent, icon);
 		text = g_list_append(text, s);
 	}
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
@@ -440,12 +440,6 @@ xde_styles(MenuContext *ctx)
 	return (text);
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "pekwm",
 	.desktop = "PEKWM",
@@ -459,21 +453,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

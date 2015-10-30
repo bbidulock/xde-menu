@@ -69,7 +69,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	GList *result = NULL;
 	GList *entries = NULL;
 
-	ctx->output = NULL;
+	ctx->wmm.output = NULL;
 
 	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
@@ -77,33 +77,33 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	}
 	xde_reset_indent(ctx, 0);
 	xde_increase_indent(ctx);
-	entries = ctx->ops.menu(ctx, dir);
+	entries = ctx->wmm.ops.menu(ctx, dir);
 	xde_decrease_indent(ctx);
 
 	if (!name)
 		name = gmenu_tree_directory_get_name(dir);
 
 	if (style == StyleFullmenu) {
-		result = ctx->wmmenu(ctx);
-		ctx->output = g_list_concat(ctx->output, result);
+		result = ctx->wmm.wmmenu(ctx);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 		result = xde_fvwmmenu(ctx);
-		ctx->output = g_list_concat(ctx->output, result);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 	}
-	result = ctx->appmenu(ctx, entries, name);
-	ctx->output = g_list_concat(ctx->output, result);
+	result = ctx->wmm.appmenu(ctx, entries, name);
+	ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 
 	if (style == StyleEntries) {
-		ctx->output = g_list_concat(ctx->output, entries);
-		return (ctx->output);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, entries);
+		return (ctx->wmm.output);
 	}
 	if (style == StyleSubmenu)
 		entries = NULL;
 	if (style != StyleAppmenu) {
-		result = ctx->rootmenu(ctx, entries);
-		ctx->output = g_list_concat(ctx->output, result);
+		result = ctx->wmm.rootmenu(ctx, entries);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 	}
-	result = ctx->output;
-	ctx->output = NULL;
+	result = ctx->wmm.output;
+	ctx->wmm.output = NULL;
 	return (result);
 }
 
@@ -154,7 +154,7 @@ xde_wmmenu(MenuContext *ctx)
 		free(esc1);
 	}
 	if (gotone)
-		text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("+ \"%s%s\" Restart\n", "Restart", icon);
 	text = g_list_append(text, s);
@@ -184,7 +184,7 @@ xde_fvwmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = strdup("+ \"&Screen Saver%mini.display.xpm%\" Popup Screen\n");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	if (options.filename) {
 		s = g_strdup_printf
 		    ("+ \"Refresh &Menu%%mini.turn.xpm%%\" Exec xdg-menugen -format fvwm -desktop FVWM -o %s\n",
@@ -210,7 +210,7 @@ xde_fvwmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = strdup("+ \"&Settings%settings.xpm%\" Popup Settings\n");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = strdup("+ \"&Modules%modules.xpm%\" Popup Module-Popup\n");
 	text = g_list_append(text, s);
 	s = strdup("+ \"&Find%find1.xpm%\" FvwmScript FvwmScript-Find\n");
@@ -219,7 +219,7 @@ xde_fvwmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = strdup("+ \"&Run%run.xpm%\" Exec exec xde-run\n");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = strdup("+ \"&Screen Saver%screen.xpm%\" Popup Screen\n");
 	text = g_list_append(text, s);
 	s = strdup("+ \"Shut &Down%shutdown.xpm%\" Module FvwmScript FvwmScript-Quit\n");
@@ -254,12 +254,12 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = strdup("AddToMenu Utilities \"Root Menu\" Title\n");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "fvwm"));
 	s = g_strdup_printf("+ \"FVWM%s\" Popup FVWMmenu\n", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("+ \"Restart%s\" Restart\n", icon);
 	text = g_list_append(text, s);
@@ -319,7 +319,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	icon = xde_wrap_icon(icon);
 	s = g_strdup_printf("+ \"%s%s\" Nop\n", esc1, icon);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
 	free(icon);
 	free(esc1);
 	return (text);
@@ -356,8 +356,8 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("AddToMenu %s \"%s\" Title\n", id, esc1);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
-	ctx->output = g_list_concat(ctx->output, text);
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
+	ctx->wmm.output = g_list_concat(ctx->wmm.output, text);
 	text = NULL;
 	s = g_strdup_printf("+ \"%s%s\" Popup %s\n", esc1, icon, id);
 	text = g_list_append(text, s);
@@ -416,12 +416,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "fvwm",
 	.desktop = "FVWM",
@@ -435,21 +429,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

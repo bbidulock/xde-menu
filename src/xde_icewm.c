@@ -130,7 +130,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 
 	text = g_list_concat(text, entries);
 	xde_increase_indent(ctx);
-	text = g_list_concat(text, ctx->wmmenu(ctx));
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 	if (options.filename) {
 		xde_increase_indent(ctx);
 		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
@@ -199,7 +199,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	icon = xde_wrap_icon(icon);
 	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
 	DPRINTF("Done processing menu '%s'\n", name);
@@ -266,12 +266,6 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
-}
-
 MenuContext xde_menu_ops = {
 	.name = "icewm",
 	.desktop = "ICEWM",
@@ -285,21 +279,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };

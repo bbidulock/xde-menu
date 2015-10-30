@@ -137,7 +137,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
 	xde_increase_indent(ctx);
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Waimea)");
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
@@ -168,11 +168,11 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[config] (Configuration)");
 	text = g_list_append(text, s);
 #endif
-	text = g_list_concat(text, ctx->themes(ctx));
-	text = g_list_concat(text, ctx->styles(ctx));
+	text = g_list_concat(text, ctx->wmm.themes(ctx));
+	text = g_list_concat(text, ctx->wmm.styles(ctx));
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[sub] (Processes) <!procinfo.pl>");
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->wmmenu(ctx));
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
@@ -186,7 +186,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[reconfig] (Reconfigure)");
 	text = g_list_append(text, s);
 #endif
-	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[exit] (Exit)");
 	text = g_list_append(text, s);
 	xde_decrease_indent(ctx);
@@ -237,7 +237,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	icon = xde_wrap_icon(icon);
 	s = g_strdup_printf("%s[nop] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
 	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->ops.directory(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
 	free(icon);
 	free(esc2);
 	free(esc1);
@@ -257,7 +257,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	esc2 = xde_character_escape(name, '}');
 	icon = xde_wrap_icon(icon);
 	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
-	text = g_list_concat(text, ctx->ops.menu(ctx, dir));
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	text = g_list_append(text, g_strdup_printf("%s[end]\n", ctx->indent));
 	free(icon);
 	free(esc1);
@@ -460,7 +460,7 @@ xde_themes(MenuContext *ctx)
 		text = g_list_concat(text, sysent);
 	if (sysent && usrent) {
 		xde_increase_indent(ctx);
-		text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 		xde_decrease_indent(ctx);
 	}
 	if (usrent)
@@ -592,7 +592,7 @@ xde_styles(MenuContext *ctx)
 		text = g_list_concat(text, sysent);
 	if (sysent && usrent) {
 		xde_increase_indent(ctx);
-		text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
+		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 		xde_decrease_indent(ctx);
 	}
 	if (usrent)
@@ -601,12 +601,6 @@ xde_styles(MenuContext *ctx)
 	text = g_list_append(text, s);
 	free(icon);
 	return (text);
-}
-
-static GtkMenu *
-xde_submenu(void)
-{
-	return NULL;
 }
 
 MenuContext xde_menu_ops = {
@@ -622,21 +616,22 @@ MenuContext xde_menu_ops = {
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
 //              | GTK_ICON_LOOKUP_FORCE_SIZE
 	    ,
-	.output = NULL,
-	.create = &xde_create,
-	.wmmenu = &xde_wmmenu,
-	.appmenu = &xde_appmenu,
-	.rootmenu = &xde_rootmenu,
-	.build = &xde_build,
-	.ops = {
-		.menu = &xde_menu,
-		.directory = &xde_directory,
-		.header = &xde_header,
-		.separator = &xde_separator,
-		.entry = &xde_entry,
-		.alias = &xde_alias,
-		},
-	.themes = &xde_themes,
-	.styles = &xde_styles,
-	.submenu = &xde_submenu,
+	.wmm = {
+		.output = NULL,
+		.create = &xde_create,
+		.wmmenu = &xde_wmmenu,
+		.appmenu = &xde_appmenu,
+		.rootmenu = &xde_rootmenu,
+		.build = &xde_build,
+		.ops = {
+			.menu = &xde_menu,
+			.directory = &xde_directory,
+			.header = &xde_header,
+			.separator = &xde_separator,
+			.entry = &xde_entry,
+			.alias = &xde_alias,
+			},
+		.themes = &xde_themes,
+		.styles = &xde_styles,
+	},
 };
