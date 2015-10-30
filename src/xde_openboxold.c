@@ -635,6 +635,12 @@ xde_styles(MenuContext *ctx)
 	return (text);
 }
 
+static GtkMenu *
+xde_submenu(void)
+{
+	return NULL;
+}
+
 MenuContext xde_menu_ops = {
 	.name = "openboxold",
 	.desktop = "OPENBOX",
@@ -664,4 +670,5 @@ MenuContext xde_menu_ops = {
 		},
 	.themes = &xde_themes,
 	.styles = &xde_styles,
+	.submenu = &xde_submenu,
 };

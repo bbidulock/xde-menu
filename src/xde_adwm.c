@@ -122,6 +122,22 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
+/*
+ * Establishes a window-manager-specific menu that can be used to control or configure the
+ * window manager.  This effectively mimics the behaviour of the root menu for window
+ * managers that support a root menu, and a similar functionality for those that don't.
+ * For example, almost all window managers support restart and most support application of
+ * a style or theme (and a reload function).  ADWM supports more external controls than
+ * most window managers.  The tiling mode and other characteristics can be controlled by
+ * sending client messages to the window manager.
+ */
+static GtkMenu *
+xde_submenu()
+{
+	return NULL;
+}
+
+
 MenuContext xde_menu_ops = {
 	.name = "adwm",
 	.desktop = "ADWM",
@@ -151,4 +167,5 @@ MenuContext xde_menu_ops = {
 		},
 	.themes = &xde_themes,
 	.styles = &xde_styles,
+	.submenu = &xde_submenu,
 };

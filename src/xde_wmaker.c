@@ -488,6 +488,12 @@ xde_styles(MenuContext *ctx)
 	return NULL;
 }
 
+static GtkMenu *
+xde_submenu(void)
+{
+	return NULL;
+}
+
 MenuContext xde_menu_ops = {
 	.name = "wmaker",
 	.desktop = "WMAKER",
@@ -517,4 +523,5 @@ MenuContext xde_menu_ops = {
 		},
 	.themes = &xde_themes,
 	.styles = &xde_styles,
+	.submenu = &xde_submenu,
 };

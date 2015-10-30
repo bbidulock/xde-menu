@@ -285,6 +285,7 @@ struct MenuContext {
 	} ops;
 	GList *(*themes) (MenuContext *ctx);
 	GList *(*styles) (MenuContext *ctx);
+	GtkMenu *(*submenu) (void);
 };
 
 typedef struct {
