@@ -75,7 +75,7 @@ xde_wmmenu(MenuContext *ctx)
 	char *s;
 
 	icon = xde_wrap_icon(NULL);
-	s = g_strdup_printf("%s[submenu] (Window Managers) {Window Managers}%s\n",
+	s = g_strdup_printf("%s[submenu] (Window Managers)%s\n",
 			ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -91,8 +91,7 @@ xde_wmmenu(MenuContext *ctx)
 
 		if (strncasecmp(xsess->key, "waimea", strlen("waimea")) == 0)
 			continue;
-		icon = NULL;
-		icon = xde_wrap_icon(icon);
+		icon = xde_wrap_icon(NULL);
 		esc1 = xde_character_escape(xsess->name, ')');
 		s = g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}%s\n",
 				    ctx->indent, esc1, xsess->key, icon);
@@ -142,13 +141,15 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Waimea)");
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
+#if 0
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[workspaces] (Workspace List)");
 	text = g_list_append(text, s);
+#endif
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Tools)");
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent,
-			    "[exec] (Window name) {xprop WM_CLASS|cut -d \" -f 2|gxmessage -file - -center}");
+			    "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
 	text = g_list_append(text, s);
 	s = g_strdup_printf("%s%s\n", ctx->indent,
 			    "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}");
@@ -163,8 +164,10 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
+#if 0
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[config] (Configuration)");
 	text = g_list_append(text, s);
+#endif
 	text = g_list_concat(text, ctx->themes(ctx));
 	text = g_list_concat(text, ctx->styles(ctx));
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[sub] (Processes) <!procinfo.pl>");
@@ -179,8 +182,10 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 				    options.filename);
 		text = g_list_append(text, s);
 	}
+#if 0
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[reconfig] (Reconfigure)");
 	text = g_list_append(text, s);
+#endif
 	text = g_list_concat(text, ctx->ops.separator(ctx, NULL));
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[exit] (Exit)");
 	text = g_list_append(text, s);
@@ -276,9 +281,11 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
 	    && (p = strstr(appid, ".desktop")))
 		*p = '\0';
+#if 0
 	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+#endif
 	if (options.launch) {
 		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
 	} else {
@@ -447,7 +454,7 @@ xde_themes(MenuContext *ctx)
 	}
 
 	icon = xde_wrap_icon(NULL);
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Themes) {Choose a theme...}", icon);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Themes) {Choose a theme...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
@@ -530,7 +537,7 @@ xde_style_entries(MenuContext *ctx, const char *dname, Which which)
 				free(file);
 				continue;
 			}
-#if 1
+#if 0
 			text = g_list_append(text, g_strdup_printf("%s[style] (%s) {%s}\n", ctx->indent, d->d_name, path));
 			(void) fmt;
 #else
@@ -561,7 +568,7 @@ xde_styles(MenuContext *ctx)
 	char *usrdir, *s;
 	GList *text = NULL, *sysent, *usrent;
 	const char *home;
-	char *icon;
+	char *icon = NULL;
 	int len;
 
 	sysent = xde_style_entries(ctx, sysdir, XdeStyleSystem);
@@ -578,8 +585,8 @@ xde_styles(MenuContext *ctx)
 		free(usrdir);
 		return (text);
 	}
-	icon = strdup("");
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Styles) {Choose a style...}", icon);
+	icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Styles) {Choose a style...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
