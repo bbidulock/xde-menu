@@ -1021,6 +1021,35 @@ xde_create_simple(MenuContext *ctx, Style style, const char *name)
 	return (result);
 }
 
+GtkMenu *
+xde_gtk_create_simple(MenuContext *ctx, Style style, const char *name)
+{
+	GMenuTreeDirectory *directory;
+	GtkMenu *result = NULL;
+
+	if (!(directory = gmenu_tree_get_root_directory(ctx->tree))) {
+		EPRINTF("could not get root directory\n");
+		return (result);
+	}
+	ctx->level = 0;
+	result = ctx->gtk.ops.menu(ctx, directory);
+	switch (style) {
+	case StyleFullmenu:
+	default:
+		result = ctx->gtk.rootmenu(ctx, result);
+		break;
+	case StyleAppmenu:
+		if (!name)
+			name = gmenu_tree_directory_get_name(directory);
+		result = ctx->gtk.appmenu(ctx, result, name);
+		break;
+	case StyleEntries:
+		/* do nothing */
+		break;
+	}
+	return (result);
+}
+
 GList *
 xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
@@ -1051,6 +1080,38 @@ xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 		break;
 	}
 	return (text);
+}
+
+GtkMenuItem *
+xde_gtk_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
+{
+	GtkMenuItem *entry = NULL;
+
+	switch (type) {
+	case GMENU_TREE_ITEM_INVALID:
+		break;
+	case GMENU_TREE_ITEM_DIRECTORY:
+		if (ctx->gtk.ops.directory)
+			entry = ctx->gtk.ops.directory(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_ENTRY:
+		if (ctx->gtk.ops.entry)
+			entry = ctx->gtk.ops.entry(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_SEPARATOR:
+		if (ctx->gtk.ops.separator)
+			entry = ctx->gtk.ops.separator(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_HEADER:
+		if (ctx->gtk.ops.header)
+			entry = ctx->gtk.ops.header(ctx, item);
+		break;
+	case GMENU_TREE_ITEM_ALIAS:
+		if (ctx->gtk.ops.alias)
+			entry = ctx->gtk.ops.alias(ctx, item);
+		break;
+	}
+	return (entry);
 }
 
 GList *
@@ -1100,6 +1161,48 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 	}
 	xde_decrease_indent(ctx);
 	return (text);
+}
+
+GtkMenu *
+xde_gtk_menu_simple(MenuContext *ctx, GMenuTreeDirectory *gmenu)
+{
+	GMenuTreeItemType type;
+	GMenuTreeIter *iter;
+	GtkMenu *menu;
+	GtkMenuItem *item;
+
+	iter = gmenu_tree_directory_iter(gmenu);
+	menu = GTK_MENU(gtk_menu_new());
+
+	while ((type = gmenu_tree_iter_next(iter)) != GMENU_TREE_ITEM_INVALID) {
+		switch (type) {
+		case GMENU_TREE_ITEM_INVALID:
+		default:
+			break;
+		case GMENU_TREE_ITEM_DIRECTORY:
+			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_directory(iter));
+			gtk_menu_append(menu, GTK_WIDGET(item));
+			continue;
+		case GMENU_TREE_ITEM_ENTRY:
+			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_entry(iter));
+			gtk_menu_append(menu, GTK_WIDGET(item));
+			continue;
+		case GMENU_TREE_ITEM_SEPARATOR:
+			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_separator(iter));
+			gtk_menu_append(menu, GTK_WIDGET(item));
+			continue;
+		case GMENU_TREE_ITEM_HEADER:
+			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_header(iter));
+			gtk_menu_append(menu, GTK_WIDGET(item));
+			continue;
+		case GMENU_TREE_ITEM_ALIAS:
+			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_alias(iter));
+			gtk_menu_append(menu, GTK_WIDGET(item));
+			continue;
+		}
+		break;
+	}
+	return (menu);
 }
 
 GList *

@@ -290,16 +290,17 @@ struct MenuContext {
 	struct {
 		GtkMenu *output;
 		GtkMenu *(*create) (MenuContext *ctx, Style style, const char *name);
-		GtkMenu *(*wmmenu) (MenuContext *ctx); /* output the window manager menu */
+		GtkMenuItem *(*wmmenu) (MenuContext *ctx); /* output the window manager menu */
 		GtkMenu *(*appmenu) (MenuContext *ctx, GtkMenu *entries, const char *name);
 		GtkMenu *(*rootmenu) (MenuContext *ctx, GtkMenu *entries);
-		GtkMenu *(*build) (MenuContext *ctx, GMenuTreeItemType type, gpointer item);
+		GtkMenuItem *(*build) (MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 		struct {
 			GtkMenu *(*menu) (MenuContext *ctx, GMenuTreeDirectory *menu);
-			GtkMenu *(*directory) (MenuContext *ctx, GMenuTreeDirectory *dir);
-			GtkMenu *(*header) (MenuContext *ctx, GMenuTreeHeader *hdr);
-			GtkMenu *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
-			GtkMenu *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+			GtkMenuItem *(*directory) (MenuContext *ctx, GMenuTreeDirectory *dir);
+			GtkMenuItem *(*header) (MenuContext *ctx, GMenuTreeHeader *hdr);
+			GtkMenuItem *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
+			GtkMenuItem *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
+			GtkMenuItem *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
 		} ops;
 		GtkMenu *(*themes) (MenuContext *ctx);
 		GtkMenu *(*styles) (MenuContext *ctx);
@@ -370,6 +371,13 @@ GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);
 GList *xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 GList *xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu);
 GList *xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
+
+GtkMenu *xde_gtk_get_xsessions(void);
+void xde_gtk_free_xsessions(GtkMenu *list);
+GtkMenu *xde_gtk_create_simple(MenuContext *ctx, Style style, const char *name);
+GtkMenuItem *xde_gtk_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
+GtkMenu *xde_gtk_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu);
+GtkMenu *xde_gtk_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
 
 #endif				/* __XDE_MENU_H__ */
 
