@@ -49,6 +49,7 @@ xde_wrap_icon(char *file)
 {
 	char *icon;
 
+#if 1
 	if (file) {
 		icon = calloc(strlen(file) + 4, sizeof(*icon));
 		strcpy(icon, " <");
@@ -56,6 +57,9 @@ xde_wrap_icon(char *file)
 		strcat(icon, ">");
 	} else
 		icon = strdup("");
+#else
+	icon = strdup("");
+#endif
 	free(file);
 	return (icon);
 }
@@ -95,7 +99,7 @@ xde_wmmenu(MenuContext *ctx)
 		XdeXsession *xsess = xsession->data;
 		char *esc1;
 
-		if (strncasecmp(xsess->key, "openbox", strlen("openbox")) == 0)
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
 		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
 				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
@@ -734,7 +738,7 @@ xde_styles(MenuContext *ctx)
 }
 
 MenuContext xde_menu_ops = {
-	.name = "openboxold",
+	.name = "openbox",
 	.desktop = "OPENBOX",
 	.version = VERSION,
 	.tree = NULL,

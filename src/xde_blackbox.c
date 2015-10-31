@@ -49,6 +49,7 @@ xde_wrap_icon(char *file)
 {
 	char *icon;
 
+#if 0
 	if (file) {
 		icon = calloc(strlen(file) + 4, sizeof(*icon));
 		strcpy(icon, " <");
@@ -56,6 +57,9 @@ xde_wrap_icon(char *file)
 		strcat(icon, ">");
 	} else
 		icon = strdup("");
+#else
+	icon = strdup("");
+#endif
 	free(file);
 	return (icon);
 }
@@ -80,13 +84,13 @@ xde_wmmenu(MenuContext *ctx)
 	char *icon;
 	char *s;
 
-	icon = xde_wrap_icon(NULL);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%s[submenu] (Window Managers) {Window Managers}%s\n",
 			    ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
-	icon = xde_wrap_icon(NULL);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("%s[restart] (Restart)%s\n", ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -95,9 +99,10 @@ xde_wmmenu(MenuContext *ctx)
 		XdeXsession *xsess = xsession->data;
 		char *esc1;
 
-		if (strncasecmp(xsess->key, "blackbox", strlen("blackbox")) == 0)
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		icon = NULL;
+		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
 		icon = xde_wrap_icon(icon);
 		esc1 = xde_character_escape(xsess->name, ')');
 		s = g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}%s\n",
@@ -172,7 +177,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
-	icon = xde_wrap_icon(NULL);
+	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
 
 	text = g_list_append(text, g_strdup_printf("[submenu] (%s) {%s Menu}%s\n", esc1, esc2, icon));
 	text = g_list_concat(text, entries);
@@ -243,13 +248,6 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 static GtkMenu *
 xde_gtk_rootmenu(MenuContext *ctx, GtkMenu *entries)
 {
-#if 0
-	GtkWidget *image, *item, *menu;
-
-	menu = GTK_WIDGET(entries);
-	if ((item = gtk_separator_menu_item_new()))
-		gtk_menu_append(GTK_MENU(menu), item);
-#endif
 	return NULL;
 }
 
@@ -402,7 +400,7 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *
 		break;
 	}
 
-	icon = xde_wrap_icon(NULL);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
 
 	if ((dir = opendir(dname))) {
 		struct dirent *d;
@@ -427,7 +425,7 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *
 			switch (which) {
 			case XdeStyleMixed:
 			{
-				static const char *fname = "/xde/themerc";
+				fname = "/xde/themerc";
 
 				if (!S_ISDIR(st.st_mode)) {
 					DPRINTF("%s: not file or directory\n", file);
@@ -521,8 +519,8 @@ xde_themes(MenuContext *ctx)
 		return (text);
 	}
 
-	icon = xde_wrap_icon(NULL);
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Themes) {Choose a theme...}", icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Themes) {Choose a theme...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
@@ -653,8 +651,8 @@ xde_styles(MenuContext *ctx)
 		free(usrdir);
 		return (text);
 	}
-	icon = strdup("");
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Styles) {Choose a style...}", icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Styles) {Choose a style...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
