@@ -174,8 +174,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	esc2 = xde_character_escape(name, '}');
 	icon = xde_wrap_icon(NULL);
 
-	text =
-	    g_list_append(text, g_strdup_printf("[submenu] (%s) {%s Menu}%s\n", esc1, esc2, icon));
+	text = g_list_append(text, g_strdup_printf("[submenu] (%s) {%s Menu}%s\n", esc1, esc2, icon));
 	text = g_list_concat(text, entries);
 	text = g_list_append(text, g_strdup_printf("[end]\n"));
 
@@ -241,6 +240,19 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	return (text);
 }
 
+static GtkMenu *
+xde_gtk_rootmenu(MenuContext *ctx, GtkMenu *entries)
+{
+#if 0
+	GtkWidget *image, *item, *menu;
+
+	menu = GTK_WIDGET(entries);
+	if ((item = gtk_separator_menu_item_new()))
+		gtk_menu_append(GTK_MENU(menu), item);
+#endif
+	return NULL;
+}
+
 static GList *
 xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
@@ -271,8 +283,7 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 	GList *text = NULL;
 	char *s;
 
-	s = g_strdup_printf("%s%s\n", ctx->indent,
-			    "[nop] (————————————) {}");
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}");
 	text = g_list_append(text, s);
 	return (text);
 }
@@ -313,10 +324,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
 	icon = xde_wrap_icon(icon);
-	text =
-	    g_list_append(text,
-			  g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1,
-					  esc2, icon));
+	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
 	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	text = g_list_append(text, g_strdup_printf("%s[end]\n", ctx->indent));
 	free(icon);
@@ -354,7 +362,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	}
 	esc2 = xde_character_escape(cmd, '}');
 	icon = xde_wrap_icon(icon);
-	s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, "");
+	s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
 	text = g_list_append(text, s);
 	free(icon);
 	free(appid);
@@ -504,7 +512,7 @@ xde_themes(MenuContext *ctx)
 
 	sysent = xde_theme_entries(ctx, sysdir, XdeStyleSystem);
 
-	home = getenv("HOME") ? : "~";
+	home = getenv("HOME") ?: "~";
 	len = strlen(home) + 1 + strlen(usr) + 1;
 	usrdir = calloc(len, sizeof(*usrdir));
 	strcpy(usrdir, home);
@@ -518,8 +526,7 @@ xde_themes(MenuContext *ctx)
 	}
 
 	icon = xde_wrap_icon(NULL);
-	s = g_strdup_printf("%s%s%s\n", ctx->indent,
-			    "[submenu] (System Themes) {Choose a theme...}", icon);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Themes) {Choose a theme...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
@@ -603,15 +610,10 @@ xde_style_entries(MenuContext *ctx, const char *dname, Which which)
 				continue;
 			}
 #if 1
-			text =
-			    g_list_append(text,
-					  g_strdup_printf("%s[style] (%s) {%s}\n", ctx->indent,
-							  d->d_name, path));
+			text = g_list_append(text, g_strdup_printf("%s[style] (%s) {%s}\n", ctx->indent, d->d_name, path));
 			(void) fmt;
 #else
-			text =
-			    g_list_append(text,
-					  g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name));
+			text = g_list_append(text, g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name));
 #endif
 			free(path);
 			free(file);
@@ -656,8 +658,7 @@ xde_styles(MenuContext *ctx)
 		return (text);
 	}
 	icon = strdup("");
-	s = g_strdup_printf("%s%s%s\n", ctx->indent,
-			    "[submenu] (System Styles) {Choose a style...}", icon);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Styles) {Choose a style...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
@@ -680,7 +681,8 @@ MenuContext xde_menu_ops = {
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,
-	.iconflags = 0 | GTK_ICON_LOOKUP_NO_SVG
+	.iconflags = 0
+		| GTK_ICON_LOOKUP_NO_SVG
 //              | GTK_ICON_LOOKUP_FORCE_SVG
 //              | GTK_ICON_LOOKUP_USE_BUILTIN
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK
@@ -709,7 +711,7 @@ MenuContext xde_menu_ops = {
 		.create = &xde_gtk_create,
 		.wmmenu = &xde_gtk_wmmenu,
 		.appmenu = &xde_gtk_appmenu,
-		.rootmenu = NULL,
+		.rootmenu = &xde_gtk_rootmenu,
 		.build = &xde_gtk_build,
 		.ops = {
 			.menu = &xde_gtk_menu,
