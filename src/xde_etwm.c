@@ -448,6 +448,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "etwm",
+	.format = "etwm",
 	.desktop = "ETWM",
 	.version = VERSION,
 	.tree = NULL,

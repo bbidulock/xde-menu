@@ -444,6 +444,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "mwm",
+	.format = "mwm",
 	.desktop = "MWM",
 	.version = VERSION,
 	.tree = NULL,

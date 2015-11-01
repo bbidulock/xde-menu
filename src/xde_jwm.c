@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "jwm",
+	.format = "jwm",
 	.desktop = "JWM",
 	.version = VERSION,
 	.tree = NULL,

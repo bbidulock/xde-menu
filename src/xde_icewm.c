@@ -268,6 +268,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "icewm",
+	.format = "icewm",
 	.desktop = "ICEWM",
 	.version = VERSION,
 	.tree = NULL,

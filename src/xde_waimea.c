@@ -214,6 +214,7 @@ static GList *
 xde_rootmenu(MenuContext *ctx, GList *entries)
 {
 	GList *text = NULL;
+	char *icon;
 	char *s;
 
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[start] (rootmenu)");
@@ -221,13 +222,12 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_concat(text, entries);
 	xde_increase_indent(ctx);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Waimea)");
+	icon = xde_wrap_icon(xde_get_icon(ctx, ctx->name));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Waimea)", icon);
 	text = g_list_append(text, s);
+	free(icon);
 	xde_increase_indent(ctx);
-#if 0
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[workspaces] (Workspace List)");
-	text = g_list_append(text, s);
-#endif
+#if 1
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Tools)");
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
@@ -247,31 +247,112 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
+#endif
 #if 0
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[config] (Configuration)");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
 	text = g_list_append(text, s);
+	free(icon);
 #endif
 	text = g_list_concat(text, ctx->wmm.themes(ctx));
 	text = g_list_concat(text, ctx->wmm.styles(ctx));
+#if 0
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Backgrounds) {Set the Background}");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Random Background) {fbsetbg -r /usr/share/fluxbox/backgrounds}");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#endif
+#if 0
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[workspaces] (Workspace List)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+#endif
+#if 1
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[sub] (Processes) <!procinfo.pl>");
 	text = g_list_append(text, s);
+#endif
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applications-utilities"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Tools)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applets-screenshooter"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}", icon);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run) {fbrun -font 10x20 -fg grey -bg black -title run}", icon);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#if 0
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Arrange Windows)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindows] (Arrange Windows)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowshorizontal] (Arrange Windows Horizontal)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowsvertical] (Arrange Windows Vertical)");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#endif
 	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
-	if (options.filename) {
-		s = g_strdup_printf("%s%s%s\n", ctx->indent,
-				    "[exec] (Refresh Menu) {xde-menugen -format waimea -desktop WAIMEA -launch -o ",
-				    options.filename);
-		text = g_list_append(text, s);
-	}
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gnome-lockscreen"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Lock screen) {xlock}", icon);
+	text = g_list_append(text, s);
+	free(icon);
 #if 0
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[reconfig] (Reconfigure)");
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[commanddialog] (Fluxbox Command)", icon);
 	text = g_list_append(text, s);
+	free(icon);
 #endif
-	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[exit] (Exit)");
+#if 0
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[reconfig] (Reload config)", icon);
 	text = g_list_append(text, s);
+	free(icon);
+#endif
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[restart] (Restart) {}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "help-about"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (About) {(fluxbox -v; fluxbox -info | sed 1d) | gxmessage -file - -center}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	if (options.filename) {
+		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+		s = g_strdup_printf("%s%s%s%s%s%s%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format", ctx->format, " -desktop ", ctx->desktop, " -launch -o ", options.filename, "}", icon);
+		text = g_list_append(text, s);
+		free(icon);
+	}
+	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exit] (Exit)", icon);
+	text = g_list_append(text, s);
+	free(icon);
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
@@ -326,7 +407,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	GMenuTreeDirectory *dir;
 	GList *text = NULL;
-	const char *name;
+	const char *name, *path;
 	char *esc1, *esc2, *s;
 	char *icon = NULL;
 
@@ -335,6 +416,16 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	name = gmenu_tree_directory_get_name(dir);
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG|
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "folder", "unknown");
 	icon = xde_wrap_icon(icon);
 	s = g_strdup_printf("%s[nop] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
 	text = g_list_append(text, s);
@@ -349,13 +440,22 @@ static GList *
 xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GList *text = NULL;
-	const char *name;
+	const char *name, *path;
 	char *esc1, *esc2;
 	char *icon = NULL;
 
 	name = gmenu_tree_directory_get_name(dir);
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "folder", "unknown");
 	icon = xde_wrap_icon(icon);
 	text = g_list_append(text, g_strdup_printf("%s%s (%s) {%s Menu}%s\n", ctx->indent, "[submenu]", esc1, esc2, icon));
 	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
@@ -706,12 +806,13 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "waimea",
+	.format = "waimea",
 	.desktop = "WAIMEA",
 	.version = VERSION,
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0
-              | GTK_ICON_LOOKUP_NO_SVG
+//              | GTK_ICON_LOOKUP_NO_SVG
 //              | GTK_ICON_LOOKUP_FORCE_SVG
 //              | GTK_ICON_LOOKUP_USE_BUILTIN
 //              | GTK_ICON_LOOKUP_GENERIC_FALLBACK

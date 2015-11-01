@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "afterstep",
+	.format = "afterstep",
 	.desktop = "AFTERSTEP",
 	.version = VERSION,
 	.tree = NULL,

@@ -263,6 +263,7 @@ typedef struct MenuContext MenuContext;
 struct MenuContext {
 	void *handle;
 	char *name;
+	char *format;
 	char *desktop;
 	char *version;
 	GMenuTree *tree;

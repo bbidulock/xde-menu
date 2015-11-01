@@ -442,6 +442,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "pekwm",
+	.format = "pekwm",
 	.desktop = "PEKWM",
 	.version = VERSION,
 	.tree = NULL,

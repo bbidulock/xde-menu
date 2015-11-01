@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "dtwm",
+	.format = "dtwm",
 	.desktop = "DTWM",
 	.version = VERSION,
 	.tree = NULL,

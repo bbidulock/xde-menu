@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "flwm",
+	.format = "flwm",
 	.desktop = "FLWM",
 	.version = VERSION,
 	.tree = NULL,

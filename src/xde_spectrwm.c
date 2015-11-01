@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "spectrwm",
+	.format = "spectrwm",
 	.desktop = "SPECTRWM",
 	.version = VERSION,
 	.tree = NULL,

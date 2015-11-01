@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "echinus",
+	.format = "echinus",
 	.desktop = "ECHINUS",
 	.version = VERSION,
 	.tree = NULL,

@@ -124,6 +124,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "metacity",
+	.format = "metacity",
 	.desktop = "METACITY",
 	.version = VERSION,
 	.tree = NULL,

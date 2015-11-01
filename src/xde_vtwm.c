@@ -447,6 +447,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "vtwm",
+	.format = "vtwm",
 	.desktop = "VTWM",
 	.version = VERSION,
 	.tree = NULL,

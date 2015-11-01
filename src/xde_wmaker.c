@@ -490,6 +490,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "wmaker",
+	.format = "wmaker",
 	.desktop = "WMAKER",
 	.version = VERSION,
 	.tree = NULL,

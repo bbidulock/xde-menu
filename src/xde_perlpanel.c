@@ -767,6 +767,7 @@ xde_styles(MenuContext *ctx)
 
 MenuContext xde_menu_ops = {
 	.name = "perlpanel",
+	.format = "perlpanel",
 	.desktop = "XDE",
 	.version = VERSION,
 	.tree = NULL,
