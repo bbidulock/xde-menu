@@ -58,6 +58,233 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	return xde_create_simple(ctx, style, name);
 }
 
+static GtkMenu *
+xde_gtk_create(MenuContext *ctx, Style style, const char *name)
+{
+	return xde_gtk_create_simple(ctx, style, name);
+}
+
+static GList *
+xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
+{
+	GList *text = NULL;
+	char *esc;
+	char *icon;
+
+	esc = xde_character_escape(name, '"');
+	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
+
+	text = g_list_append(text, g_strdup_printf("menu \"%s\" %s {\n", name, icon));
+	text = g_list_concat(text, entries);
+	text = g_list_append(text, g_strdup_printf("}\n"));
+
+	free(icon);
+	free(esc);
+	return (text);
+}
+
+static GtkMenu *
+xde_gtk_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
+{
+	GtkWidget *image, *item, *menu;
+	GdkPixbuf *pixbuf;
+	char *icon;
+
+	menu = gtk_menu_new();
+	item = gtk_image_menu_item_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(entries));
+	if (name)
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), name);
+	if ((icon = xde_get_icon2(ctx, "start-here", "folder")) &&
+	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	free(icon);
+	gtk_menu_append(menu, item);
+	return (GTK_MENU(menu));
+}
+
+/* IceWM does not actually support specifying the entire root menu. */
+
+static GList *
+xde_rootmenu(MenuContext *ctx, GList *entries)
+{
+	GList *text = NULL;
+	char *icon;
+	char *s;
+
+	text = g_list_concat(text, entries);
+	xde_increase_indent(ctx);
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
+	if (options.filename) {
+		xde_increase_indent(ctx);
+		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+		s = g_strdup_printf
+		    ("%sprog \"%s\" %s xde-menugen -format icewm -desktop ICEWM -launch -o %s\n",
+		     ctx->indent, "Refresh Menu", icon, options.filename);
+		text = g_list_append(text, s);
+		free(icon);
+		xde_decrease_indent(ctx);
+	}
+	xde_decrease_indent(ctx);
+	return (text);
+}
+
+static GtkMenu *
+xde_gtk_rootmenu(MenuContext *ctx, GtkMenu *entries)
+{
+	return NULL;
+}
+
+static GList *
+xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
+{
+	return xde_build_simple(ctx, type, item);
+}
+
+static GtkMenuItem *
+xde_gtk_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
+{
+	return xde_gtk_build_simple(ctx, type, item);
+}
+
+static GList *
+xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
+{
+	return xde_menu_simple(ctx, menu);
+}
+
+static GtkMenu *
+xde_gtk_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
+{
+	return xde_gtk_menu_simple(ctx, menu);
+}
+
+static GList *
+xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+{
+	/* IceWM does not support separators */
+	return NULL;
+}
+
+static GtkMenuItem *
+xde_gtk_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+{
+	return NULL;
+}
+
+static GList *
+xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
+{
+	/* IceWM does not support inline headers */
+	return NULL;
+}
+
+static GtkMenuItem *
+xde_gtk_header(MenuContext *ctx, GMenuTreeHeader *hdr)
+{
+	return NULL;
+}
+
+static GList *
+xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
+{
+	GList *text = NULL;
+	const char *name, *path;
+	char *esc, *s;
+	char *icon = NULL;
+
+	name = gmenu_tree_directory_get_name(dir);
+
+	esc = xde_character_escape(name, '"');
+
+	DPRINTF("Processing menu '%s'\n", name);
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file;
+
+		file = g_key_file_new();
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon =
+		    xde_get_entry_icon(ctx, file, "folder", "unknown",
+				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "folder", "unknown");
+	icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
+	text = g_list_append(text, s);
+	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
+	s = g_strdup_printf("%s}\n", ctx->indent);
+	text = g_list_append(text, s);
+	DPRINTF("Done processing menu '%s'\n", name);
+
+	free(icon);
+	free(esc);
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
+{
+	return NULL;
+}
+
+static GList *
+xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
+{
+	GDesktopAppInfo *info;
+	GList *text = NULL;
+	const char *name;
+	char *esc, *cmd, *s, *p;
+	char *icon = NULL;
+	char *appid;
+
+	info = gmenu_tree_entry_get_app_info(ent);
+	name = g_app_info_get_name(G_APP_INFO(info));
+
+	esc = xde_character_escape(name, '"');
+
+	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
+	    && (p = strstr(appid, ".desktop")))
+		*p = '\0';
+
+	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+	if (options.launch) {
+		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
+	} else {
+		cmd = xde_get_command(info, appid, icon);
+	}
+	icon = xde_wrap_icon(icon);
+	s = g_strdup_printf("%sprog \"%s\" %s %s\n", ctx->indent, esc, icon, cmd);
+	text = g_list_append(text, s);
+	free(icon);
+	free(appid);
+	free(esc);
+	free(cmd);
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_entry(MenuContext *ctx, GMenuTreeEntry *ent)
+{
+	return NULL;
+}
+
+static GList *
+xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
+{
+	return xde_alias_simple(ctx, als);
+}
+
+static GtkMenuItem *
+xde_gtk_alias(MenuContext *ctx, GMenuTreeAlias *als)
+{
+	return NULL;
+}
+
 static GList *
 xde_wmmenu(MenuContext *ctx)
 {
@@ -100,156 +327,54 @@ xde_wmmenu(MenuContext *ctx)
 	return (text);
 }
 
-static GList *
-xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
+static GtkMenuItem *
+xde_gtk_wmmenu(MenuContext *ctx)
 {
-	GList *text = NULL;
-	char *esc;
+	GtkWidget *menu = NULL, *image, *item;
+	GtkMenuItem *result = NULL;
+	GList *xsessions, *xsession;
+	GdkPixbuf *pixbuf;
 	char *icon;
 
-	esc = xde_character_escape(name, '"');
-	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
-
-	text = g_list_append(text, g_strdup_printf("menu \"%s\" %s {\n", name, icon));
-	text = g_list_concat(text, entries);
-	text = g_list_append(text, g_strdup_printf("}\n"));
-
+	menu = gtk_menu_new();
+	result = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_submenu(result, menu);
+	gtk_menu_item_set_label(result, "Window Managers");
+	if ((icon = xde_get_icon(ctx, "gtk-quit")) &&
+	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
 	free(icon);
-	free(esc);
-	return (text);
-}
+	item = gtk_menu_item_new();
+	gtk_menu_append(menu, item);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
+	if ((icon = xde_get_icon(ctx, "gtk-refresh")) &&
+	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
+	free(icon);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *label;
 
-/* IceWM does not actually support specifying the entire root menu. */
-
-static GList *
-xde_rootmenu(MenuContext *ctx, GList *entries)
-{
-	GList *text = NULL;
-	char *icon;
-	char *s;
-
-	text = g_list_concat(text, entries);
-	xde_increase_indent(ctx);
-	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
-	if (options.filename) {
-		xde_increase_indent(ctx);
-		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
-		s = g_strdup_printf
-		    ("%sprog \"%s\" %s xde-menugen -format icewm -desktop ICEWM -launch -o %s\n",
-		     ctx->indent, "Refresh Menu", icon, options.filename);
-		text = g_list_append(text, s);
+		if (strncasecmp(xsess->key, "blackbox", strlen("blackbox")) == 0)
+			continue;
+		item = gtk_menu_item_new();
+		gtk_menu_append(menu, item);
+		label = g_strdup_printf("Start %s", xsess->name);
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
+		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+					       "metacity",
+					       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG))
+		    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
+		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 		free(icon);
-		xde_decrease_indent(ctx);
+		free(label);
 	}
-	xde_decrease_indent(ctx);
-	return (text);
-}
-
-static GList *
-xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
-{
-	return xde_build_simple(ctx, type, item);
-}
-
-static GList *
-xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
-{
-	return xde_menu_simple(ctx, menu);
-}
-
-static GList *
-xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
-{
-	/* IceWM does not support separators */
-	return NULL;
-}
-
-static GList *
-xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
-{
-	/* IceWM does not support inline headers */
-	return NULL;
-}
-
-static GList *
-xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
-{
-	GList *text = NULL;
-	const char *name, *path;
-	char *esc, *s;
-	char *icon = NULL;
-
-	name = gmenu_tree_directory_get_name(dir);
-
-	esc = xde_character_escape(name, '"');
-
-	DPRINTF("Processing menu '%s'\n", name);
-	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
-		GKeyFile *file;
-
-		file = g_key_file_new();
-		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon =
-		    xde_get_entry_icon(ctx, file, "folder", "unknown",
-				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		g_key_file_unref(file);
-	} else
-		icon = xde_get_icon2(ctx, "folder", "unknown");
-	icon = xde_wrap_icon(icon);
-	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
-	text = g_list_append(text, s);
-	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
-	s = g_strdup_printf("%s}\n", ctx->indent);
-	text = g_list_append(text, s);
-	DPRINTF("Done processing menu '%s'\n", name);
-
-	free(icon);
-	free(esc);
-	return (text);
-}
-
-static GList *
-xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
-{
-	GDesktopAppInfo *info;
-	GList *text = NULL;
-	const char *name;
-	char *esc, *cmd, *s, *p;
-	char *icon = NULL;
-	char *appid;
-
-	info = gmenu_tree_entry_get_app_info(ent);
-	name = g_app_info_get_name(G_APP_INFO(info));
-
-	esc = xde_character_escape(name, '"');
-
-	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
-	    && (p = strstr(appid, ".desktop")))
-		*p = '\0';
-
-	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
-				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-	if (options.launch) {
-		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
-	} else {
-		cmd = xde_get_command(info, appid, icon);
-	}
-	icon = xde_wrap_icon(icon);
-	s = g_strdup_printf("%sprog \"%s\" %s %s\n", ctx->indent, esc, icon, cmd);
-	text = g_list_append(text, s);
-	free(icon);
-	free(appid);
-	free(esc);
-	free(cmd);
-	return (text);
-}
-
-static GList *
-xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
-{
-	return xde_alias_simple(ctx, als);
+	return (result);
 }
 
 static GList *
@@ -259,10 +384,46 @@ xde_themes(MenuContext *ctx)
 	return NULL;
 }
 
+static GtkMenuItem *
+xde_gtk_themes(MenuContext *ctx)
+{
+	return NULL;
+}
+
 static GList *
 xde_styles(MenuContext *ctx)
 {
 	/* IceWM does not support specification of styles menu */
+	return NULL;
+}
+
+static GtkMenuItem *
+xde_gtk_styles(MenuContext *ctx)
+{
+	return NULL;
+}
+
+static GList *
+xde_config(MenuContext *ctx)
+{
+	return NULL;
+}
+
+static GtkMenuItem *
+xde_gtk_config(MenuContext *ctx)
+{
+	return NULL;
+}
+
+static GList *
+xde_wkspcs(MenuContext *ctx)
+{
+	return NULL;
+}
+
+static GtkMenuItem *
+xde_gtk_wkspcs(MenuContext *ctx)
+{
 	return NULL;
 }
 
@@ -283,7 +444,6 @@ MenuContext xde_menu_ops = {
 	.wmm = {
 		.output = NULL,
 		.create = &xde_create,
-		.wmmenu = &xde_wmmenu,
 		.appmenu = &xde_appmenu,
 		.rootmenu = &xde_rootmenu,
 		.build = &xde_build,
@@ -295,7 +455,30 @@ MenuContext xde_menu_ops = {
 			.entry = &xde_entry,
 			.alias = &xde_alias,
 			},
+		.wmmenu = &xde_wmmenu,
 		.themes = &xde_themes,
 		.styles = &xde_styles,
-	},
+		.config = &xde_config,
+		.wkspcs = &xde_wkspcs,
+		},
+	.gtk = {
+		.output = NULL,
+		.create = &xde_gtk_create,
+		.appmenu = &xde_gtk_appmenu,
+		.rootmenu = &xde_gtk_rootmenu,
+		.build = &xde_gtk_build,
+		.ops = {
+			.menu = &xde_gtk_menu,
+			.directory = &xde_gtk_directory,
+			.header = &xde_gtk_header,
+			.separator = &xde_gtk_separator,
+			.entry = &xde_gtk_entry,
+			.alias = &xde_gtk_alias,
+			},
+		.wmmenu = &xde_gtk_wmmenu,
+		.themes = &xde_gtk_themes,
+		.styles = &xde_gtk_styles,
+		.config = &xde_gtk_config,
+		.wkspcs = &xde_gtk_wkspcs,
+		},
 };

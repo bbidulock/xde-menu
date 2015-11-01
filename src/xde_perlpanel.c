@@ -250,12 +250,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
 #endif
-#if 1
-	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
-	text = g_list_append(text, s);
-	free(icon);
-#endif
+	text = g_list_concat(text, ctx->wmm.config(ctx));
 	text = g_list_concat(text, ctx->wmm.themes(ctx));
 	text = g_list_concat(text, ctx->wmm.styles(ctx));
 #if 1
@@ -801,6 +796,32 @@ xde_styles(MenuContext *ctx)
 	return (text);
 }
 
+static GList *
+xde_config(MenuContext *ctx)
+{
+	char *icon, *s;
+	GList *text = NULL;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
+}
+
+static GList *
+xde_wkspcs(MenuContext *ctx)
+{
+	GList *text = NULL;
+	char *icon, *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[workspaces] (Workspace List)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
+}
+
 MenuContext xde_menu_ops = {
 	.name = "perlpanel",
 	.format = "perlpanel",
@@ -818,7 +839,6 @@ MenuContext xde_menu_ops = {
 	.wmm = {
 		.output = NULL,
 		.create = &xde_create,
-		.wmmenu = &xde_wmmenu,
 		.appmenu = &xde_appmenu,
 		.rootmenu = &xde_rootmenu,
 		.build = &xde_build,
@@ -830,13 +850,15 @@ MenuContext xde_menu_ops = {
 			.entry = &xde_entry,
 			.alias = &xde_alias,
 			},
+		.wmmenu = &xde_wmmenu,
 		.themes = &xde_themes,
 		.styles = &xde_styles,
+		.config = &xde_config,
+		.wkspcs = &xde_wkspcs,
 	},
 	.gtk = {
 		.output = NULL,
 		.create = &xde_gtk_create,
-		.wmmenu = &xde_gtk_wmmenu,
 		.appmenu = &xde_gtk_appmenu,
 		.rootmenu = &xde_gtk_rootmenu,
 		.build = &xde_gtk_build,
@@ -848,7 +870,10 @@ MenuContext xde_menu_ops = {
 			.entry = NULL,
 			.alias = NULL,
 			},
+		.wmmenu = &xde_gtk_wmmenu,
 		.themes = NULL,
 		.styles = NULL,
+		.config = NULL,
+		.wkspcs = NULL,
 		},
 };

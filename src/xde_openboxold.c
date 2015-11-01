@@ -77,98 +77,6 @@ xde_gtk_create(MenuContext *ctx, Style style, const char *name)
 }
 
 static GList *
-xde_wmmenu(MenuContext *ctx)
-{
-	GList *text = NULL;
-	GList *xsessions, *xsession;
-	char *icon;
-	char *s;
-
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
-	s = g_strdup_printf("%s[submenu] (Window Managers) {Window Managers}%s\n",
-			    ctx->indent, icon);
-	text = g_list_append(text, s);
-	free(icon);
-	xde_increase_indent(ctx);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
-	s = g_strdup_printf("%s[restart] (Restart)%s\n", ctx->indent, icon);
-	text = g_list_append(text, s);
-	free(icon);
-	xsessions = xde_get_xsessions();
-	for (xsession = xsessions; xsession; xsession = xsession->next) {
-		XdeXsession *xsess = xsession->data;
-		char *esc1;
-
-		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
-			continue;
-		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
-				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
-		icon = xde_wrap_icon(icon);
-		esc1 = xde_character_escape(xsess->name, ')');
-		s = g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}%s\n",
-				    ctx->indent, esc1, xsess->key, icon);
-		text = g_list_append(text, s);
-		free(esc1);
-		free(icon);
-	}
-	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s[end]\n", ctx->indent);
-	text = g_list_append(text, s);
-	xde_free_xsessions(xsessions);
-	return (text);
-}
-
-static GtkMenuItem *
-xde_gtk_wmmenu(MenuContext *ctx)
-{
-	GtkWidget *menu = NULL, *image, *item;
-	GtkMenuItem *result = NULL;
-	GList *xsessions, *xsession;
-	GdkPixbuf *pixbuf;
-	char *icon;
-
-	menu = gtk_menu_new();
-	result = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_menu_item_set_submenu(result, menu);
-	gtk_menu_item_set_label(result, "Window Managers");
-	if ((icon = xde_get_icon(ctx, "gtk-quit")) &&
-	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
-	    (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
-	free(icon);
-	item = gtk_menu_item_new();
-	gtk_menu_append(menu, item);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
-	if ((icon = xde_get_icon(ctx, "gtk-refresh")) &&
-	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
-	    (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
-	free(icon);
-	xsessions = xde_get_xsessions();
-	for (xsession = xsessions; xsession; xsession = xsession->next) {
-		XdeXsession *xsess = xsession->data;
-		char *label;
-
-		if (strncasecmp(xsess->key, "blackbox", strlen("blackbox")) == 0)
-			continue;
-		item = gtk_menu_item_new();
-		gtk_menu_append(menu, item);
-		label = g_strdup_printf("Start %s", xsess->name);
-		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
-		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
-					       "metacity",
-					       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-					       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG))
-		    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
-		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
-			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-		free(icon);
-		free(label);
-	}
-	return (result);
-}
-
-static GList *
 xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
 	GList *text = NULL;
@@ -248,12 +156,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
 #endif
-#if 1
-	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
-	text = g_list_append(text, s);
-	free(icon);
-#endif
+	text = g_list_concat(text, ctx->wmm.config(ctx));
 	text = g_list_concat(text, ctx->wmm.themes(ctx));
 	text = g_list_concat(text, ctx->wmm.styles(ctx));
 #if 1
@@ -510,6 +413,98 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 }
 
 static GList *
+xde_wmmenu(MenuContext *ctx)
+{
+	GList *text = NULL;
+	GList *xsessions, *xsession;
+	char *icon;
+	char *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	s = g_strdup_printf("%s[submenu] (Window Managers) {Window Managers}%s\n",
+			    ctx->indent, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	s = g_strdup_printf("%s[restart] (Restart)%s\n", ctx->indent, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *esc1;
+
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
+			continue;
+		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
+		icon = xde_wrap_icon(icon);
+		esc1 = xde_character_escape(xsess->name, ')');
+		s = g_strdup_printf("%s[restart] (Start %s) {xdg-launch --pointer -X %s}%s\n",
+				    ctx->indent, esc1, xsess->key, icon);
+		text = g_list_append(text, s);
+		free(esc1);
+		free(icon);
+	}
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s[end]\n", ctx->indent);
+	text = g_list_append(text, s);
+	xde_free_xsessions(xsessions);
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_wmmenu(MenuContext *ctx)
+{
+	GtkWidget *menu = NULL, *image, *item;
+	GtkMenuItem *result = NULL;
+	GList *xsessions, *xsession;
+	GdkPixbuf *pixbuf;
+	char *icon;
+
+	menu = gtk_menu_new();
+	result = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_submenu(result, menu);
+	gtk_menu_item_set_label(result, "Window Managers");
+	if ((icon = xde_get_icon(ctx, "gtk-quit")) &&
+	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
+	free(icon);
+	item = gtk_menu_item_new();
+	gtk_menu_append(menu, item);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
+	if ((icon = xde_get_icon(ctx, "gtk-refresh")) &&
+	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
+	free(icon);
+	xsessions = xde_get_xsessions();
+	for (xsession = xsessions; xsession; xsession = xsession->next) {
+		XdeXsession *xsess = xsession->data;
+		char *label;
+
+		if (strncasecmp(xsess->key, "blackbox", strlen("blackbox")) == 0)
+			continue;
+		item = gtk_menu_item_new();
+		gtk_menu_append(menu, item);
+		label = g_strdup_printf("Start %s", xsess->name);
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
+		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+					       "metacity",
+					       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG))
+		    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
+		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+		free(icon);
+		free(label);
+	}
+	return (result);
+}
+
+static GList *
 xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *fname)
 {
 	GList *text = NULL;
@@ -670,6 +665,12 @@ xde_themes(MenuContext *ctx)
 	return (text);
 }
 
+static GtkMenuItem *
+xde_gtk_themes(MenuContext *ctx)
+{
+	return NULL;
+}
+
 static GList *
 xde_style_entries(MenuContext *ctx, const char *dname, Which which, const char *fname)
 {
@@ -802,6 +803,50 @@ xde_styles(MenuContext *ctx)
 	return (text);
 }
 
+static GtkMenuItem *
+xde_gtk_styles(MenuContext *ctx)
+{
+	return NULL;
+}
+
+static GList *
+xde_config(MenuContext *ctx)
+{
+	char *icon, *s;
+	GList *text = NULL;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[config] (Configure)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_config(MenuContext *ctx)
+{
+	return NULL;
+}
+
+static GList *
+xde_wkspcs(MenuContext *ctx)
+{
+	GList *text = NULL;
+	char *icon, *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[workspaces] (Workspace List)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_wkspcs(MenuContext *ctx)
+{
+	return NULL;
+}
+
 MenuContext xde_menu_ops = {
 	.name = "openbox",
 	.format = "openboxold",
@@ -819,7 +864,6 @@ MenuContext xde_menu_ops = {
 	.wmm = {
 		.output = NULL,
 		.create = &xde_create,
-		.wmmenu = &xde_wmmenu,
 		.appmenu = &xde_appmenu,
 		.rootmenu = &xde_rootmenu,
 		.build = &xde_build,
@@ -831,13 +875,15 @@ MenuContext xde_menu_ops = {
 			.entry = &xde_entry,
 			.alias = &xde_alias,
 			},
+		.wmmenu = &xde_wmmenu,
 		.themes = &xde_themes,
 		.styles = &xde_styles,
+		.config = &xde_config,
+		.wkspcs = &xde_wkspcs,
 	},
 	.gtk = {
 		.output = NULL,
 		.create = &xde_gtk_create,
-		.wmmenu = &xde_gtk_wmmenu,
 		.appmenu = &xde_gtk_appmenu,
 		.rootmenu = &xde_gtk_rootmenu,
 		.build = &xde_gtk_build,
@@ -849,7 +895,10 @@ MenuContext xde_menu_ops = {
 			.entry = NULL,
 			.alias = NULL,
 			},
-		.themes = NULL,
-		.styles = NULL,
+		.wmmenu = &xde_gtk_wmmenu,
+		.themes = &xde_gtk_themes,
+		.styles = &xde_gtk_styles,
+		.config = &xde_gtk_config,
+		.wkspcs = &xde_gtk_wkspcs,
 		},
 };
