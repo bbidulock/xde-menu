@@ -283,12 +283,14 @@ struct MenuContext {
 			GList *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
 			GList *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
 			GList *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+			GList *(*pin) (MenuContext *ctx);
 		} ops;
 		GList *(*wmmenu) (MenuContext *ctx);
 		GList *(*themes) (MenuContext *ctx);
 		GList *(*styles) (MenuContext *ctx);
 		GList *(*config) (MenuContext *ctx);
 		GList *(*wkspcs) (MenuContext *ctx);
+		GList *(*wmspec) (MenuContext *ctx);
 	} wmm;
 	struct {
 		GtkMenu *output;
@@ -303,12 +305,14 @@ struct MenuContext {
 			GtkMenuItem *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
 			GtkMenuItem *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
 			GtkMenuItem *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+			GtkMenuItem *(*pin) (MenuContext *ctx);
 		} ops;
 		GtkMenuItem *(*wmmenu) (MenuContext *ctx);
 		GtkMenuItem *(*themes) (MenuContext *ctx);
 		GtkMenuItem *(*styles) (MenuContext *ctx);
 		GtkMenuItem *(*config) (MenuContext *Ctx);
 		GtkMenuItem *(*wkspcs) (MenuContext *ctx);
+		GtkMenuItem *(*wmspec) (MenuContext *ctx);
 	} gtk;
 };
 

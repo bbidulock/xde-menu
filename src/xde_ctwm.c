@@ -44,8 +44,6 @@
 
 #include "xde-menu.h"
 
-static GList *xde_twmmenu(MenuContext *ctx);
-
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
@@ -75,7 +73,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	if (style == StyleFullmenu) {
 		result = ctx->wmm.wmmenu(ctx);
 		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
-		result = xde_twmmenu(ctx);
+		result = ctx->wmm.wmspec(ctx);
 		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
 	}
 	if (style == StyleAppmenu || style == StyleSubmenu) {
@@ -106,79 +104,6 @@ static GtkMenu *
 xde_gtk_create(MenuContext *ctx, Style style, const char *name)
 {
 	return xde_gtk_create_simple(ctx, style, name);
-}
-
-static GList *
-xde_twmmenu(MenuContext *ctx)
-{
-	GList *text = NULL;
-	char *s, *menu;
-
-	s = g_strdup_printf("\n%s\n", "Menu \"twmmenu\" twm_MenuColor");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("{\n");
-	text = g_list_append(text, s);
-	menu = g_strdup_printf("\"%s Menu\"", ctx->desktop);
-	s = g_strdup_printf("    %-32s  %s\n", menu, "f.title");
-	text = g_list_append(text, s);
-	free(menu);
-	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
-		s = g_strdup_printf("    %-32s  %s\n", "\"Icons List\"", "f.menu \"TwmIcons\"");
-		text = g_list_append(text, s);
-	}
-	s = g_strdup_printf("    %-32s  %s\n", "\"Window List\"", "f.menu \"TwmWindows\"");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Window Operations\"", "f.menu \"windowops\"");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Styles\"", "f.menu \"twmstyles\"");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Window Managers\"", "f.menu \"managers\"");
-	text = g_list_append(text, s);
-	if (!strcmp(ctx->name, "mwm")) {
-		s = g_strdup_printf("    %-32s  %s\n", "\"Pack Icons\"", "f.pack_icons");
-		text = g_list_append(text, s);
-	}
-	if (strcmp(ctx->name, "mwm")) {
-		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Icon Manager\"", "f.hideiconmgr");
-		text = g_list_append(text, s);
-		s = g_strdup_printf("    %-32s  %s\n", "\"Show Icon Manager\"", "f.showiconmgr");
-		text = g_list_append(text, s);
-	}
-	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
-		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Workspace Manager\"", "f.hideworkspacemgr");
-		text = g_list_append(text, s);
-		s = g_strdup_printf("    %-32s  %s\n", "\"Show Workspace Manager\"", "f.showworkspacemgr");
-		text = g_list_append(text, s);
-	}
-	if (!strcmp(ctx->name, "vtwm")) {
-		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Desktop Display\"", "f.hidedesktopdisplay");
-		text = g_list_append(text, s);
-		s = g_strdup_printf("    %-32s  %s\n", "\"Show Desktop Display\"", "f.showdesktopdisplay");
-		text = g_list_append(text, s);
-	}
-	s = g_strdup_printf("    %-32s  %s\n", "\"Refresh\"", "f.refresh");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  f.exec \"exec xde-menugen -format %s -desktop %s -o %s\"\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.filename);
-	text = g_list_append(text, s);
-	s = g_strdup_printf("}\n");
-	text = g_list_append(text, s);
-
-	return (text);
-}
-
-static GList *
-xde_pin(MenuContext *ctx)
-{
-	GList *text = NULL;
-	char *s;
-
-	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
-		s = g_strdup_printf("    %-32s  %s\n", "\"--------> pin <--------\"", "f.pin");
-		text = g_list_append(text, s);
-	}
-	return (text);
 }
 
 static GList *
@@ -245,7 +170,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("    %-32s  %s\n", menu, "f.title");
 	text = g_list_append(text, s);
 	free(menu);
-	text = g_list_concat(text, xde_pin(ctx));
+	text = g_list_concat(text, ctx->wmm.ops.pin(ctx));
 	text = g_list_concat(text, entries);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	menu = g_strdup_printf("\"%s Menu\"", ctx->desktop);
@@ -270,7 +195,9 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 static GtkMenu *
 xde_gtk_rootmenu(MenuContext *ctx, GtkMenu *entries)
 {
-	return NULL;
+	GtkMenu *menu = NULL;
+
+	return (menu);
 }
 
 static GList *
@@ -310,13 +237,15 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 		s = g_strdup_printf("    %-32s  %s\n", "\"--------------------------------\"", "f.nop");
 		text = g_list_append(text, s);
 	}
-	return text;
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -344,7 +273,9 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 static GtkMenuItem *
 xde_gtk_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -380,7 +311,9 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 static GtkMenuItem *
 xde_gtk_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -426,7 +359,9 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 static GtkMenuItem *
 xde_gtk_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -438,7 +373,30 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 static GtkMenuItem *
 xde_gtk_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
+static GList *
+xde_pin(MenuContext *ctx)
+{
+	GList *text = NULL;
+	char *s;
+
+	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"--------> pin <--------\"", "f.pin");
+		text = g_list_append(text, s);
+	}
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_pin(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -561,49 +519,133 @@ xde_gtk_wmmenu(MenuContext *ctx)
 static GList *
 xde_themes(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
 xde_styles(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_styles(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
 xde_config(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_config(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
 xde_wkspcs(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_wkspcs(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
+static GList *
+xde_wmspec(MenuContext *ctx)
+{
+	GList *text = NULL;
+	char *s, *menu;
+
+	s = g_strdup_printf("\n%s\n", "Menu \"twmmenu\" twm_MenuColor");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("{\n");
+	text = g_list_append(text, s);
+	menu = g_strdup_printf("\"%s Menu\"", ctx->desktop);
+	s = g_strdup_printf("    %-32s  %s\n", menu, "f.title");
+	text = g_list_append(text, s);
+	free(menu);
+	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Icons List\"", "f.menu \"TwmIcons\"");
+		text = g_list_append(text, s);
+	}
+	s = g_strdup_printf("    %-32s  %s\n", "\"Window List\"", "f.menu \"TwmWindows\"");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("    %-32s  %s\n", "\"Window Operations\"", "f.menu \"windowops\"");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("    %-32s  %s\n", "\"Styles\"", "f.menu \"twmstyles\"");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("    %-32s  %s\n", "\"Window Managers\"", "f.menu \"managers\"");
+	text = g_list_append(text, s);
+	if (!strcmp(ctx->name, "mwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Pack Icons\"", "f.pack_icons");
+		text = g_list_append(text, s);
+	}
+	if (strcmp(ctx->name, "mwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Icon Manager\"", "f.hideiconmgr");
+		text = g_list_append(text, s);
+		s = g_strdup_printf("    %-32s  %s\n", "\"Show Icon Manager\"", "f.showiconmgr");
+		text = g_list_append(text, s);
+	}
+	if (!strcmp(ctx->name, "ctwm") || !strcmp(ctx->name, "etwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Workspace Manager\"", "f.hideworkspacemgr");
+		text = g_list_append(text, s);
+		s = g_strdup_printf("    %-32s  %s\n", "\"Show Workspace Manager\"", "f.showworkspacemgr");
+		text = g_list_append(text, s);
+	}
+	if (!strcmp(ctx->name, "vtwm")) {
+		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Desktop Display\"", "f.hidedesktopdisplay");
+		text = g_list_append(text, s);
+		s = g_strdup_printf("    %-32s  %s\n", "\"Show Desktop Display\"", "f.showdesktopdisplay");
+		text = g_list_append(text, s);
+	}
+	s = g_strdup_printf("    %-32s  %s\n", "\"Refresh\"", "f.refresh");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("    %-32s  f.exec \"exec xde-menugen -format %s -desktop %s -o %s\"\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.filename);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("}\n");
+	text = g_list_append(text, s);
+
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_wmspec(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 MenuContext xde_menu_ops = {
@@ -633,12 +675,14 @@ MenuContext xde_menu_ops = {
 			.separator = &xde_separator,
 			.entry = &xde_entry,
 			.alias = &xde_alias,
+			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
 		.themes = &xde_themes,
 		.styles = &xde_styles,
 		.config = &xde_config,
 		.wkspcs = &xde_wkspcs,
+		.wmspec = &xde_wmspec,
 		},
 	.gtk = {
 		.output = NULL,
@@ -653,11 +697,13 @@ MenuContext xde_menu_ops = {
 			.separator = &xde_gtk_separator,
 			.entry = &xde_gtk_entry,
 			.alias = &xde_gtk_alias,
+			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,
 		.themes = &xde_gtk_themes,
 		.styles = &xde_gtk_styles,
 		.config = &xde_gtk_config,
 		.wkspcs = &xde_gtk_wkspcs,
+		.wmspec = &xde_gtk_wmspec,
 		},
 };

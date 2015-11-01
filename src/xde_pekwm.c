@@ -237,7 +237,9 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 static GtkMenu *
 xde_gtk_rootmenu(MenuContext *ctx, GtkMenu *entries)
 {
-	return NULL;
+	GtkMenu *menu = NULL;
+
+	return (menu);
 }
 
 static GList *
@@ -278,7 +280,9 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 static GtkMenuItem *
 xde_gtk_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -323,7 +327,9 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 static GtkMenuItem *
 xde_gtk_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -365,7 +371,9 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 static GtkMenuItem *
 xde_gtk_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -408,7 +416,9 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 static GtkMenuItem *
 xde_gtk_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -420,7 +430,25 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 static GtkMenuItem *
 xde_gtk_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
+static GList *
+xde_pin(MenuContext *ctx)
+{
+	GList *text = NULL;
+
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_pin(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -549,7 +577,9 @@ xde_themes(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
@@ -574,31 +604,57 @@ xde_styles(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_styles(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
 xde_config(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_config(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 static GList *
 xde_wkspcs(MenuContext *ctx)
 {
-	return NULL;
+	GList *text = NULL;
+
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_wkspcs(MenuContext *ctx)
 {
-	return NULL;
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
+static GList *
+xde_wmspec(MenuContext *ctx)
+{
+	GList *text = NULL;
+
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_wmspec(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
 }
 
 MenuContext xde_menu_ops = {
@@ -628,12 +684,14 @@ MenuContext xde_menu_ops = {
 			.separator = &xde_separator,
 			.entry = &xde_entry,
 			.alias = &xde_alias,
+			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
 		.themes = &xde_themes,
 		.styles = &xde_styles,
 		.config = &xde_config,
 		.wkspcs = &xde_wkspcs,
+		.wmspec = &xde_wmspec,
 		},
 	.gtk = {
 		.output = NULL,
@@ -648,11 +706,13 @@ MenuContext xde_menu_ops = {
 			.separator = &xde_gtk_separator,
 			.entry = &xde_gtk_entry,
 			.alias = &xde_gtk_alias,
+			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,
 		.themes = &xde_gtk_themes,
 		.styles = &xde_gtk_styles,
 		.config = &xde_gtk_config,
 		.wkspcs = &xde_gtk_wkspcs,
+		.wmspec = &xde_gtk_wmspec,
 		},
 };
