@@ -130,97 +130,9 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_concat(text, entries);
 	xde_increase_indent(ctx);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, ctx->name));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Openbox)", icon);
-	text = g_list_append(text, s);
-	free(icon);
-	xde_increase_indent(ctx);
-#if 0
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Tools)");
-	text = g_list_append(text, s);
-	xde_increase_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent,
-			    "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s\n", ctx->indent,
-			    "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s\n", ctx->indent,
-			    "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Run) {xde-run}");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}");
-	text = g_list_append(text, s);
-	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
-	text = g_list_append(text, s);
-#endif
-	text = g_list_concat(text, ctx->wmm.config(ctx));
-	text = g_list_concat(text, ctx->wmm.themes(ctx));
-	text = g_list_concat(text, ctx->wmm.styles(ctx));
-#if 1
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Backgrounds) {Set the Background}");
-	text = g_list_append(text, s);
-	xde_increase_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Random Background) {fbsetbg -r /usr/share/fluxbox/backgrounds}");
-	text = g_list_append(text, s);
-	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
-	text = g_list_append(text, s);
-#endif
-#if 1
-	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[workspaces] (Workspace List)", icon);
-	text = g_list_append(text, s);
-	free(icon);
-#endif
-#if 0
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[sub] (Processes) <!procinfo.pl>");
-	text = g_list_append(text, s);
-#endif
-	icon = xde_wrap_icon(xde_get_icon(ctx, "applications-utilities"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Tools)", icon);
-	text = g_list_append(text, s);
-	free(icon);
-	xde_increase_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
-	text = g_list_append(text, s);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "applets-screenshooter"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}", icon);
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}", icon);
-	text = g_list_append(text, s);
-	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run) {fbrun -font 10x20 -fg grey -bg black -title run}", icon);
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}", icon);
-	text = g_list_append(text, s);
-	free(icon);
-	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
-	text = g_list_append(text, s);
-#if 0
-	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Arrange Windows)", icon);
-	text = g_list_append(text, s);
-	free(icon);
-	xde_increase_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindows] (Arrange Windows)");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowshorizontal] (Arrange Windows Horizontal)");
-	text = g_list_append(text, s);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowsvertical] (Arrange Windows Vertical)");
-	text = g_list_append(text, s);
-	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
-	text = g_list_append(text, s);
-#endif
-	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
-	xde_decrease_indent(ctx);
-	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
-	text = g_list_append(text, s);
+
+	text = g_list_concat(text, ctx->wmm.wmspec(ctx));
+
 	icon = xde_wrap_icon(xde_get_icon(ctx, "gnome-lockscreen"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Lock screen) {xlock}", icon);
 	text = g_list_append(text, s);
@@ -917,6 +829,95 @@ static GList *
 xde_wmspec(MenuContext *ctx)
 {
 	GList *text = NULL;
+	char *icon;
+	char *s;
+
+	icon = xde_wrap_icon(xde_get_icon(ctx, ctx->name));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Openbox)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+#if 0
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Tools)");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent,
+			    "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent,
+			    "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent,
+			    "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Run) {xde-run}");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#endif
+	text = g_list_concat(text, ctx->wmm.config(ctx));
+	text = g_list_concat(text, ctx->wmm.themes(ctx));
+	text = g_list_concat(text, ctx->wmm.styles(ctx));
+#if 1
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[submenu] (Backgrounds) {Set the Background}");
+	text = g_list_append(text, s);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Random Background) {fbsetbg -r /usr/share/fluxbox/backgrounds}");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#endif
+	text = g_list_concat(text, ctx->wmm.wkspcs(ctx));
+#if 0
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[sub] (Processes) <!procinfo.pl>");
+	text = g_list_append(text, s);
+#endif
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applications-utilities"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Tools)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[exec] (Window name) {xprop WM_CLASS|cut -d \\\" -f 2|gxmessage -file - -center}");
+	text = g_list_append(text, s);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "applets-screenshooter"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - JPG) {import screenshot.jpg && display -resize 50% screenshot.jpg}", icon);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Screenshot - PNG) {import screenshot.png && display -resize 50% screenshot.png}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run) {fbrun -font 10x20 -fg grey -bg black -title run}", icon);
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (Run Command) {bbrun -a -w}", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#if 0
+	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Arrange Windows)", icon);
+	text = g_list_append(text, s);
+	free(icon);
+	xde_increase_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindows] (Arrange Windows)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowshorizontal] (Arrange Windows Horizontal)");
+	text = g_list_append(text, s);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[arrangewindowsvertical] (Arrange Windows Vertical)");
+	text = g_list_append(text, s);
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
+#endif
+	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
+	xde_decrease_indent(ctx);
+	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
+	text = g_list_append(text, s);
 
 	return (text);
 }
