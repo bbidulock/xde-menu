@@ -653,7 +653,7 @@ xde_themes(MenuContext *ctx)
 	}
 
 	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (System Themes) {Choose a theme...}", icon);
+	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Themes) {Choose a theme...}", icon);
 	text = g_list_append(text, s);
 	if (sysent)
 		text = g_list_concat(text, sysent);
