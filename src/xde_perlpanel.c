@@ -380,6 +380,7 @@ xde_gtk_pin(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	item = GTK_MENU_ITEM(gtk_tearoff_menu_item_new());
 	return (item);
 }
 
