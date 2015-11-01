@@ -409,6 +409,7 @@ xde_gtk_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GtkMenuItem *item = NULL;
 
+	item = GTK_MENU_ITEM(gtk_separator_menu_item_new());
 	return (item);
 }
 
