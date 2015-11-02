@@ -1251,15 +1251,87 @@ GtkMenuItem *
 xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GtkMenuItem *item = NULL;
+	GtkMenu *menu;
+	const char *name, *path;
+	GdkPixbuf *pixbuf;
+	GtkWidget *image;
+	char *icon;
 
+	if (!(menu = ctx->gtk.ops.menu(ctx, dir)))
+		return (item);
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	if ((name = gmenu_tree_directory_get_name(dir)))
+		gtk_menu_item_set_label(item, name);
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "folder", "unknown");
+	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
+	free(icon);
 	return (item);
+}
+
+void
+xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data)
+{
+	char *cmd, *exec;
+	int result;
+
+	if ((cmd = user_data)) {
+		exec = g_strdup_printf("%s &", cmd);
+		if ((result = system(cmd)) == -1)
+			;
+		free(exec);
+	}
+}
+
+void
+xde_entry_disconnect(gpointer data, GClosure *closure)
+{
+	free(data);
 }
 
 GtkMenuItem *
 xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GtkMenuItem *item = NULL;
+	GDesktopAppInfo *info;
+	GdkPixbuf *pixbuf;
+	GtkWidget *image;
+	const char *name;
+	char *p, *icon, *appid, *cmd;
 
+	if (!(info = gmenu_tree_entry_get_app_info(ent)))
+		return (item);
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	if ((name = g_app_info_get_name(G_APP_INFO(info))))
+		gtk_menu_item_set_label(item, name);
+	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
+	    && (p = strstr(appid, ".desktop")))
+		*p = '\0';
+	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+	if (options.launch)
+		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
+	else
+		cmd = xde_get_command(info, appid, icon);
+	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	free(icon);
+	free(appid);
+	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
+			      &xde_entry_disconnect, 0);
 	return (item);
 }
 
@@ -1291,8 +1363,25 @@ xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
 GtkMenuItem *
 xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
+	GMenuTreeItemType type;
 	GtkMenuItem *item = NULL;
 
+	switch ((type = gmenu_tree_alias_get_aliased_item_type(als))) {
+	case GMENU_TREE_ITEM_INVALID:
+		break;
+	case GMENU_TREE_ITEM_DIRECTORY:
+		item = ctx->gtk.build(ctx, type, gmenu_tree_alias_get_aliased_directory(als));
+		break;
+	case GMENU_TREE_ITEM_ENTRY:
+		item = ctx->gtk.build(ctx, type, gmenu_tree_alias_get_aliased_entry(als));
+		break;
+	case GMENU_TREE_ITEM_SEPARATOR:
+		break;
+	case GMENU_TREE_ITEM_HEADER:
+		break;
+	case GMENU_TREE_ITEM_ALIAS:
+		break;
+	}
 	return (item);
 }
 
