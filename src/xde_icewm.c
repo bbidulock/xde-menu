@@ -1,4 +1,8 @@
 /*****************************************************************************
+	GtkMenuItem *item = NULL;
+
+	item = xde_gtk_common_entry(ctx, ent);
+	return (item);
 
  Copyright (c) 2008-2015  Monavacon Limited <http://www.monavacon.com/>
  Copyright (c) 2001-2008  OpenSS7 Corporation <http://www.openss7.com/>
@@ -157,9 +161,12 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 }
 
 static GtkMenu *
-xde_gtk_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
+xde_gtk_menu(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
-	return xde_gtk_menu_simple(ctx, menu);
+	GtkMenu *menu = NULL;
+
+	menu = xde_gtk_common_menu(ctx, dir);
+	return (menu);
 }
 
 static GList *
@@ -175,7 +182,7 @@ xde_gtk_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GtkMenuItem *item = NULL;
 
-	item = GTK_MENU_ITEM(gtk_separator_menu_item_new());
+	item = xde_gtk_common_separator(ctx, sep);
 	return (item);
 }
 
@@ -192,6 +199,7 @@ xde_gtk_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	GtkMenuItem *item = NULL;
 
+	item = xde_gtk_common_header(ctx, hdr);
 	return (item);
 }
 
@@ -238,6 +246,7 @@ xde_gtk_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GtkMenuItem *item = NULL;
 
+	item = xde_gtk_common_directory(ctx, dir);
 	return (item);
 }
 
@@ -283,6 +292,7 @@ xde_gtk_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GtkMenuItem *item = NULL;
 
+	item = xde_gtk_common_entry(ctx, ent);
 	return (item);
 }
 
@@ -297,6 +307,7 @@ xde_gtk_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
 	GtkMenuItem *item = NULL;
 
+	item = xde_gtk_common_alias(ctx, als);
 	return (item);
 }
 
@@ -313,7 +324,7 @@ xde_gtk_pin(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
-	item = GTK_MENU_ITEM(gtk_tearoff_menu_item_new());
+	item = xde_gtk_common_pin(ctx);
 	return (item);
 }
 

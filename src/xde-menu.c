@@ -1164,7 +1164,7 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 }
 
 GtkMenu *
-xde_gtk_menu_simple(MenuContext *ctx, GMenuTreeDirectory *gmenu)
+xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 {
 	GMenuTreeItemType type;
 	GMenuTreeIter *iter;
@@ -1205,6 +1205,64 @@ xde_gtk_menu_simple(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 	return (menu);
 }
 
+GtkMenuItem *
+xde_gtk_common_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
+{
+	GtkMenuItem *item = NULL;
+
+	item = GTK_MENU_ITEM(gtk_separator_menu_item_new());
+	return (item);
+}
+
+GtkMenuItem *
+xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr)
+{
+	GMenuTreeDirectory *dir;
+	GtkMenuItem *item = NULL;
+	const char *name, *path;
+	GdkPixbuf *pixbuf;
+	GtkWidget *image;
+	char *icon;
+
+	/* TODO: we should do more here (like center and boldface the label). */
+	if (!(dir = gmenu_tree_header_get_directory(hdr)))
+		return (item);
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	if ((name = gmenu_tree_directory_get_name(dir)))
+		gtk_menu_item_set_label(item, name);
+	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "folder", "unknown");
+	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	free(icon);
+	return (item);
+}
+
+GtkMenuItem *
+xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
+GtkMenuItem *
+xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
 GList *
 xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
 {
@@ -1228,6 +1286,23 @@ xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als)
 		break;
 	}
 	return (text);
+}
+
+GtkMenuItem *
+xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als)
+{
+	GtkMenuItem *item = NULL;
+
+	return (item);
+}
+
+GtkMenuItem *
+xde_gtk_common_pin(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
+
+	item = GTK_MENU_ITEM(gtk_tearoff_menu_item_new());
+	return (item);
 }
 
 static GMenuTree *
@@ -1582,7 +1657,7 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 	const char *name;
 
 	/* I suppose that what we should do here is set a timer and wait before doing
-	   anything; however, I think that libwnck++ already does this (waits before even 
+	   anything; however, I think that libwnck++ already does this (waits before even
 	   giving us the signal). */
 
 	if (!xscr) {
@@ -2237,7 +2312,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 
 	j = 0;
 
-	/* CloneCommand: This is like the RestartCommand except it restarts a copy of the 
+	/* CloneCommand: This is like the RestartCommand except it restarts a copy of the
 	   application.  The only difference is that the application doesn't supply its
 	   client id at register time.  On POSIX systems the type should be a
 	   LISTofARRAY8. */
@@ -2355,7 +2430,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 
 	/* RestartCommand: The restart command contains a command that when delivered to
 	   the host that the client is running on (determined from the connection), will
-	   cause the client to restart in its current state.  On POSIX-based systems this 
+	   cause the client to restart in its current state.  On POSIX-based systems this
 	   if of type LISTofARRAY8 and each of the elements in the array represents an
 	   element in the argv[] array.  This restart command should ensure that the
 	   client restarts with the specified client-ID.  */
@@ -2397,11 +2472,11 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals[1].length = strlen("-quit");
 	j++;
 
-	/* RestartStyleHint: If the RestartStyleHint property is present, it will contain 
+	/* RestartStyleHint: If the RestartStyleHint property is present, it will contain
 	   the style of restarting the client prefers.  If this flag is not specified,
 	   RestartIfRunning is assumed.  The possible values are as follows:
-	   RestartIfRunning(0), RestartAnyway(1), RestartImmediately(2), RestartNever(3). 
-	   The RestartIfRunning(0) style is used in the usual case.  The client should be 
+	   RestartIfRunning(0), RestartAnyway(1), RestartImmediately(2), RestartNever(3).
+	   The RestartIfRunning(0) style is used in the usual case.  The client should be
 	   restarted in the next session if it is connected to the session manager at the
 	   end of the current session. The RestartAnyway(1) style is used to tell the SM
 	   that the application should be restarted in the next session even if it exits
@@ -2411,7 +2486,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	   should also set the ResignCommand and ShutdownCommand properties to the
 	   commands that undo the state of the client after it exits.  The
 	   RestartImmediately(2) style is like RestartAnyway(1) but in addition, the
-	   client is meant to run continuously.  If the client exits, the SM should try to 
+	   client is meant to run continuously.  If the client exits, the SM should try to
 	   restart it in the current session.  The RestartNever(3) style specifies that
 	   the client does not wish to be restarted in the next session. */
 	prop[j].name = SmRestartStyleHint;
@@ -2424,7 +2499,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	propval[j].length = 1;
 	j++;
 
-	/* ShutdownCommand: This command is executed at shutdown time to clean up after a 
+	/* ShutdownCommand: This command is executed at shutdown time to clean up after a
 	   client that is no longer running but retained its state by setting
 	   RestartStyleHint to RestartAnyway(1).  The command must not remove any saved
 	   state as the client is still part of the session. */
@@ -2439,7 +2514,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals[1].length = strlen("-quit");
 	j++;
 
-	/* UserID: Specifies the user's ID.  On POSIX-based systems this will contain the 
+	/* UserID: Specifies the user's ID.  On POSIX-based systems this will contain the
 	   user's name (the pw_name field of struct passwd).  */
 	errno = 0;
 	prop[j].name = SmUserID;
@@ -2991,7 +3066,7 @@ General options:\n\
     -v, --verbose [LEVEL]\n\
         increment or set output verbosity LEVEL [default: %25$d]\n\
         this option may be repeated.\n\
-", argv[0] 
+", argv[0]
 	, defaults.wmname
 	, defaults.format
 	, show_style(defaults.style)

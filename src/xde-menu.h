@@ -385,8 +385,13 @@ GtkMenu *xde_gtk_get_xsessions(void);
 void xde_gtk_free_xsessions(GtkMenu *list);
 GtkMenu *xde_gtk_create_simple(MenuContext *ctx, Style style, const char *name);
 GtkMenuItem *xde_gtk_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
-GtkMenu *xde_gtk_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu);
-GtkMenu *xde_gtk_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
+GtkMenu *xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *menu);
+GtkMenuItem *xde_gtk_common_separator(MenuContext *ctx, GMenuTreeSeparator *sep);
+GtkMenuItem *xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr);
+GtkMenuItem *xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir);
+GtkMenuItem *xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent);
+GtkMenuItem *xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als);
+GtkMenuItem *xde_gtk_common_pin(MenuContext *ctx);
 
 #endif				/* __XDE_MENU_H__ */
 
