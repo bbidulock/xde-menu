@@ -1050,6 +1050,27 @@ xde_gtk_create_simple(MenuContext *ctx, Style style, const char *name)
 	return (result);
 }
 
+GtkMenu *
+xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
+{
+	GtkWidget *image, *item, *menu;
+	GdkPixbuf *pixbuf;
+	char *icon;
+
+	menu = gtk_menu_new();
+	item = gtk_image_menu_item_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(entries));
+	if (name)
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), name);
+	if ((icon = xde_get_icon2(ctx, "start-here", "folder")) &&
+	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+	    (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	free(icon);
+	gtk_menu_append(menu, item);
+	return (GTK_MENU(menu));
+}
+
 GList *
 xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {

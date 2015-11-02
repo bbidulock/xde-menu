@@ -384,6 +384,7 @@ GList *xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
 GtkMenu *xde_gtk_get_xsessions(void);
 void xde_gtk_free_xsessions(GtkMenu *list);
 GtkMenu *xde_gtk_create_simple(MenuContext *ctx, Style style, const char *name);
+GtkMenu *xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name);
 GtkMenuItem *xde_gtk_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 GtkMenu *xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *menu);
 GtkMenuItem *xde_gtk_common_separator(MenuContext *ctx, GMenuTreeSeparator *sep);
