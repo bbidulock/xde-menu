@@ -240,51 +240,10 @@ xde_wmmenu(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_wmmenu(MenuContext *ctx)
 {
-	GtkWidget *menu = NULL, *image, *item;
-	GtkMenuItem *result = NULL;
-	GList *xsessions, *xsession;
-	GdkPixbuf *pixbuf;
-	char *icon;
+	GtkMenuItem *item = NULL;
 
-	menu = gtk_menu_new();
-	result = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_menu_item_set_submenu(result, menu);
-	gtk_menu_item_set_label(result, "Window Managers");
-	if ((icon = xde_get_icon(ctx, "gtk-quit")) &&
-	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
-	    (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
-	free(icon);
-	item = gtk_menu_item_new();
-	gtk_menu_append(menu, item);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
-	if ((icon = xde_get_icon(ctx, "gtk-refresh")) &&
-	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
-	    (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
-	free(icon);
-	xsessions = xde_get_xsessions();
-	for (xsession = xsessions; xsession; xsession = xsession->next) {
-		XdeXsession *xsess = xsession->data;
-		char *label;
-
-		if (strncasecmp(xsess->key, "blackbox", strlen("blackbox")) == 0)
-			continue;
-		item = gtk_menu_item_new();
-		gtk_menu_append(menu, item);
-		label = g_strdup_printf("Start %s", xsess->name);
-		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
-		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
-					       "metacity",
-					       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-					       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG))
-		    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
-		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
-			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-		free(icon);
-		free(label);
-	}
-	return (result);
+	item = xde_gtk_common_wmmenu(ctx);
+	return (item);
 }
 
 static GList *

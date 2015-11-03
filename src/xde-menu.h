@@ -393,6 +393,11 @@ GtkMenuItem *xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 GtkMenuItem *xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent);
 GtkMenuItem *xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als);
 GtkMenuItem *xde_gtk_common_pin(MenuContext *ctx);
+GtkMenuItem *xde_gtk_common_wmmenu(MenuContext *ctx);
+
+void xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data);
+void xde_entry_disconnect(gpointer data, GClosure *closure);
+
 
 #endif				/* __XDE_MENU_H__ */
 

@@ -424,78 +424,17 @@ xde_wmmenu(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_wmmenu(MenuContext *ctx)
 {
-	GtkWidget *menu = NULL, *image, *item;
-	GtkMenuItem *result = NULL;
-	GList *xsessions, *xsession;
-	GdkPixbuf *pixbuf;
-	char *icon;
+	GtkMenuItem *item = NULL;
 
-	menu = gtk_menu_new();
-	result = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_menu_item_set_submenu(result, menu);
-	gtk_menu_item_set_label(result, "Window Managers");
-	if ((icon = xde_get_icon(ctx, "gtk-quit")) &&
-	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
-	    (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
-	free(icon);
-	item = gtk_menu_item_new();
-	gtk_menu_append(menu, item);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
-	if ((icon = xde_get_icon(ctx, "gtk-refresh")) &&
-	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
-	    (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(result), image);
-	free(icon);
-	xsessions = xde_get_xsessions();
-	for (xsession = xsessions; xsession; xsession = xsession->next) {
-		XdeXsession *xsess = xsession->data;
-		char *label;
-
-		if (strncasecmp(xsess->key, "blackbox", strlen("blackbox")) == 0)
-			continue;
-		item = gtk_menu_item_new();
-		gtk_menu_append(menu, item);
-		label = g_strdup_printf("Start %s", xsess->name);
-		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
-		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
-					       "metacity",
-					       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
-					       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG))
-		    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
-		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
-			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-		free(icon);
-		free(label);
-	}
-	return (result);
+	item = xde_gtk_common_wmmenu(ctx);
+	return (item);
 }
 
 static GList *
 xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *fname)
 {
-	GList *text = NULL;
+	GList *list = NULL;
 	DIR *dir;
-	static const char *sysfmt = "%s[exec] (%s) {xde-style -s -t -r -y '%s'}%s\n";
-	static const char *usrfmt = "%s[exec] (%s) {xde-style -s -t -r -u '%s'}%s\n";
-	static const char *mixfmt = "%s[exec] (%s) {xde-style -s -t -r '%s'}%s\n";
-	const char *fmt;
-	char *icon;
-
-	switch (which) {
-	case XdeStyleSystem:
-		fmt = sysfmt;
-		break;
-	case XdeStyleUser:
-		fmt = usrfmt;
-		break;
-	case XdeStyleMixed:
-	default:
-		fmt = mixfmt;
-		break;
-	}
-
-	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
 
 	if ((dir = opendir(dname))) {
 		struct dirent *d;
@@ -503,7 +442,6 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *
 		char *file;
 		int len;
 
-		xde_increase_indent(ctx);
 		while ((d = readdir(dir))) {
 			if (d->d_name[0] == '.')
 				continue;
@@ -574,27 +512,27 @@ xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *
 				break;
 			}
 			}
-			text = g_list_append(text, g_strdup_printf(fmt, ctx->indent, d->d_name, d->d_name, icon));
+			list = g_list_append(list, strdup(d->d_name));
 			free(file);
 		}
-		xde_decrease_indent(ctx);
 		closedir(dir);
-		text = g_list_sort(text, xde_string_compare);
-
+		list = g_list_sort(list, xde_string_compare);
 	} else
 		DPRINTF("%s: %s\n", dname, strerror(errno));
-	free(icon);
-	return (text);
+	return (list);
 }
 
 static GList *
 xde_themes(MenuContext *ctx)
 {
+	static const char *sysfmt = "%s[exec] (%s) {xde-style -s -t -r -y '%s'}%s\n";
+	static const char *usrfmt = "%s[exec] (%s) {xde-style -s -t -r -u '%s'}%s\n";
+	static const char *mixfmt = "%s[exec] (%s) {xde-style -s -t -r '%s'}%s\n";
 	static const char *sysdir = "/usr/share/themes";
 	static const char *usr = "/.config/perlpanel/styles";
 	static const char *fname = "/xde/themerc";
 	char *usrdir, *s;
-	GList *text = NULL, *sysent, *usrent;
+	GList *text = NULL, *sysent, *usrent, *style;
 	const char *home;
 	char *icon;
 	int len;
@@ -608,24 +546,45 @@ xde_themes(MenuContext *ctx)
 	strcat(usrdir, usr);
 
 	usrent = xde_theme_entries(ctx, usrdir, XdeStyleUser, fname);
+	free(usrdir);
 
-	if (!sysent && !usrent) {
-		free(usrdir);
+	if (!sysent && !usrent)
 		return (text);
-	}
 
 	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[submenu] (Themes) {Choose a theme...}", icon);
 	text = g_list_append(text, s);
-	if (sysent)
+
+	(void) mixfmt;
+
+	if (sysent) {
+		xde_increase_indent(ctx);
+		for (style = sysent; style; style = style->next) {
+			char *name = style->data;
+
+			style->data = g_strdup_printf(sysfmt, ctx->indent, name, name, icon);
+			free(name);
+		}
+		xde_decrease_indent(ctx);
 		text = g_list_concat(text, sysent);
+	}
 	if (sysent && usrent) {
 		xde_increase_indent(ctx);
 		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 		xde_decrease_indent(ctx);
 	}
-	if (usrent)
+	if (usrent) {
+		xde_increase_indent(ctx);
+		for (style = usrent; style; style = style->next) {
+			char *name = style->data;
+
+			style->data = g_strdup_printf(usrfmt, ctx->indent, name, name, icon);
+			free(name);
+		}
+		xde_decrease_indent(ctx);
 		text = g_list_concat(text, usrent);
+	}
+
 	s = g_strdup_printf("%s%s\n", ctx->indent, "[end]");
 	text = g_list_append(text, s);
 	free(icon);
@@ -635,8 +594,95 @@ xde_themes(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
 {
-	GtkMenuItem *item = NULL;
+	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
+	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
+	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	static const char *sysdir = "/usr/share/themes";
+	static const char *usr = "/.config/perlpanel/styles";
+	static const char *fname = "/xde/themerc";
+	char *usrdir;
+	GtkMenuItem *item = NULL, *entry;
+	GList *sysent, *usrent;
+	GtkWidget *menu, *image = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	const char *home;
+	char *icon;
+	int len;
 
+	sysent = xde_theme_entries(ctx, sysdir, XdeStyleSystem, fname);
+
+	home = getenv("HOME") ? : "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_theme_entries(ctx, usrdir, XdeStyleUser, fname);
+	free(usrdir);
+
+	if (!sysent && !usrent)
+		return (item);
+
+	menu = gtk_menu_new();
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_label(item, "Themes");
+	if ((icon = xde_wrap_icon(xde_get_icon(ctx, "style"))))
+		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
+	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_menu_item_set_submenu(item, menu);
+
+	(void) mixfmt;
+
+	if (sysent) {
+		GList *style;
+
+		for (style = sysent; style; style = style->next) {
+			char *name = style->data;
+			char *cmd = g_strdup_printf(sysfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			style->data = NULL;
+			free(name);
+		}
+		g_list_free(sysent);
+	}
+	if (sysent && usrent) {
+		entry = ctx->gtk.ops.separator(ctx, NULL);
+		gtk_menu_append(menu, GTK_WIDGET(entry));
+	}
+	if (usrent) {
+		GList *style;
+
+		for (style = usrent; style; style = style->next) {
+			char *name = style->data;
+			char *cmd = g_strdup_printf(usrfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			style->data = NULL;
+			free(name);
+		}
+		g_list_free(usrent);
+	}
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	free(icon);
 	return (item);
 }
 
