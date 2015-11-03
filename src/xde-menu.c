@@ -2834,7 +2834,7 @@ static SmcCallbacks clientCBs = {
 /* *INDENT-ON* */
 
 static gboolean
-on_ifd_watch(GIOChannel *chan, GIOCondition cond, pointer data)
+on_ifd_watch(GIOChannel *chan, GIOCondition cond, gpointer data)
 {
 	SmcConn smcConn = data;
 	IceConn iceConn = SmcGetIceConnection(smcConn);
