@@ -48,8 +48,8 @@
 
 #include "xde-menu.h"
 
-char *
-xde_wrap_icon(char *file)
+static char *
+xde_wrap_icon(MenuContext *ctx, char *file)
 {
 	if (file)
 		return (file);
@@ -76,7 +76,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	char *icon;
 
 	esc = xde_character_escape(name, '"');
-	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon2(ctx, "start-here", "folder"));
 
 	text = g_list_append(text, g_strdup_printf("menu \"%s\" %s {\n", name, icon));
 	text = g_list_concat(text, entries);
@@ -110,7 +110,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_concat(text, ctx->wmm.wmmenu(ctx));
 	if (options.filename) {
 		xde_increase_indent(ctx);
-		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf
 		    ("%sprog \"%s\" %s xde-menugen -format icewm -desktop ICEWM -launch -o %s\n",
 		     ctx->indent, "Refresh Menu", icon, options.filename);
@@ -216,7 +216,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		g_key_file_unref(file);
 	} else
 		icon = xde_get_icon2(ctx, "folder", "unknown");
-	icon = xde_wrap_icon(icon);
+	icon = ctx->wmm.wrap(ctx, icon);
 	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, esc, icon);
 	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
@@ -265,7 +265,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	} else {
 		cmd = xde_get_command(info, appid, icon);
 	}
-	icon = xde_wrap_icon(icon);
+	icon = ctx->wmm.wrap(ctx, icon);
 	s = g_strdup_printf("%sprog \"%s\" %s %s\n", ctx->indent, esc, icon, cmd);
 	text = g_list_append(text, s);
 	free(icon);
@@ -325,12 +325,12 @@ xde_wmmenu(MenuContext *ctx)
 	char *s;
 
 	xde_increase_indent(ctx);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%smenu \"%s\" %s {\n", ctx->indent, "Window Managers", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("%srestart \"%s\" %s\n", ctx->indent, "Restart", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -344,7 +344,7 @@ xde_wmmenu(MenuContext *ctx)
 					  "metacity",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
+		icon = ctx->wmm.wrap(ctx, icon);
 		s = g_strdup_printf("%srestart \"Start %s\" %s xdg-launch --pointer -X %s\n",
 				    ctx->indent, xsess->name, icon, xsess->key);
 		text = g_list_append(text, s);
@@ -463,6 +463,7 @@ MenuContext xde_menu_ops = {
 	    ,
 	.wmm = {
 		.output = NULL,
+		.wrap = &xde_wrap_icon,
 		.create = &xde_create,
 		.appmenu = &xde_appmenu,
 		.rootmenu = &xde_rootmenu,

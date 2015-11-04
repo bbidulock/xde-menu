@@ -272,6 +272,7 @@ struct MenuContext {
 	GtkIconLookupFlags iconflags;
 	struct {
 		GList *output;
+		char *(*wrap) (MenuContext *ctx, char *icon);
 		GList *(*create) (MenuContext *ctx, Style style, const char *name);
 		GList *(*appmenu) (MenuContext *ctx, GList *entries, const char *name);
 		GList *(*rootmenu) (MenuContext *ctx, GList *entries);

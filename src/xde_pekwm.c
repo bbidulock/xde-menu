@@ -44,8 +44,8 @@
 
 #include "xde-menu.h"
 
-char *
-xde_wrap_icon(char *file)
+static char *
+xde_wrap_icon(MenuContext *ctx, char *file)
 {
 	char *icon;
 
@@ -79,7 +79,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	char *esc1, *icon, *s;
 
 	esc1 = xde_character_escape(name, '"');
-	icon = xde_wrap_icon(xde_get_icon2(ctx, "start-here", "folder"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon2(ctx, "start-here", "folder"));
 	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, esc1, icon);
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
@@ -116,17 +116,17 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "pekwm"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "pekwm"));
 	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Pekwm", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-execute"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-execute"));
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
 			    ctx->indent, "Run Command...", icon, "ShowCmdDialog");
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-desktop-display"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "preferences-desktop-display"));
 	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Workspace List", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -138,7 +138,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "preferences-system-windows"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "preferences-system-windows"));
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
 			    ctx->indent, "Window List", icon, "ShowMenu GotoClient True");
 	text = g_list_append(text, s);
@@ -190,7 +190,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
 	if (options.filename) {
-		icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s%s\" }\n",
 				    ctx->indent, "Refresh Menu", icon,
 				    "Exec xdg-menugen -format pekwm -desktop PEKWM -launch -o ",
@@ -198,18 +198,18 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 		text = g_list_append(text, s);
 		free(icon);
 	}
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-redo-ltr"));
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
 			    ctx->indent, "Reload", icon, "Reload");
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
 			    ctx->indent, "Restart", icon, "Restart");
 	text = g_list_append(text, s);
 	free(icon);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s\" }\n",
 			    ctx->indent, "Exit", icon, "Exit");
 	text = g_list_append(text, s);
@@ -395,7 +395,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 		cmd = xde_get_command(info, appid, icon);
 	}
 	esc2 = xde_character_escape(cmd, '"');
-	icon = xde_wrap_icon(icon);
+	icon = ctx->wmm.wrap(ctx, icon);
 	s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"Exec %s\" }\n",
 			    ctx->indent, esc1, icon, esc2);
 	text = g_list_append(text, s);
@@ -455,7 +455,7 @@ xde_wmmenu(MenuContext *ctx)
 	GList *xsessions, *xsession;
 	char *icon, *s;
 
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%sSubmenu = \"Window Managers\" { %s\n", ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -472,7 +472,7 @@ xde_wmmenu(MenuContext *ctx)
 					  "metacity",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
+		icon = ctx->wmm.wrap(ctx, icon);
 		s = g_strdup_printf
 		    ("%s  Entry = \"Start %s\" { %sActions = \"RestartOther xdg-launch --pointer -X %s\" }\n",
 		     ctx->indent, esc1, icon, xsess->key);
@@ -481,17 +481,17 @@ xde_wmmenu(MenuContext *ctx)
 		free(icon);
 	}
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-redo-ltr"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-redo-ltr"));
 	s = g_strdup_printf("%s  Entry = \"Reload\" { %sActions = \"Reload\" }\n", ctx->indent,
 			    icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("%s  Entry = \"Restart\" { %sActions = \"Restart\" }\n", ctx->indent,
 			    icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("%s  Entry = \"Exit\" { %sActions = \"Exit\" }\n", ctx->indent, icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -516,7 +516,7 @@ xde_themes(MenuContext *ctx)
 	GList *text = NULL;
 	char *icon = NULL, *s;
 
-	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "style"));
 	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Themes", icon);
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
@@ -544,7 +544,7 @@ xde_styles(MenuContext *ctx)
 	GList *text = NULL;
 	char *icon = NULL, *s;
 
-	icon = xde_wrap_icon(xde_get_icon(ctx, "style"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "style"));
 	s = g_strdup_printf("%sSubmenu = \"%s\" { %s\n", ctx->indent, "Styles", icon);
 	text = g_list_append(text, s);
 	xde_increase_indent(ctx);
@@ -629,6 +629,7 @@ MenuContext xde_menu_ops = {
 	    ,
 	.wmm = {
 		.output = NULL,
+		.wrap = &xde_wrap_icon,
 		.create = &xde_create,
 		.appmenu = &xde_appmenu,
 		.rootmenu = &xde_rootmenu,

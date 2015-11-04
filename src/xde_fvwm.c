@@ -44,8 +44,8 @@
 
 #include "xde-menu.h"
 
-char *
-xde_wrap_icon(char *file)
+static char *
+xde_wrap_icon(MenuContext *ctx, char *file)
 {
 	char *icon;
 
@@ -148,16 +148,16 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_append(text, s);
 	text = g_list_concat(text, entries);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "fvwm"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "fvwm"));
 	s = g_strdup_printf("+ \"FVWM%s\" Popup FVWMmenu\n", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("+ \"Restart%s\" Restart\n", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("+ \"Quit%s\" Quit\n", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -241,7 +241,7 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 		g_key_file_unref(file);
 	} else
 		icon = xde_get_icon2(ctx, "folder", "unknown");
-	icon = xde_wrap_icon(icon);
+	icon = ctx->wmm.wrap(ctx, icon);
 	s = g_strdup_printf("+ \"%s%s\" Nop\n", esc1, icon);
 	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->wmm.ops.directory(ctx, dir));
@@ -279,7 +279,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		g_key_file_unref(file);
 	} else
 		icon = xde_get_icon2(ctx, "folder", "unknown");
-	icon = xde_wrap_icon(icon);
+	icon = ctx->wmm.wrap(ctx, icon);
 
 	id = g_strdup_printf("/XDG/%s", name);
 	for (p = q = id; *p; p++)
@@ -331,7 +331,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	} else {
 		cmd = xde_get_command(info, appid, icon);
 	}
-	icon = xde_wrap_icon(icon);
+	icon = ctx->wmm.wrap(ctx, icon);
 	s = g_strdup_printf("+ \"%s%s\" Exec exec %s\n", esc1, icon, cmd);
 	text = g_list_append(text, s);
 	free(appid);
@@ -411,7 +411,7 @@ xde_wmmenu(MenuContext *ctx)
 					  "metacity",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		icon = xde_wrap_icon(icon);
+		icon = ctx->wmm.wrap(ctx, icon);
 
 		if (options.launch) {
 			exec = g_strdup_printf("xdg-launch -X %s", xsess->key);
@@ -430,11 +430,11 @@ xde_wmmenu(MenuContext *ctx)
 	}
 	if (gotone)
 		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-refresh"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 	s = g_strdup_printf("+ \"%s%s\" Restart\n", "Restart", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = xde_wrap_icon(xde_get_icon(ctx, "gtk-quit"));
+	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
 	s = g_strdup_printf("+ \"%s%s\" Quit\n", "Quit", icon);
 	text = g_list_append(text, s);
 	free(icon);
@@ -599,6 +599,7 @@ MenuContext xde_menu_ops = {
 	    ,
 	.wmm = {
 		.output = NULL,
+		.wrap = &xde_wrap_icon,
 		.create = &xde_create,
 		.appmenu = &xde_appmenu,
 		.rootmenu = &xde_rootmenu,
