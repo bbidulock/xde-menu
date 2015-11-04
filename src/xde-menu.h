@@ -400,6 +400,9 @@ GtkMenuItem *xde_gtk_common_pin(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_wmmenu(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_themes(MenuContext *ctx);
 
+GtkMenuItem *xde_gtk_styles_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname, const char *suffix);
+GtkMenuItem *xde_gtk_themes_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname, const char *suffix);
+
 void xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data);
 void xde_entry_disconnect(gpointer data, GClosure *closure);
 

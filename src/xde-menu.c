@@ -1706,7 +1706,175 @@ xde_gtk_common_themes(MenuContext *ctx)
 	return (item);
 }
 
+GtkMenuItem *
+xde_gtk_styles_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname,
+		      const char *suffix)
+{
+	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
+	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
+	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	GtkMenuItem *item = NULL, *entry;
+	GList *sysent, *usrent;
+	GtkWidget *menu, *image = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	char *icon;
 
+	sysent = xde_common_get_styles(ctx, sysdir, fname, suffix);
+	usrent = xde_common_get_styles(ctx, usrdir, fname, suffix);
+
+	if (!sysent && !usrent)
+		return (item);
+
+	(void) mixfmt;
+
+	menu = gtk_menu_new();
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_label(item, "Styles");
+	if ((icon = xde_get_icon(ctx, "style")))
+		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
+	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_menu_item_set_submenu(item, menu);
+
+	(void) mixfmt;
+
+	if (sysent) {
+		GList *style;
+
+		for (style = sysent; style; style = style->next) {
+			char *name = style->data;
+			char *cmd = g_strdup_printf(sysfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			style->data = NULL;
+			free(name);
+		}
+		g_list_free(sysent);
+	}
+	if (sysent && usrent) {
+		entry = ctx->gtk.ops.separator(ctx, NULL);
+		gtk_menu_append(menu, GTK_WIDGET(entry));
+	}
+	if (usrent) {
+		GList *style;
+
+		for (style = usrent; style; style = style->next) {
+			char *name = style->data;
+			char *cmd = g_strdup_printf(usrfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			style->data = NULL;
+			free(name);
+		}
+		g_list_free(usrent);
+	}
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	free(icon);
+	return (item);
+
+}
+
+GtkMenuItem *
+xde_gtk_themes_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname,
+		      const char *suffix)
+{
+	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
+	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
+	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	GtkMenuItem *item = NULL, *entry;
+	GList *sysent, *usrent;
+	GtkWidget *menu, *image = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	char *icon;
+
+	sysent = xde_common_get_styles(ctx, sysdir, fname, suffix);
+	usrent = xde_common_get_styles(ctx, usrdir, fname, suffix);
+
+	sysent = xde_common_find_themes(ctx, sysent);
+	usrent = xde_common_find_themes(ctx, usrent);
+
+	if (!sysent && !usrent)
+		return (item);
+
+	(void) mixfmt;
+
+	menu = gtk_menu_new();
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_label(item, "Themes");
+	if ((icon = xde_get_icon(ctx, "style")))
+		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
+	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_menu_item_set_submenu(item, menu);
+
+	if (sysent) {
+		GList *theme;
+
+		for (theme = sysent; theme; theme = theme->next) {
+			char *name = theme->data;
+			char *cmd = g_strdup_printf(sysfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			theme->data = NULL;
+			free(name);
+		}
+		g_list_free(sysent);
+	}
+	if (sysent && usrent) {
+		entry = ctx->gtk.ops.separator(ctx, NULL);
+		gtk_menu_append(menu, GTK_WIDGET(entry));
+	}
+	if (usrent) {
+		GList *theme;
+
+		for (theme = usrent; theme; theme = theme->next) {
+			char *name = theme->data;
+			char *cmd = g_strdup_printf(usrfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			theme->data = NULL;
+			free(name);
+		}
+		g_list_free(usrent);
+	}
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	free(icon);
+	return (item);
+}
 
 static GMenuTree *
 get_menu(int argc, char *argv[])
