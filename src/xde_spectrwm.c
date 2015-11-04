@@ -264,43 +264,9 @@ xde_themes(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
 {
-	GList *themes, *theme;
-	GtkWidget *menu, *image = NULL;
 	GtkMenuItem *item = NULL;
-	GdkPixbuf *pixbuf = NULL;
-	char *icon;
 
-	themes = xde_common_get_themes(ctx);
-	menu = gtk_menu_new();
-	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_menu_item_set_label(item, "Themes");
-	if ((icon = xde_get_icon(ctx, "style")))
-		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
-	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-	gtk_menu_item_set_submenu(item, menu);
-
-	for (theme = themes; theme; theme = theme->next) {
-		char *name = theme->data;
-		char *cmd = g_strdup_printf("xde-style -s -t -r '%s'", name);
-		GtkMenuItem *entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
-
-		gtk_menu_item_set_label(entry, name);
-		if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
-			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
-		gtk_menu_append(menu, GTK_WIDGET(entry));
-		g_signal_connect_data(G_OBJECT(entry), "activate",
-				      G_CALLBACK(xde_entry_activated), cmd,
-				      &xde_entry_disconnect, 0);
-		theme->data = NULL;
-		free(name);
-	}
-	g_list_free(themes);
-	if (pixbuf) {
-		g_object_unref(pixbuf);
-		pixbuf = NULL;
-	}
-	free(icon);
+	item = xde_gtk_common_themes(ctx);
 	return (item);
 }
 
