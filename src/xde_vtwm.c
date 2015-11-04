@@ -44,6 +44,10 @@
 
 #include "xde-menu.h"
 
+/** @name VTWM
+  */
+/** @{ */
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
@@ -472,22 +476,11 @@ xde_gtk_wmmenu(MenuContext *ctx)
 	return (item);
 }
 
-static GList *
-xde_themes(MenuContext *ctx)
-{
-	GList *text = NULL;
-
-	return (text);
-}
-
-static GtkMenuItem *
-xde_gtk_themes(MenuContext *ctx)
-{
-	GtkMenuItem *item = NULL;
-
-	return (item);
-}
-
+/*
+ * Don't need to do anything here as the native styles menu is built using a
+ * the script 'getsytyles' and is set using the script 'setstyle'.  Only the
+ * GTK+ version needs to be performed here.
+ */
 static GList *
 xde_styles(MenuContext *ctx)
 {
@@ -500,7 +493,200 @@ static GtkMenuItem *
 xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
+	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
+	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
+	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	static const char *sysdir = "/usr/share/vtwm/styles";
+	static const char *usr = "/.vtwm/styles";
+	static const char *fname = "/stylerc";
+	char *usrdir;
+	GtkMenuItem *entry;
+	GList *sysent, *usrent;
+	GtkWidget *menu, *image = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	const char *home;
+	char *icon;
+	int len;
 
+	sysent = xde_common_get_styles(ctx, sysdir, fname, "");
+
+	home = getenv("HOME") ? : "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_common_get_styles(ctx, usrdir, fname, "");
+	free(usrdir);
+
+	if (!sysent && !usrent)
+		return (item);
+
+	menu = gtk_menu_new();
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_label(item, "Styles");
+	if ((icon = xde_get_icon(ctx, "style")))
+		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
+	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_menu_item_set_submenu(item, menu);
+
+	(void) mixfmt;
+
+	if (sysent) {
+		GList *style;
+
+		for (style = sysent; style; style = style->next) {
+			char *name = style->data;
+			char *cmd = g_strdup_printf(sysfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			style->data = NULL;
+			free(name);
+		}
+		g_list_free(sysent);
+	}
+	if (sysent && usrent) {
+		entry = ctx->gtk.ops.separator(ctx, NULL);
+		gtk_menu_append(menu, GTK_WIDGET(entry));
+	}
+	if (usrent) {
+		GList *style;
+
+		for (style = usrent; style; style = style->next) {
+			char *name = style->data;
+			char *cmd = g_strdup_printf(usrfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			style->data = NULL;
+			free(name);
+		}
+		g_list_free(usrent);
+	}
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	free(icon);
+	return (item);
+}
+
+static GList *
+xde_themes(MenuContext *ctx)
+{
+	GList *text = NULL;
+
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_themes(MenuContext *ctx)
+{
+	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
+	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
+	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	static const char *sysdir = "/usr/share/vtwm/styles";
+	static const char *usr = "/.vtwm/styles";
+	static const char *fname = "/stylerc";
+	char *usrdir;
+	GtkMenuItem *item = NULL, *entry;
+	GList *sysent, *usrent;
+	GtkWidget *menu, *image = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	const char *home;
+	char *icon;
+	int len;
+
+	sysent = xde_common_get_styles(ctx, sysdir, fname, "");
+	sysent = xde_common_find_themes(ctx, sysent);
+
+	home = getenv("HOME") ? : "~";
+	len = strlen(home) + 1 + strlen(usr) + 1;
+	usrdir = calloc(len, sizeof(*usrdir));
+	strcpy(usrdir, home);
+	strcat(usrdir, usr);
+
+	usrent = xde_common_get_styles(ctx, usrdir, fname, "");
+	usrent = xde_common_find_themes(ctx, usrent);
+	free(usrdir);
+
+	if (!sysent && !usrent)
+		return (item);
+
+	menu = gtk_menu_new();
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_label(item, "Themes");
+	if ((icon = xde_get_icon(ctx, "style")))
+		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
+	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_menu_item_set_submenu(item, menu);
+
+	(void) mixfmt;
+
+	if (sysent) {
+		GList *theme;
+
+		for (theme = sysent; theme; theme = theme->next) {
+			char *name = theme->data;
+			char *cmd = g_strdup_printf(sysfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			theme->data = NULL;
+			free(name);
+		}
+		g_list_free(sysent);
+	}
+	if (sysent && usrent) {
+		entry = ctx->gtk.ops.separator(ctx, NULL);
+		gtk_menu_append(menu, GTK_WIDGET(entry));
+	}
+	if (usrent) {
+		GList *theme;
+
+		for (theme = usrent; theme; theme = theme->next) {
+			char *name = theme->data;
+			char *cmd = g_strdup_printf(usrfmt, name);
+
+			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
+			gtk_menu_item_set_label(entry, name);
+			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
+			gtk_menu_append(menu, GTK_WIDGET(entry));
+			g_signal_connect_data(G_OBJECT(entry), "activate",
+					      G_CALLBACK(xde_entry_activated), cmd,
+					      &xde_entry_disconnect, 0);
+			theme->data = NULL;
+			free(name);
+		}
+		g_list_free(usrent);
+	}
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	free(icon);
 	return (item);
 }
 
@@ -634,8 +820,8 @@ MenuContext xde_menu_ops = {
 			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
-		.themes = &xde_themes,
 		.styles = &xde_styles,
+		.themes = &xde_themes,
 		.config = &xde_config,
 		.wkspcs = &xde_wkspcs,
 		.wmspec = &xde_wmspec,
@@ -656,10 +842,14 @@ MenuContext xde_menu_ops = {
 			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,
-		.themes = &xde_gtk_themes,
 		.styles = &xde_gtk_styles,
+		.themes = &xde_gtk_themes,
 		.config = &xde_gtk_config,
 		.wkspcs = &xde_gtk_wkspcs,
 		.wmspec = &xde_gtk_wmspec,
 		},
 };
+
+/** @} */
+
+// vim: set sw=8 tw=100 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:

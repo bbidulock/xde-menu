@@ -286,8 +286,8 @@ struct MenuContext {
 			GList *(*pin) (MenuContext *ctx);
 		} ops;
 		GList *(*wmmenu) (MenuContext *ctx);
-		GList *(*themes) (MenuContext *ctx);
 		GList *(*styles) (MenuContext *ctx);
+		GList *(*themes) (MenuContext *ctx);
 		GList *(*config) (MenuContext *ctx);
 		GList *(*wkspcs) (MenuContext *ctx);
 		GList *(*wmspec) (MenuContext *ctx);
@@ -308,8 +308,8 @@ struct MenuContext {
 			GtkMenuItem *(*pin) (MenuContext *ctx);
 		} ops;
 		GtkMenuItem *(*wmmenu) (MenuContext *ctx);
-		GtkMenuItem *(*themes) (MenuContext *ctx);
 		GtkMenuItem *(*styles) (MenuContext *ctx);
+		GtkMenuItem *(*themes) (MenuContext *ctx);
 		GtkMenuItem *(*config) (MenuContext *Ctx);
 		GtkMenuItem *(*wkspcs) (MenuContext *ctx);
 		GtkMenuItem *(*wmspec) (MenuContext *ctx);
@@ -380,6 +380,10 @@ GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);
 GList *xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 GList *xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu);
 GList *xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
+
+GList *xde_common_get_styles(MenuContext *ctx, const char *dname, const char *fname, const char *suffix);
+GList *xde_common_find_themes(MenuContext *ctx, GList *styles);
+GList *xde_common_get_themes(MenuContext *ctx);
 
 GtkMenu *xde_gtk_get_xsessions(void);
 void xde_gtk_free_xsessions(GtkMenu *list);

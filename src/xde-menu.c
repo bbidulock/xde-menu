@@ -1477,6 +1477,194 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 	return (result);
 }
 
+GList *
+xde_common_get_styles(MenuContext *ctx, const char *dname, const char *fname, const char *suffix)
+{
+	GList *list = NULL;
+	struct dirent *d;
+	DIR *dir;
+
+	if (!(dir = opendir(dname))) {
+		DPRINTF("%s: %s\n", dname, strerror(errno));
+		return (list);
+	}
+	while ((d = readdir(dir))) {
+		char *file, *p, *name;
+		struct stat st;
+		int len;
+
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dname) + strlen(d->d_name) + strlen(fname) + 2;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, dname);
+		strcat(file, "/");
+		strcat(file, d->d_name);
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			/* filename must end in suffix when specified */
+			if (suffix && suffix[0]
+			    && (!(p = strstr(d->d_name, suffix)) || p[strlen(suffix)])) {
+				DPRINTF("%s has no %s suffix\n", d->d_name, suffix);
+				free(file);
+				continue;
+			}
+		} else if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not file or directory\n", file);
+			free(file);
+			continue;
+		} else {
+			strcat(file, fname);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+		}
+		DPRINTF("got file name %s\n", file);
+		name = strdup(d->d_name);
+		if (suffix && suffix[0] && (p = strstr(d->d_name, suffix)) && !p[strlen(suffix)])
+			*p = '\0';
+		list = g_list_append(list, name);
+		free(file);
+	}
+	closedir(dir);
+	list = g_list_sort(list, xde_string_compare);
+	return (list);
+}
+
+/** @brief Get the list of XDE themes.
+  * @param ctx  The current menu generation context.
+  * @return (GList *) Pointer to list of XDE themes.
+  *
+  * For window managers that do not support styles, simply return the list of
+  * XDE themes.  For these window managers the style will not change, however
+  * the XDE theme (backgound images, XDE utility theme) will change properly.
+  */
+GList *
+xde_common_get_themes(MenuContext *ctx)
+{
+	static const char *suffix = "/xde/theme.ini";
+	static const char *subdir = "/themes/";
+	GList *list = NULL;
+	char *p;
+
+	for (p = xdg_data_path; p < xdg_data_last; p += strlen(p) + 1) {
+		int len = strlen(p) + strlen(subdir) + 1;
+		char *dirname = calloc(len, sizeof(*dirname));
+		struct dirent *d;
+		struct stat st;
+		DIR *dir;
+
+		strcpy(dirname, p);
+		strcat(dirname, subdir);
+		if (!(dir = opendir(dirname))) {
+			free(dirname);
+			continue;
+		}
+		while ((d = readdir(dir))) {
+			char *file;
+
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dirname) + strlen(d->d_name) + strlen(suffix) + 1;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, d->d_name);
+			strcat(file, suffix);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+			list = g_list_append(list, strdup(d->d_name));
+			free(file);
+		}
+		closedir(dir);
+		free(dirname);
+	}
+	list = g_list_sort(list, xde_string_compare);
+	return (list);
+}
+
+/** @brief Find the list of XDE themes corresponding to WM styles.
+  * @param ctx  The current menu generation context.
+  * @param styles  The list of supported WM styles (consumed).
+  * @return (GList *) Pointer to list of XDE themes.
+  *
+  * Find the list of XDE themes that are supported by the window manager.  Pass
+  * the list of supported WM style names and this function will return the names
+  * in the list that re also supported XDE themes.  This function is used to
+  * generated XDE theme menus for window managers that support styles.
+  */
+GList *
+xde_common_find_themes(MenuContext *ctx, GList *styles)
+{
+	static const char *suffix = "/xde/theme.ini";
+	static const char *subdir = "/themes/";
+	GList *list = NULL, *style;
+
+	for (style = styles; style; style = style->next) {
+		char *copy, *theme, *dir, *p;
+		int tlen;
+
+		/* careful, icewm style names may have a path component */
+		copy = theme = strdup(style->data);
+		free(style->data);
+		style->data = NULL;
+		if ((p = strrchr(theme, '/')))
+			*p = '\0';
+		if ((p = strchr(theme, '/')))
+			theme = p + 1;
+		tlen = strlen(subdir) + strlen(theme) + strlen(suffix) + 1;
+		for (dir = xdg_data_path; dir < xdg_data_last; dir += strlen(dir) + 1) {
+			int len = strlen(dir) + tlen + 1;
+			char *file;
+			struct stat st;
+
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dir);
+			strcat(file, subdir);
+			strcat(file, theme);
+			strcat(file, suffix);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+			DPRINTF("found theme file %s\n", file);
+			free(file);
+			list = g_list_append(list, strdup(theme));
+			free(copy);
+			break;
+		}
+	}
+	g_list_free(styles);
+	list = g_list_sort(list, xde_string_compare);
+	return (list);
+}
+
+
+
 static GMenuTree *
 get_menu(int argc, char *argv[])
 {
@@ -4276,4 +4464,4 @@ main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 }
 
-// vim: tw=100 com=sr0\:/**,mb\:*,ex\:*/,sr0\:/*,mb\:*,ex\:*/,b\:TRANS formatoptions+=tcqlor
+// vim: set sw=8 tw=100 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:
