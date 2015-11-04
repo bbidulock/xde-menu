@@ -262,10 +262,17 @@ typedef struct MenuContext MenuContext;
 
 struct MenuContext {
 	void *handle;
-	char *name;
-	char *format;
-	char *desktop;
-	char *version;
+	const char *name;
+	const char *format;
+	const char *desktop;
+	const char *version;
+	struct {
+		const char *sysdir;
+		const char *usrdir;
+		const char *subdir;
+		const char *fname;
+		const char *suffix;
+	} styles;
 	GMenuTree *tree;
 	int level;
 	char *indent;
@@ -401,8 +408,8 @@ GtkMenuItem *xde_gtk_common_pin(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_wmmenu(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_themes(MenuContext *ctx);
 
-GtkMenuItem *xde_gtk_styles_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname, const char *suffix);
-GtkMenuItem *xde_gtk_themes_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname, const char *suffix);
+GtkMenuItem *xde_gtk_styles_simple(MenuContext *ctx);
+GtkMenuItem *xde_gtk_themes_simple(MenuContext *ctx);
 
 void xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data);
 void xde_entry_disconnect(gpointer data, GClosure *closure);

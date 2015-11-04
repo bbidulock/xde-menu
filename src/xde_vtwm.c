@@ -493,12 +493,8 @@ static GtkMenuItem *
 xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
-	static const char *sysdir = "/usr/share/vtwm/styles";
-	char *usrdir = g_strdup_printf("%s/.vtwm/styles", getenv("HOME"));
-	static const char *fname = "/stylerc";
 
-	item = xde_gtk_styles_simple(ctx, sysdir, usrdir, fname, "");
-	free(usrdir);
+	item = xde_gtk_styles_simple(ctx);
 	return (item);
 }
 
@@ -514,12 +510,8 @@ static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
-	static const char *sysdir = "/usr/share/vtwm/styles";
-	char *usrdir = g_strdup_printf("%s/.vtwm/styles", getenv("HOME"));
-	static const char *fname = "/stylerc";
 
-	item = xde_gtk_themes_simple(ctx, sysdir, usrdir, fname, "");
-	free(usrdir);
+	item = xde_gtk_themes_simple(ctx);
 	return (item);
 }
 
@@ -628,6 +620,13 @@ MenuContext xde_menu_ops = {
 	.format = "vtwm",
 	.desktop = "VTWM",
 	.version = VERSION,
+	.styles = {
+		.sysdir = "/usr/share/vtwm",
+		.usrdir = "/.vtwm",
+		.subdir = "/styles",
+		.fname = "/stylerc",
+		.suffix = "",
+	},
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0

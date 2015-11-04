@@ -249,12 +249,8 @@ static GtkMenuItem *
 xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
-	static const char *sysdir = "/usr/share/adwm/styles";
-	char *usrdir = g_strdup_printf("%s/.adwm/styles", getenv("HOME"));
-	static const char *fname = "/stylerc";
 
-	item = xde_gtk_styles_simple(ctx, sysdir, usrdir, fname, "");
-	g_free(usrdir);
+	item = xde_gtk_styles_simple(ctx);
 	return (item);
 }
 
@@ -270,12 +266,8 @@ static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
-	static const char *sysdir = "/usr/share/adwm/styles";
-	char *usrdir = g_strdup_printf("%s/.adwm/styles", getenv("HOME"));
-	static const char *fname = "/stylerc";
 
-	item = xde_gtk_themes_simple(ctx, sysdir, usrdir, fname, "");
-	g_free(usrdir);
+	item = xde_gtk_themes_simple(ctx);
 	return (item);
 }
 
@@ -332,6 +324,13 @@ MenuContext xde_menu_ops = {
 	.format = "adwm",
 	.desktop = "ADWM",
 	.version = VERSION,
+	.styles = {
+		.sysdir = "/usr/share/adwm",
+		.usrdir = "/.adwm",
+		.subdir = "/styles",
+		.fname = "/stylerc",
+		.suffix = "",
+	},
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0

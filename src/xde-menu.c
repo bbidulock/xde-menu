@@ -1707,20 +1707,26 @@ xde_gtk_common_themes(MenuContext *ctx)
 }
 
 GtkMenuItem *
-xde_gtk_styles_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname,
-		      const char *suffix)
+xde_gtk_styles_simple(MenuContext *ctx)
 {
 	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
 	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
 	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	char *sysdir, *usrdir;
 	GtkMenuItem *item = NULL, *entry;
 	GList *sysent, *usrent;
 	GtkWidget *menu, *image = NULL;
 	GdkPixbuf *pixbuf = NULL;
 	char *icon;
 
-	sysent = xde_common_get_styles(ctx, sysdir, fname, suffix);
-	usrent = xde_common_get_styles(ctx, usrdir, fname, suffix);
+	sysdir = g_strdup_printf("%s%s", ctx->styles.sysdir, ctx->styles.subdir);
+	usrdir = g_strdup_printf("%s%s%s", getenv("HOME"), ctx->styles.usrdir, ctx->styles.subdir);
+
+	sysent = xde_common_get_styles(ctx, sysdir, ctx->styles.fname, ctx->styles.suffix);
+	usrent = xde_common_get_styles(ctx, usrdir, ctx->styles.fname, ctx->styles.suffix);
+
+	g_free(sysdir);
+	g_free(usrdir);
 
 	if (!sysent && !usrent)
 		return (item);
@@ -1792,23 +1798,29 @@ xde_gtk_styles_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, 
 }
 
 GtkMenuItem *
-xde_gtk_themes_simple(MenuContext *ctx, const char *sysdir, const char *usrdir, const char *fname,
-		      const char *suffix)
+xde_gtk_themes_simple(MenuContext *ctx)
 {
 	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
 	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
 	static const char *mixfmt = "xde-style -s -t -r '%s'";
+	char *sysdir, *usrdir;
 	GtkMenuItem *item = NULL, *entry;
 	GList *sysent, *usrent;
 	GtkWidget *menu, *image = NULL;
 	GdkPixbuf *pixbuf = NULL;
 	char *icon;
 
-	sysent = xde_common_get_styles(ctx, sysdir, fname, suffix);
-	usrent = xde_common_get_styles(ctx, usrdir, fname, suffix);
+	sysdir = g_strdup_printf("%s%s", ctx->styles.sysdir, ctx->styles.subdir);
+	usrdir = g_strdup_printf("%s%s%s", getenv("HOME"), ctx->styles.usrdir, ctx->styles.subdir);
+
+	sysent = xde_common_get_styles(ctx, sysdir, ctx->styles.fname, ctx->styles.suffix);
+	usrent = xde_common_get_styles(ctx, usrdir, ctx->styles.fname, ctx->styles.suffix);
 
 	sysent = xde_common_find_themes(ctx, sysent);
 	usrent = xde_common_find_themes(ctx, usrent);
+
+	g_free(sysdir);
+	g_free(usrdir);
 
 	if (!sysent && !usrent)
 		return (item);
