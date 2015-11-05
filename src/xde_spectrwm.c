@@ -250,6 +250,7 @@ xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	/* XXX: spectrwm does not support styles? */
 	return (item);
 }
 
@@ -323,6 +324,13 @@ MenuContext xde_menu_ops = {
 	.format = "spectrwm",
 	.desktop = "SPECTRWM",
 	.version = VERSION,
+	.styles = {
+		.sysdir = NULL,		/* XXX */
+		.usrdir = NULL,		/* XXX */
+		.subdir = NULL,		/* XXX */
+		.fname = NULL,		/* XXX */
+		.suffix = NULL,		/* XXX */
+	},
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0

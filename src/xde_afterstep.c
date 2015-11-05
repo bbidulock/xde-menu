@@ -44,6 +44,10 @@
 
 #include "xde-menu.h"
 
+/** @name AFTERSTEP
+  */
+/** @{ */
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
@@ -234,95 +238,19 @@ xde_gtk_wmmenu(MenuContext *ctx)
 }
 
 static GList *
-xde_theme_entries(MenuContext *ctx, const char *dname, Which which, const char *fname)
+xde_styles(MenuContext *ctx)
 {
-	GList *list = NULL;
-	DIR *dir;
+	GList *text = NULL;
 
-	if ((dir = opendir(dname))) {
-		struct dirent *d;
-		struct stat st;
-		char *file;
-		int len;
+	return (text);
+}
 
-		while ((d = readdir(dir))) {
-			if (d->d_name[0] == '.')
-				continue;
-			len = strlen(dname) + strlen(d->d_name) + 16;
-			file = calloc(len, sizeof(*file));
-			strcpy(file, dname);
-			strcat(file, "/");
-			strcat(file, d->d_name);
-			if (lstat(file, &st)) {
-				EPRINTF("%s: %s\n", file, strerror(errno));
-				free(file);
-				continue;
-			}
-			switch (which) {
-			case XdeStyleMixed:
-			{
-				fname = "/xde/themerc";
+static GtkMenuItem *
+xde_gtk_styles(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
 
-				if (!S_ISDIR(st.st_mode)) {
-					DPRINTF("%s: not file or directory\n", file);
-					free(file);
-					continue;
-				}
-				strcat(file, fname);
-				if (stat(file, &st)) {
-					EPRINTF("%s: %s\n", file, strerror(errno));
-					free(file);
-					continue;
-				}
-				if (!S_ISREG(st.st_mode)) {
-					DPRINTF("%s: not a file\n", file);
-					free(file);
-					continue;
-				}
-				break;
-			}
-			case XdeStyleSystem:
-			case XdeStyleUser:
-			default:
-			{
-				if (!S_ISLNK(st.st_mode)) {
-					DPRINTF("%s: not symbolic link\n", file);
-					free(file);
-					continue;
-				}
-				if (stat(file, &st)) {
-					EPRINTF("%s: %s\n", file, strerror(errno));
-					free(file);
-					continue;
-				}
-				if (S_ISDIR(st.st_mode)) {
-					strcat(file, fname);
-					if (stat(file, &st)) {
-						EPRINTF("%s: %s\n", file, strerror(errno));
-						free(file);
-						continue;
-					}
-					if (!S_ISREG(st.st_mode)) {
-						DPRINTF("%s: not a file\n", file);
-						free(file);
-						continue;
-					}
-				} else if (!S_ISREG(st.st_mode)) {
-					DPRINTF("%s: not file or directory\n", file);
-					free(file);
-					continue;
-				}
-				break;
-			}
-			}
-			list = g_list_append(list, strdup(d->d_name));
-			free(file);
-		}
-		closedir(dir);
-		list = g_list_sort(list, xde_string_compare);
-	} else
-		DPRINTF("%s: %s\n", dname, strerror(errno));
-	return (list);
+	return (item);
 }
 
 static GList *
@@ -335,85 +263,6 @@ xde_themes(MenuContext *ctx)
 
 static GtkMenuItem *
 xde_gtk_themes(MenuContext *ctx)
-{
-	static const char *sysfmt = "xde-style -s -t -r -y '%s'";
-	static const char *usrfmt = "xde-style -s -t -r -u '%s'";
-	static const char *mixfmt = "xde-style -s -t -r '%s'";
-	static const char *sysdir = "/usr/share/themes";
-	static const char *usr = "/.local/share/themes";
-	static const char *fname = "/xde/themerc";
-	char *usrdir;
-	GtkMenuItem *item = NULL, *entry;
-	GList *mixent;
-	GtkWidget *menu, *image = NULL;
-	GdkPixbuf *pixbuf = NULL;
-	const char *home;
-	char *icon;
-	int len;
-
-	home = getenv("HOME") ? : "~";
-	len = strlen(home) + 1 + strlen(usr) + 1;
-	usrdir = calloc(len, sizeof(*usrdir));
-	strcpy(usrdir, home);
-	strcat(usrdir, usr);
-
-	mixent = xde_theme_entries(ctx, sysdir, XdeStyleMixed, fname);
-	free(usrdir);
-
-	if (!mixent)
-		return (item);
-
-	menu = gtk_menu_new();
-	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_menu_item_set_label(item, "Themes");
-	if ((icon = xde_get_icon(ctx, "style")))
-		pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL);
-	if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-	gtk_menu_item_set_submenu(item, menu);
-
-	(void) sysfmt;
-	(void) usrfmt;
-	(void) mixfmt;
-
-	if (mixent) {
-		GList *theme;
-
-		for (theme = mixent; theme; theme = theme->next) {
-			char *name = theme->data;
-			char *cmd = g_strdup_printf(mixfmt, name);
-
-			entry = GTK_MENU_ITEM(gtk_image_menu_item_new());
-			gtk_menu_item_set_label(entry, name);
-			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
-				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
-			gtk_menu_append(menu, GTK_WIDGET(entry));
-			g_signal_connect_data(G_OBJECT(entry), "activate",
-					      G_CALLBACK(xde_entry_activated), cmd,
-					      &xde_entry_disconnect, 0);
-			theme->data = NULL;
-			free(name);
-		}
-		g_list_free(mixent);
-	}
-	if (pixbuf) {
-		g_object_unref(pixbuf);
-		pixbuf = NULL;
-	}
-	free(icon);
-	return (item);
-}
-
-static GList *
-xde_styles(MenuContext *ctx)
-{
-	GList *text = NULL;
-
-	return (text);
-}
-
-static GtkMenuItem *
-xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
@@ -473,6 +322,13 @@ MenuContext xde_menu_ops = {
 	.format = "afterstep",
 	.desktop = "AFTERSTEP",
 	.version = VERSION,
+	.styles = {
+		.sysdir = NULL,
+		.usrdir = NULL,
+		.subdir = NULL,
+		.fname = NULL,
+		.suffix = NULL,
+	},
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0
@@ -498,8 +354,8 @@ MenuContext xde_menu_ops = {
 			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
-		.themes = &xde_themes,
 		.styles = &xde_styles,
+		.themes = &xde_themes,
 		.config = &xde_config,
 		.wkspcs = &xde_wkspcs,
 		.wmspec = &xde_wmspec,
@@ -520,10 +376,14 @@ MenuContext xde_menu_ops = {
 			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,
-		.themes = &xde_gtk_themes,
 		.styles = &xde_gtk_styles,
+		.themes = &xde_gtk_themes,
 		.config = &xde_gtk_config,
 		.wkspcs = &xde_gtk_wkspcs,
 		.wmspec = &xde_gtk_wmspec,
 		},
 };
+
+/** @} */
+
+// vim: set sw=8 tw=100 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:

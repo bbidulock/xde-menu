@@ -323,6 +323,13 @@ MenuContext xde_menu_ops = {
 	.format = "yeahwm",
 	.desktop = "YEAHWM",
 	.version = VERSION,
+	.styles = {
+		.sysdir = NULL,
+		.usrdir = NULL,
+		.subdir = NULL,
+		.fname = NULL,
+		.suffix = NULL,
+	},
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0

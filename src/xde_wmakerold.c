@@ -44,6 +44,10 @@
 
 #include "xde-menu.h"
 
+/** @name WMAKER OLD
+  */
+/** @{ */
+
 static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
@@ -404,22 +408,6 @@ xde_gtk_wmmenu(MenuContext *ctx)
 }
 
 static GList *
-xde_themes(MenuContext *ctx)
-{
-	GList *text = NULL;
-
-	return (text);
-}
-
-static GtkMenuItem *
-xde_gtk_themes(MenuContext *ctx)
-{
-	GtkMenuItem *item = NULL;
-
-	return (item);
-}
-
-static GList *
 xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
@@ -432,6 +420,24 @@ xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	item = xde_gtk_styles_simple(ctx);
+	return (item);
+}
+
+static GList *
+xde_themes(MenuContext *ctx)
+{
+	GList *text = NULL;
+
+	return (text);
+}
+
+static GtkMenuItem *
+xde_gtk_themes(MenuContext *ctx)
+{
+	GtkMenuItem *item = NULL;
+
+	item = xde_gtk_themes_simple(ctx);
 	return (item);
 }
 
@@ -488,6 +494,13 @@ MenuContext xde_menu_ops = {
 	.format = "wmakerold",
 	.desktop = "WMAKER",
 	.version = VERSION,
+	.styles = {
+		.sysdir = "/usr/share/WindowMaker",
+		.usrdir = "/GNUstep/Library/WindowMaker",
+		.subdir = "/Themes",
+		.fname = "/theme",
+		.suffix = ".themed",
+	},
 	.tree = NULL,
 	.level = 0,
 	.iconflags = 0
@@ -513,8 +526,8 @@ MenuContext xde_menu_ops = {
 			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
-		.themes = &xde_themes,
 		.styles = &xde_styles,
+		.themes = &xde_themes,
 		.config = &xde_config,
 		.wkspcs = &xde_wkspcs,
 		.wmspec = &xde_wmspec,
@@ -535,10 +548,14 @@ MenuContext xde_menu_ops = {
 			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,
-		.themes = &xde_gtk_themes,
 		.styles = &xde_gtk_styles,
+		.themes = &xde_gtk_themes,
 		.config = &xde_gtk_config,
 		.wkspcs = &xde_gtk_wkspcs,
 		.wmspec = &xde_gtk_wmspec,
 		},
 };
+
+/** @} */
+
+// vim: set sw=8 tw=100 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:

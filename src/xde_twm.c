@@ -486,6 +486,9 @@ xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	/* FIXME: this should just place the "Styles" entry in the menu refering to the
+	   "twmstyles" menu which was built by the getstyles script before m4
+	   configuration. */
 	return (text);
 }
 
@@ -503,6 +506,10 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	/* FIXME: because we have built up the internal twmstyles menu actions for
+	   setting style, it is actually possible to create a "twmthemes" menu here that
+	   will only contain the styles with an equivalent theme and invoke the
+	   corresponding actions defined for the "twmstyles" menu. */
 	return (text);
 }
 
