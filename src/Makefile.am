@@ -23,6 +23,7 @@ xdemod_LTLIBRARIES = \
 	xde-menu-dwm.la \
 	xde-menu-echinus.la \
 	xde-menu-etwm.la \
+	xde-menu-ewmh.la \
 	xde-menu-fluxbox.la \
 	xde-menu-flwm.la \
 	xde-menu-fvwm.la \
@@ -114,6 +115,12 @@ xde_menu_etwm_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_etwm_la_SOURCES = xde-menu.h xde_etwm.c
 xde_menu_etwm_la_LIBADD = $(AM_LDFLAGS)
 xde_menu_etwm_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_ewmh_la_CPPFLAGS = -DNAME=\"xde-ewmh\"
+xde_menu_ewmh_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_ewmh_la_SOURCES = xde-menu.h xde_ewmh.c
+xde_menu_ewmh_la_LIBADD = $(AM_LDFLAGS)
+xde_menu_ewmh_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_fluxbox_la_CPPFLAGS = -DNAME=\"xde-fluxbox\"
 xde_menu_fluxbox_la_CFLAGS = $(AM_CFLAGS)
