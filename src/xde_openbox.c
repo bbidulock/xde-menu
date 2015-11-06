@@ -61,7 +61,7 @@ static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
 	GMenuTreeDirectory *dir;
-	GList *result = NULL;
+	GList *text = NULL;
 	GList *entries = NULL;
 	char *s;
 
@@ -74,7 +74,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 
 	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
-		return (result);
+		return (text);
 	}
 	xde_reset_indent(ctx, 0);
 	xde_increase_indent(ctx);
@@ -84,28 +84,31 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 	switch(style) {
 	case StyleFullmenu:
 	default:
-		result = ctx->wmm.rootmenu(ctx, entries);
+		text = ctx->wmm.rootmenu(ctx, entries);
 		break;
 	case StyleAppmenu:
 		if (!name)
 			name = gmenu_tree_directory_get_name(dir);
-		result = ctx->wmm.appmenu(ctx, entries, name);
+		text = ctx->wmm.appmenu(ctx, entries, name);
 		break;
 	case StyleEntries:
 		break;
 	}
-	result = g_list_concat(ctx->wmm.output, result);
+	text = g_list_concat(ctx->wmm.output, text);
 	ctx->wmm.output = NULL;
 
 	s = g_strdup_printf("\n%s\n", "</openbox_menu>");
-	result = g_list_append(result, s);
-	return (result);
+	text = g_list_append(text, s);
+	return (text);
 }
 
 static GtkMenu *
 xde_gtk_create(MenuContext *ctx, Style style, const char *name)
 {
-	return xde_gtk_create_simple(ctx, style, name);
+	GtkMenu *menu = NULL;
+
+	menu = xde_gtk_create_simple(ctx, style, name);
+	return (menu);
 }
 
 static GList *
@@ -226,25 +229,35 @@ xde_gtk_rootmenu(MenuContext *ctx, GtkMenu *entries)
 {
 	GtkMenu *menu = NULL;
 
+	menu = xde_gtk_common_rootmenu(ctx, entries);
 	return (menu);
 }
 
 static GList *
 xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
-	return xde_build_simple(ctx, type, item);
+	GList *text = NULL;
+
+	text = xde_build_simple(ctx, type, item);
+	return (text);
 }
 
 static GtkMenuItem *
 xde_gtk_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
-	return xde_gtk_build_simple(ctx, type, item);
+	GtkMenuItem *menu = NULL;
+
+	menu = xde_gtk_build_simple(ctx, type, item);
+	return (menu);
 }
 
 static GList *
 xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 {
-	return xde_menu_simple(ctx, menu);
+	GList *text = NULL;
+
+	text = xde_menu_simple(ctx, menu);
+	return (text);
 }
 
 static GtkMenu *
@@ -466,7 +479,10 @@ xde_gtk_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 static GList *
 xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
-	return xde_alias_simple(ctx, als);
+	GList *text = NULL;
+
+	text = xde_alias_simple(ctx, als);
+	return (text);
 }
 
 static GtkMenuItem *

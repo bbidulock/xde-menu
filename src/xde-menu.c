@@ -1071,6 +1071,38 @@ xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
 	return (GTK_MENU(menu));
 }
 
+GtkMenu *
+xde_gtk_common_rootmenu(MenuContext *ctx, GtkMenu *entries)
+{
+	GtkMenu *menu = entries;
+	GtkWidget *item, *image;
+
+	item = GTK_WIDGET(ctx->gtk.ops.pin(ctx));
+	gtk_menu_prepend(menu, item);
+
+	item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL));
+	gtk_menu_append(menu, item);
+
+	item = gtk_image_menu_item_new();
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Run");
+	if ((image = gtk_image_new_from_icon_name("gtk-execute", GTK_ICON_SIZE_MENU)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), "xde-run");
+	gtk_menu_append(menu, item);
+
+	item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL));
+	gtk_menu_append(menu, item);
+
+	item = gtk_image_menu_item_new();
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Exit");
+	if ((image = gtk_image_new_from_icon_name("system-log-out", GTK_ICON_SIZE_MENU)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), "xde-logout");
+	gtk_menu_append(menu, item);
+
+	return (menu);
+}
+
 GList *
 xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
