@@ -562,6 +562,9 @@ does provide a mechanism for invoking an external root menu.
 This can be used to invoke the GTK+ version of the root menu (i.e.
 pop-up menu).
 
+L<2bwm(1)> does not provide a user-settable style mechanism.  Therefore,
+theme sub-menus provide only for the selection of XDE themes.
+
 =item B<--wmname=>I<adwm> B<--format=>I<adwm>
 
 Like L<dwm(1)>, L<adwm(1)> does not provide a root menu; however, it
@@ -569,13 +572,20 @@ does provide a mechanism for invoking an external root menu.
 This can be used to invoke the GTK+ version of the root menu (i.e.
 pop-up menu).
 
+L<adwm(1)> provides a user-settable style mechanism.  Therefore, both
+style and theme sub-menus can be generated.
+
 =item B<--wmname=>I<afterstep> B<--format=>I<afterstep>
 
-No support has yet been included for L<afterstep(1)>.
+No support has yet been included for L<afterstep(1)>.  Only generic
+applications menu and XDE theme sub-menus will currently be generated.
+The L<afterstep(1)> root menu is not supported.
 
 =item B<--wmname=>I<awesome> B<--format=>I<awesome>
 
-No support has yet been included for L<awesome(1)>.
+No support has yet been included for L<awesome(1)>.  Only generic
+applications menu and XDE theme sub-menus will currently be generated.
+The L<awesome(1)> root menu is not supported.
 
 =item B<--wmname=>I<blackbox> B<--format=>I<blackbox>
 
@@ -584,10 +594,17 @@ L<fluxbox(1)> and the older L<openbox(1)> (C<openboxold>) menu style.
 The primary difference is that L<blackbox(1)> does not support the
 display of icons.
 
+Sub-menus of user-settable L<blackbox(1)> styles and corresponding XDE
+themes can be generated.
+
 =item B<--wmname=>I<ctwm> B<--format=>I<ctwm>
 
 L<ctwm(1)> provides a root menu that is formatted similar to L<twm(1)>.
 This root menu format does not support the display of icons.
+
+L<ctwm(1)> when launched with XDE configuration files supports
+user-settable styles.  Sub-menus of user-settable L<ctwm(1)> styles and
+corresponding XDE themes can be generated.
 
 =item B<--wmname=>I<cwm> B<--format=>I<cwm>
 
@@ -596,9 +613,19 @@ generate sub-menus); however, it has the ability to specify command
 actions in response to key bindings or mouse buttons and can easily be
 configured to launch the GTK+ menu.
 
+L<cwm(1)> does not really have a user-settable style system; however,
+the colors of some things can be changed using the configuration file
+and the window manager can be restarted.  L<xde-style(1)> does not fully
+support L<cwm(1)> yet, so sub-menus of user-settable L<cwm(1)> styles
+are not generated; however, XDE themes are.
+
 =item B<--wmname=>I<dtwm> B<--format=>I<dtwm>
 
-L<dtwm(1)>
+L<dtwm(1)> provides a root menu that is formatted similar to L<twm(1)>.
+This root menu format does not support the display of icons.
+
+L<dtwm(1)> does not really have a user-settable style system.  Current
+support is only for setting XDE themes.
 
 =item B<--wmname=>I<dwm> B<--format=>I<dwm>
 
@@ -666,11 +693,14 @@ facility for launching the GTK+ menu.
 
 =item B<--wmname=>I<mwm> B<--format=>I<mwm>
 
-L<mwm(1)> is the old pre-openmotify window manager that was intended on
+L<mwm(1)> is the old pre-openmotif window manager that was intended on
 providing the capabilities of the L<dtwm(1)> OSF/Motif/CDE window
 manager.  It provides a root menu following a similar configuration file
 format to L<twm(1)>, L<ctwm(1)>, L<etwm(1)> and L<vtwm(1)>.  It does not
 have the ability to display icons in menu items.
+
+Like L<dtwm(1)>, L<mwm(1)> does not really have a user-settable style
+system.  Current support is only for setting XDE themes.
 
 =item B<--wmname=>I<openbox> B<--format=>I<openbox> or B<--format=>I<openboxold>
 

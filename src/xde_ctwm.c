@@ -438,7 +438,7 @@ xde_wmmenu(MenuContext *ctx)
 			exec = exec ? strdup(exec) : strdup("/usr/bin/true");
 		}
 		esc2 = xde_character_escape(exec, '"');
-		if (!strcmp(ctx->name, "mwm"))
+		if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm"))
 			s = g_strdup_printf("    %-32s  %s \"%s\"\n", qname, "f.restart -", esc2);
 		else if (!strcmp(ctx->name, "twm")||!strcmp(ctx->name, "vtwm"))
 			s = g_strdup_printf("    %-32s  %s \"%s\"\n", qname, "f.startwm", esc2);
@@ -456,7 +456,7 @@ xde_wmmenu(MenuContext *ctx)
 		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
-	if (!strcmp(ctx->name, "mwm"))
+	if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm"))
 		s = g_strdup_printf("    %-32s  %s\n", "\"Quit\"", "f.quit_mwm");
 	else
 		s = g_strdup_printf("    %-32s  %s\n", "\"Quit\"", "f.quit");
@@ -486,6 +486,9 @@ xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	/* FIXME: this should just place the "Styles" entry in the menu refering to the
+	   "twmstyles" menu which was built by the getstyles script before m4
+	   configuration. */
 	return (text);
 }
 
@@ -494,7 +497,8 @@ xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
-	item = xde_gtk_styles_simple(ctx);
+	if (strcmp(ctx->name, "dtwm"))
+		item = xde_gtk_styles_simple(ctx);
 	return (item);
 }
 
@@ -503,6 +507,10 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	/* FIXME: because we have built up the internal twmstyles menu actions for
+	   setting style, it is actually possible to create a "twmthemes" menu here that
+	   will only contain the styles with an equivalent theme and invoke the
+	   corresponding actions defined for the "twmstyles" menu. */
 	return (text);
 }
 
@@ -511,7 +519,10 @@ xde_gtk_themes(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
-	item = xde_gtk_themes_simple(ctx);
+	if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm"))
+		item = xde_gtk_common_themes(ctx);
+	else
+		item = xde_gtk_themes_simple(ctx);
 	return (item);
 }
 
@@ -573,11 +584,11 @@ xde_wmspec(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Window Managers\"", "f.menu \"managers\"");
 	text = g_list_append(text, s);
-	if (!strcmp(ctx->name, "mwm")) {
+	if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"Pack Icons\"", "f.pack_icons");
 		text = g_list_append(text, s);
 	}
-	if (strcmp(ctx->name, "mwm")) {
+	if (strcmp(ctx->name, "mwm") && strcmp(ctx->name, "dtwm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"Hide Icon Manager\"", "f.hideiconmgr");
 		text = g_list_append(text, s);
 		s = g_strdup_printf("    %-32s  %s\n", "\"Show Icon Manager\"", "f.showiconmgr");
