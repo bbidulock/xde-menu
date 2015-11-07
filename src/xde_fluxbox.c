@@ -776,6 +776,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "fluxbox",
 	.format = "fluxbox",
+	.wmname = "Fluxbox",
 	.desktop = "FLUXBOX",
 	.version = VERSION,
 	.styles = {

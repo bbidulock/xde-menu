@@ -339,6 +339,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "afterstep",
 	.format = "afterstep",
+	.wmname = "AfterStep",
 	.desktop = "AFTERSTEP",
 	.version = VERSION,
 	.styles = {

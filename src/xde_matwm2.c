@@ -340,6 +340,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "matwm2",
 	.format = "matwm2",
+	.wmname = "MATWM2",
 	.desktop = "MATWM2",
 	.version = VERSION,
 	.styles = {

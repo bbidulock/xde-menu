@@ -340,6 +340,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "cwm",
 	.format = "cwm",
+	.wmname = "CWM",
 	.desktop = "CWM",
 	.version = VERSION,
 	.styles = {

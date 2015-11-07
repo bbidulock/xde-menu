@@ -645,6 +645,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "twm",
 	.format = "twm",
+	.wmname = "TWM",
 	.desktop = "TWM",
 	.version = VERSION,
 	.styles = {

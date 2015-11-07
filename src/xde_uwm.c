@@ -549,6 +549,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "uwm",
 	.format = "uwm",
+	.wmname = "UWM",
 	.desktop = "UWM",
 	.version = VERSION,
 	.styles = {

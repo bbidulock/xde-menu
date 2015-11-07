@@ -341,6 +341,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "echinus",
 	.format = "echinus",
+	.wmname = "Echinus",
 	.desktop = "ECHINUS",
 	.version = VERSION,
 	.styles = {

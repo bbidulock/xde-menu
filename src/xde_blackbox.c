@@ -772,6 +772,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "blackbox",
 	.format = "blackbox",
+	.wmname = "Blackbox",
 	.desktop = "BLACKBOX",
 	.version = VERSION,
 	.styles = {

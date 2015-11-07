@@ -699,6 +699,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "wmaker",
 	.format = "wmaker",
+	.wmname = "WindowMaker",
 	.desktop = "WMAKER",
 	.version = VERSION,
 	.styles = {

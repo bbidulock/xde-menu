@@ -608,6 +608,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "fvwm",
 	.format = "fvwm",
+	.wmname = "Fvwm",
 	.desktop = "FVWM",
 	.version = VERSION,
 	.styles = {

@@ -645,6 +645,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "etwm",
 	.format = "etwm",
+	.wmname = "ETWM",
 	.desktop = "ETWM",
 	.version = VERSION,
 	.styles = {

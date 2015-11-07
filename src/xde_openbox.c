@@ -705,6 +705,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "openbox",
 	.format = "openbox",
+	.wmname = "Openbox",
 	.desktop = "OPENBOX",
 	.version = VERSION,
 	.styles = {

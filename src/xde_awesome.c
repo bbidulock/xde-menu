@@ -339,6 +339,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "awesome",
 	.format = "awesome",
+	.wmname = "Awesome",
 	.desktop = "AWESOME",
 	.version = VERSION,
 	.styles = {

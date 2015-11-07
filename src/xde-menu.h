@@ -264,6 +264,7 @@ struct MenuContext {
 	void *handle;
 	const char *name;
 	const char *format;
+	const char *wmname;
 	const char *desktop;
 	const char *version;
 	struct {

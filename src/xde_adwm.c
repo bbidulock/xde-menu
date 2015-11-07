@@ -53,7 +53,6 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 {
 	GList *text = NULL;
 
-	text = xde_create_simple(ctx, style, name);
 	return (text);
 }
 
@@ -105,7 +104,6 @@ xde_build(MenuContext *ctx, GMenuTreeItemType type, gpointer item)
 {
 	GList *text = NULL;
 
-	text = xde_build_simple(ctx, type, item);
 	return (text);
 }
 
@@ -123,7 +121,6 @@ xde_menu(MenuContext *ctx, GMenuTreeDirectory *menu)
 {
 	GList *text = NULL;
 
-	text = xde_menu_simple(ctx, menu);
 	return (text);
 }
 
@@ -209,7 +206,6 @@ xde_alias(MenuContext *ctx, GMenuTreeAlias *als)
 {
 	GList *text = NULL;
 
-	text = xde_alias_simple(ctx, als);
 	return (text);
 }
 
@@ -303,6 +299,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	/* FIXME */
 	return (item);
 }
 
@@ -319,6 +316,7 @@ xde_gtk_wkspcs(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	/* FIXME */
 	return (item);
 }
 
@@ -341,6 +339,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "adwm",
 	.format = "adwm",
+	.wmname = "ADWM",
 	.desktop = "ADWM",
 	.version = VERSION,
 	.styles = {

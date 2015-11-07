@@ -340,6 +340,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "wind",
 	.format = "wind",
+	.wmname = "Wind",
 	.desktop = "WIND",
 	.version = VERSION,
 	.styles = {

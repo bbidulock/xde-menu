@@ -340,6 +340,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "2bwm",
 	.format = "2bwm",
+	.wmname = "2BWM",
 	.desktop = "2BWM",
 	.version = VERSION,
 	.styles = {

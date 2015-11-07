@@ -341,6 +341,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "metacity",
 	.format = "metacity",
+	.wmname = "Metacity",
 	.desktop = "METACITY",
 	.version = VERSION,
 	.styles = {

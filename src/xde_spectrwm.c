@@ -341,6 +341,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "spectrwm",
 	.format = "spectrwm",
+	.wmname = "Spectrwm",
 	.desktop = "SPECTRWM",
 	.version = VERSION,
 	.styles = {

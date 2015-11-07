@@ -992,62 +992,62 @@ GList *
 xde_create_simple(MenuContext *ctx, Style style, const char *name)
 {
 	GMenuTreeDirectory *directory;
-	GList *result = NULL;
+	GList *menu = NULL;
 
 	if (!(directory = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
-		return (result);
+		return (menu);
 	}
 	ctx->level = 0;
 	xde_increase_indent(ctx);
-	result = ctx->wmm.ops.menu(ctx, directory);
+	menu = ctx->wmm.ops.menu(ctx, directory);
 	xde_decrease_indent(ctx);
 	switch (style) {
 	case StyleFullmenu:
 	default:
-		result = ctx->wmm.rootmenu(ctx, result);
+		menu = ctx->wmm.rootmenu(ctx, menu);
 		break;
 	case StyleAppmenu:
 		if (!name)
 			name = gmenu_tree_directory_get_name(directory);
-		result = ctx->wmm.appmenu(ctx, result, name);
+		menu = ctx->wmm.appmenu(ctx, menu, name);
 		break;
 	case StyleEntries:
 		/* do nothing */
 		break;
 	}
-	result = g_list_concat(ctx->wmm.output, result);
+	menu = g_list_concat(ctx->wmm.output, menu);
 	ctx->wmm.output = NULL;
-	return (result);
+	return (menu);
 }
 
 GtkMenu *
 xde_gtk_create_simple(MenuContext *ctx, Style style, const char *name)
 {
 	GMenuTreeDirectory *directory;
-	GtkMenu *result = NULL;
+	GtkMenu *menu = NULL;
 
 	if (!(directory = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
-		return (result);
+		return (menu);
 	}
 	ctx->level = 0;
-	result = ctx->gtk.ops.menu(ctx, directory);
+	menu = ctx->gtk.ops.menu(ctx, directory);
 	switch (style) {
 	case StyleFullmenu:
 	default:
-		result = ctx->gtk.rootmenu(ctx, result);
+		menu = ctx->gtk.rootmenu(ctx, menu);
 		break;
 	case StyleAppmenu:
 		if (!name)
 			name = gmenu_tree_directory_get_name(directory);
-		result = ctx->gtk.appmenu(ctx, result, name);
+		menu = ctx->gtk.appmenu(ctx, menu, name);
 		break;
 	case StyleEntries:
 		/* do nothing */
 		break;
 	}
-	return (result);
+	return (menu);
 }
 
 GtkMenu *
@@ -1068,6 +1068,8 @@ xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 	free(icon);
 	gtk_menu_append(menu, item);
+	gtk_widget_show_all(item);
+	gtk_widget_show_all(menu);
 	return (GTK_MENU(menu));
 }
 
@@ -1082,6 +1084,7 @@ xde_gtk_common_rootmenu(MenuContext *ctx, GtkMenu *entries)
 
 	item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL));
 	gtk_menu_append(menu, item);
+	gtk_widget_show_all(item);
 
 	item = gtk_image_menu_item_new();
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Run");
@@ -1089,9 +1092,11 @@ xde_gtk_common_rootmenu(MenuContext *ctx, GtkMenu *entries)
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), "xde-run");
 	gtk_menu_append(menu, item);
+	gtk_widget_show_all(item);
 
 	item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL));
 	gtk_menu_append(menu, item);
+	gtk_widget_show_all(item);
 
 	item = gtk_image_menu_item_new();
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Exit");
@@ -1099,6 +1104,7 @@ xde_gtk_common_rootmenu(MenuContext *ctx, GtkMenu *entries)
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), "xde-logout");
 	gtk_menu_append(menu, item);
+	gtk_widget_show_all(item);
 
 	return (menu);
 }
@@ -1235,26 +1241,32 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 		case GMENU_TREE_ITEM_DIRECTORY:
 			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_directory(iter));
 			gtk_menu_append(menu, GTK_WIDGET(item));
+			gtk_widget_show_all(GTK_WIDGET(item));
 			continue;
 		case GMENU_TREE_ITEM_ENTRY:
 			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_entry(iter));
 			gtk_menu_append(menu, GTK_WIDGET(item));
+			gtk_widget_show_all(GTK_WIDGET(item));
 			continue;
 		case GMENU_TREE_ITEM_SEPARATOR:
 			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_separator(iter));
 			gtk_menu_append(menu, GTK_WIDGET(item));
+			gtk_widget_show_all(GTK_WIDGET(item));
 			continue;
 		case GMENU_TREE_ITEM_HEADER:
 			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_header(iter));
 			gtk_menu_append(menu, GTK_WIDGET(item));
+			gtk_widget_show_all(GTK_WIDGET(item));
 			continue;
 		case GMENU_TREE_ITEM_ALIAS:
 			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_alias(iter));
 			gtk_menu_append(menu, GTK_WIDGET(item));
+			gtk_widget_show_all(GTK_WIDGET(item));
 			continue;
 		}
 		break;
 	}
+	gtk_widget_show_all(GTK_WIDGET(menu));
 	return (menu);
 }
 
@@ -1471,6 +1483,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 	free(icon);
 	item = gtk_menu_item_new();
 	gtk_menu_append(menu, item);
+	gtk_widget_show_all(item);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
 	if ((icon = xde_get_icon(ctx, "gtk-refresh")) &&
 	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
@@ -1490,6 +1503,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 			continue;
 		item = gtk_menu_item_new();
 		gtk_menu_append(menu, item);
+		gtk_widget_show_all(item);
 		label = g_strdup_printf("Start %s", xsess->name);
 		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
 		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
@@ -1506,6 +1520,8 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		free(icon);
 		free(label);
 	}
+	gtk_widget_show_all(menu);
+	gtk_widget_show_all(GTK_WIDGET(result));
 	return (result);
 }
 
@@ -1723,6 +1739,7 @@ xde_gtk_common_themes(MenuContext *ctx)
 		if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
 			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
 		gtk_menu_append(menu, GTK_WIDGET(entry));
+		gtk_widget_show_all(GTK_WIDGET(entry));
 		g_signal_connect_data(G_OBJECT(entry), "activate",
 				      G_CALLBACK(xde_entry_activated), cmd,
 				      &xde_entry_disconnect, 0);
@@ -1735,6 +1752,8 @@ xde_gtk_common_themes(MenuContext *ctx)
 		pixbuf = NULL;
 	}
 	free(icon);
+	gtk_widget_show_all(menu);
+	gtk_widget_show_all(GTK_WIDGET(item));
 	return (item);
 }
 
@@ -1788,6 +1807,7 @@ xde_gtk_styles_simple(MenuContext *ctx)
 			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
 				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
 			gtk_menu_append(menu, GTK_WIDGET(entry));
+			gtk_widget_show_all(GTK_WIDGET(entry));
 			g_signal_connect_data(G_OBJECT(entry), "activate",
 					      G_CALLBACK(xde_entry_activated), cmd,
 					      &xde_entry_disconnect, 0);
@@ -1799,6 +1819,7 @@ xde_gtk_styles_simple(MenuContext *ctx)
 	if (sysent && usrent) {
 		entry = ctx->gtk.ops.separator(ctx, NULL);
 		gtk_menu_append(menu, GTK_WIDGET(entry));
+		gtk_widget_show_all(GTK_WIDGET(entry));
 	}
 	if (usrent) {
 		GList *style;
@@ -1812,6 +1833,7 @@ xde_gtk_styles_simple(MenuContext *ctx)
 			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
 				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
 			gtk_menu_append(menu, GTK_WIDGET(entry));
+			gtk_widget_show_all(GTK_WIDGET(entry));
 			g_signal_connect_data(G_OBJECT(entry), "activate",
 					      G_CALLBACK(xde_entry_activated), cmd,
 					      &xde_entry_disconnect, 0);
@@ -1825,6 +1847,8 @@ xde_gtk_styles_simple(MenuContext *ctx)
 		pixbuf = NULL;
 	}
 	free(icon);
+	gtk_widget_show_all(menu);
+	gtk_widget_show_all(GTK_WIDGET(item));
 	return (item);
 
 }
@@ -1880,6 +1904,7 @@ xde_gtk_themes_simple(MenuContext *ctx)
 			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
 				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
 			gtk_menu_append(menu, GTK_WIDGET(entry));
+			gtk_widget_show_all(GTK_WIDGET(entry));
 			g_signal_connect_data(G_OBJECT(entry), "activate",
 					      G_CALLBACK(xde_entry_activated), cmd,
 					      &xde_entry_disconnect, 0);
@@ -1891,6 +1916,7 @@ xde_gtk_themes_simple(MenuContext *ctx)
 	if (sysent && usrent) {
 		entry = ctx->gtk.ops.separator(ctx, NULL);
 		gtk_menu_append(menu, GTK_WIDGET(entry));
+		gtk_widget_show_all(GTK_WIDGET(entry));
 	}
 	if (usrent) {
 		GList *theme;
@@ -1904,6 +1930,7 @@ xde_gtk_themes_simple(MenuContext *ctx)
 			if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
 				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(entry), image);
 			gtk_menu_append(menu, GTK_WIDGET(entry));
+			gtk_widget_show_all(GTK_WIDGET(entry));
 			g_signal_connect_data(G_OBJECT(entry), "activate",
 					      G_CALLBACK(xde_entry_activated), cmd,
 					      &xde_entry_disconnect, 0);
@@ -1917,6 +1944,8 @@ xde_gtk_themes_simple(MenuContext *ctx)
 		pixbuf = NULL;
 	}
 	free(icon);
+	gtk_widget_show_all(menu);
+	gtk_widget_show_all(GTK_WIDGET(item));
 	return (item);
 }
 
@@ -2516,6 +2545,91 @@ do_restart(int argc, char *argv[])
 	}
 }
 
+static gboolean
+position_pointer(GtkMenu *menu, gint *x, gint *y)
+{
+	GdkDisplay *disp;
+
+	DPRINT();
+	disp = gtk_widget_get_display(GTK_WIDGET(menu));
+
+	gdk_display_get_pointer(disp, NULL, x, y, NULL);
+
+	return TRUE;
+}
+
+static gboolean
+position_center(GtkMenu *menu, gint *x, gint *y)
+{
+	GdkDisplay *disp;
+	GdkScreen *scrn;
+	GdkRectangle rect;
+	gint px, py, nmon;
+	GtkRequisition req;
+
+	DPRINT();
+	disp = gtk_widget_get_display(GTK_WIDGET(menu));
+	gdk_display_get_pointer(disp, &scrn, &px, &py, NULL);
+	nmon = gdk_screen_get_monitor_at_point(scrn, px, py);
+	gdk_screen_get_monitor_geometry(scrn, nmon, &rect);
+	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
+
+	*x = rect.x + (rect.width - req.width) / 2;
+	*y = rect.y + (rect.height - req.height) / 2;
+
+	return TRUE;
+}
+
+static gboolean
+position_topleft(GtkMenu *menu, gint *x, gint *y)
+{
+	GdkDisplay *disp;
+	GdkScreen *scrn;
+	GdkRectangle rect;
+	gint px, py, nmon;
+
+	DPRINT();
+	disp = gtk_widget_get_display(GTK_WIDGET(menu));
+	gdk_display_get_pointer(disp, &scrn, &px, &py, NULL);
+	nmon = gdk_screen_get_monitor_at_point(scrn, px, py);
+	gdk_screen_get_monitor_geometry(scrn, nmon, &rect);
+
+	*x = rect.x;
+	*y = rect.y;
+
+	return TRUE;
+}
+
+static void
+position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
+{
+	switch (options.where) {
+	case XdePositionDefault:
+	default:
+		if (options.button) {
+			position_pointer(menu, x, y);
+			break;
+		}
+		position_center(menu, x, y);
+		break;
+	case XdePositionPointer:
+		position_pointer(menu, x, y);
+		break;
+	case XdePositionCenter:
+		position_center(menu, x, y);
+		break;
+	case XdePositionTopLeft:
+		position_topleft(menu, x, y);
+		break;
+	}
+}
+
+void
+on_selection_done(GtkMenuShell *menushell, gpointer user_data)
+{
+	gtk_main_quit();
+}
+
 static void
 do_popmenu(int argc, char *argv[])
 {
@@ -2561,8 +2675,43 @@ do_popmenu(int argc, char *argv[])
 		}
 	}
 	if (!gotone) {
+#if 1
+		MenuContext *ctx;
+		GMenuTree *tree;
+		GtkMenu *menu;
+
+		setup_x11(FALSE);
+		/* let's just pop the menu if no other process is running */
+		if (!(tree = get_menu(argc, argv))) {
+			EPRINTF("%s: could not allocate menu tree\n", NAME);
+			exit(EXIT_FAILURE);
+		}
+		if (!(ctx = screens[0].context)) {
+			EPRINTF("no menu context for screen 0\n");
+			exit(EXIT_FAILURE);
+		}
+		ctx->tree = tree;
+		ctx->level = 0;
+		ctx->indent = calloc(64, sizeof(*ctx->indent));
+
+		if (!gmenu_tree_load_sync(tree, NULL)) {
+			EPRINTF("could not sync menu %s\n", options.rootmenu);
+			return;
+		}
+		DPRINTF("calling create!\n");
+		menu = ctx->gtk.create(ctx, options.style, NULL);
+		DPRINTF("done create!\n");
+		g_signal_connect(G_OBJECT(menu), "selection-done",
+				G_CALLBACK(on_selection_done), NULL);
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, NULL,
+				options.button, options.timestamp);
+		gtk_main();
+
+		/* the tricky part is exiting when it drops */
+#else
 		EPRINTF("%s: need running instance to pop menu\n", argv[0]);
 		exit(EXIT_FAILURE);
+#endif
 	}
 }
 

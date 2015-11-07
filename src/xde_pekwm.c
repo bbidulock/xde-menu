@@ -641,6 +641,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "pekwm",
 	.format = "pekwm",
+	.wmname = "PekWM",
 	.desktop = "PEKWM",
 	.version = VERSION,
 	.styles = {

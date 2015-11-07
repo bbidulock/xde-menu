@@ -341,6 +341,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "jwm",
 	.format = "jwm",
+	.wmname = "JWM",
 	.desktop = "JWM",
 	.version = VERSION,
 	.styles = {

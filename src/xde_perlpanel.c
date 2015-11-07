@@ -763,6 +763,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "perlpanel",
 	.format = "perlpanel",
+	.wmname = "PerlPanel",
 	.desktop = "XDE",
 	.version = VERSION,
 	.styles = {

@@ -770,6 +770,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "waimea",
 	.format = "waimea",
+	.wmname = "Waimea",
 	.desktop = "WAIMEA",
 	.version = VERSION,
 	.styles = {

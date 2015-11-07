@@ -340,6 +340,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 MenuContext xde_menu_ops = {
 	.name = "ewmh",
 	.format = "ewmh",
+	.wmname = "EWMH/NetWM",
 	.desktop = "XDE",
 	.version = VERSION,
 	.styles = {
