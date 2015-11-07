@@ -1372,8 +1372,11 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	GDesktopAppInfo *info;
 	GdkPixbuf *pixbuf;
 	GtkWidget *image;
-	const char *name;
-	char *p, *icon, *appid, *cmd;
+	const char *name, *value;
+	char *p, *icon, *appid, *cmd, *myicon = NULL;
+	GIcon *gicon;
+	int i = 0;
+	gchar **markup;
 
 	if (!(info = gmenu_tree_entry_get_app_info(ent)))
 		return (item);
@@ -1393,10 +1396,35 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-	free(icon);
-	free(appid);
 	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
 			      &xde_entry_disconnect, 0);
+
+	markup = calloc(16, sizeof(*markup));
+
+	if ((value = g_app_info_get_name(G_APP_INFO(info))))
+		markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", value);
+	if ((value = g_desktop_app_info_get_generic_name(info)))
+		markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
+	if ((value = g_app_info_get_description(G_APP_INFO(info))))
+		markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
+	if ((value = g_app_info_get_commandline(G_APP_INFO(info))))
+		markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
+	if ((gicon = g_app_info_get_icon(G_APP_INFO(info))) && (myicon = g_icon_to_string(gicon)))
+		markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
+	if ((value = g_desktop_app_info_get_categories(info)))
+		markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
+	if (appid)
+		markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s\n", appid);
+	if ((value = gmenu_tree_entry_get_desktop_file_path(ent)))
+		markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", value);
+	if (icon)
+		markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
+
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(item), g_strjoinv(NULL, markup));
+	g_strfreev(markup);
+	g_free(myicon);
+	free(icon);
+	free(appid);
 	return (item);
 }
 
