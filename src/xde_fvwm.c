@@ -341,7 +341,10 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	GIcon *gicon = NULL;
 	char *appid;
 
-	info = gmenu_tree_entry_get_app_info(ent);
+	if (!(info = gmenu_tree_entry_get_app_info(ent)) || g_desktop_app_info_get_is_hidden(info)
+	    || g_desktop_app_info_get_nodisplay(info) || !g_desktop_app_info_get_show_in(info, NULL)
+	    || !g_app_info_should_show(G_APP_INFO(info)))
+		return (text);
 	name = g_app_info_get_name(G_APP_INFO(info));
 	esc1 = xde_character_escape(name, '"');
 	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))

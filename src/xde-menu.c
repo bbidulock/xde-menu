@@ -1203,7 +1203,7 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 {
 	GMenuTreeItemType type;
 	GMenuTreeIter *iter;
-	GList *text = NULL;
+	GList *text = NULL, *item;
 
 	iter = gmenu_tree_directory_iter(menu);
 
@@ -1214,31 +1214,24 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 		default:
 			break;
 		case GMENU_TREE_ITEM_DIRECTORY:
-			text =
-			    g_list_concat(text,
-					  ctx->wmm.build(ctx, type,
-						     gmenu_tree_iter_get_directory(iter)));
+			if ((item = ctx->wmm.build(ctx, type, gmenu_tree_iter_get_directory(iter))))
+				text = g_list_concat(text, item);
 			continue;
 		case GMENU_TREE_ITEM_ENTRY:
-			text =
-			    g_list_concat(text,
-					  ctx->wmm.build(ctx, type, gmenu_tree_iter_get_entry(iter)));
+			if ((item = ctx->wmm.build(ctx, type, gmenu_tree_iter_get_entry(iter))))
+				text = g_list_concat(text, item);
 			continue;
 		case GMENU_TREE_ITEM_SEPARATOR:
-			text =
-			    g_list_concat(text,
-					  ctx->wmm.build(ctx, type,
-						     gmenu_tree_iter_get_separator(iter)));
+			if ((item = ctx->wmm.build(ctx, type, gmenu_tree_iter_get_separator(iter))))
+				text = g_list_concat(text, item);
 			continue;
 		case GMENU_TREE_ITEM_HEADER:
-			text =
-			    g_list_concat(text,
-					  ctx->wmm.build(ctx, type, gmenu_tree_iter_get_header(iter)));
+			if ((item = ctx->wmm.build(ctx, type, gmenu_tree_iter_get_header(iter))))
+				text = g_list_concat(text, item);
 			continue;
 		case GMENU_TREE_ITEM_ALIAS:
-			text =
-			    g_list_concat(text,
-					  ctx->wmm.build(ctx, type, gmenu_tree_iter_get_alias(iter)));
+			if ((item = ctx->wmm.build(ctx, type, gmenu_tree_iter_get_alias(iter))))
+				text = g_list_concat(text, item);
 			continue;
 		}
 		break;
@@ -1266,29 +1259,34 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 		default:
 			break;
 		case GMENU_TREE_ITEM_DIRECTORY:
-			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_directory(iter));
-			gtk_menu_append(menu, GTK_WIDGET(item));
-			gtk_widget_show_all(GTK_WIDGET(item));
+			if ((item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_directory(iter)))) {
+				gtk_menu_append(menu, GTK_WIDGET(item));
+				gtk_widget_show_all(GTK_WIDGET(item));
+			}
 			continue;
 		case GMENU_TREE_ITEM_ENTRY:
-			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_entry(iter));
-			gtk_menu_append(menu, GTK_WIDGET(item));
-			gtk_widget_show_all(GTK_WIDGET(item));
+			if ((item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_entry(iter)))) {
+				gtk_menu_append(menu, GTK_WIDGET(item));
+				gtk_widget_show_all(GTK_WIDGET(item));
+			}
 			continue;
 		case GMENU_TREE_ITEM_SEPARATOR:
-			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_separator(iter));
-			gtk_menu_append(menu, GTK_WIDGET(item));
-			gtk_widget_show_all(GTK_WIDGET(item));
+			if ((item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_separator(iter)))) {
+				gtk_menu_append(menu, GTK_WIDGET(item));
+				gtk_widget_show_all(GTK_WIDGET(item));
+			}
 			continue;
 		case GMENU_TREE_ITEM_HEADER:
-			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_header(iter));
-			gtk_menu_append(menu, GTK_WIDGET(item));
-			gtk_widget_show_all(GTK_WIDGET(item));
+			if ((item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_header(iter)))) {
+				gtk_menu_append(menu, GTK_WIDGET(item));
+				gtk_widget_show_all(GTK_WIDGET(item));
+			}
 			continue;
 		case GMENU_TREE_ITEM_ALIAS:
-			item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_alias(iter));
-			gtk_menu_append(menu, GTK_WIDGET(item));
-			gtk_widget_show_all(GTK_WIDGET(item));
+			if ((item = ctx->gtk.build(ctx, type, gmenu_tree_iter_get_alias(iter)))) {
+				gtk_menu_append(menu, GTK_WIDGET(item));
+				gtk_widget_show_all(GTK_WIDGET(item));
+			}
 			continue;
 		}
 		break;
@@ -1422,7 +1420,9 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	int i = 0;
 	gchar **markup;
 
-	if (!(info = gmenu_tree_entry_get_app_info(ent)))
+	if (!(info = gmenu_tree_entry_get_app_info(ent)) || g_desktop_app_info_get_is_hidden(info)
+	    || g_desktop_app_info_get_nodisplay(info) || !g_desktop_app_info_get_show_in(info, NULL)
+	    || !g_app_info_should_show(G_APP_INFO(info)))
 		return (item);
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	if ((name = g_app_info_get_name(G_APP_INFO(info))))
