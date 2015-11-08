@@ -154,10 +154,12 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[restart] (Restart) {}", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "help-about"));
-	s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (About) {(fluxbox -v; fluxbox -info | sed 1d) | gxmessage -file - -center}", icon);
-	text = g_list_append(text, s);
-	free(icon);
+	if (!strcmp(ctx->name, "fluxbox")) {
+		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "help-about"));
+		s = g_strdup_printf("%s%s%s\n", ctx->indent, "[exec] (About) {(fluxbox -v; fluxbox -info | sed 1d) | gxmessage -file - -center}", icon);
+		text = g_list_append(text, s);
+		free(icon);
+	}
 	if (options.filename) {
 		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf("%s%s%s%s%s%s%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format", ctx->format, " -desktop ", ctx->desktop, " -launch -o ", options.filename, "}", icon);

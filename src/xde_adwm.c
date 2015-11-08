@@ -331,9 +331,44 @@ xde_wmspec(MenuContext *ctx)
 static GtkMenuItem *
 xde_gtk_wmspec(MenuContext *ctx)
 {
-	GtkMenuItem *item = NULL;
+	GtkWidget *image, *menu;
+	GtkMenuItem *item, *part;
+	GdkPixbuf *pixbuf = NULL;
+	const char *inames[4] = { ctx->name, "preferences-system-windows", "metacity", NULL };
+	char *icon;
 
-	return (item);
+	menu = gtk_menu_new();
+	item = (GtkMenuItem *)gtk_image_menu_item_new();
+	gtk_menu_item_set_submenu(item, menu);
+	gtk_menu_item_set_label(item, ctx->wmname);
+	if ((icon = xde_get_icons(ctx, inames))
+	    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
+	    && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_widget_show_all(GTK_WIDGET(menu));
+	gtk_widget_show_all(GTK_WIDGET(item));
+	DPRINTF("calling \"config\"\n");
+	if ((part = ctx->gtk.config(ctx)))
+		gtk_menu_append(menu, GTK_WIDGET(part));
+	DPRINTF("calling \"themes\"\n");
+	if ((part = ctx->gtk.themes(ctx)))
+		gtk_menu_append(menu, GTK_WIDGET(part));
+	DPRINTF("calling \"styles\"\n");
+	if ((part = ctx->gtk.styles(ctx)))
+		gtk_menu_append(menu, GTK_WIDGET(part));
+	DPRINTF("calling \"wkspcs\"\n");
+	if ((part = ctx->gtk.wkspcs(ctx)))
+		gtk_menu_append(menu, GTK_WIDGET(part));
+	DPRINTF("calling \"wmmenu\"\n");
+	if ((part = ctx->gtk.wmmenu(ctx)))
+		gtk_menu_append(menu, GTK_WIDGET(part));
+	DPRINTF("done\n");
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	free(icon);
+	return (GTK_MENU_ITEM(item));
 }
 
 MenuContext xde_menu_ops = {

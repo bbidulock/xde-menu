@@ -131,6 +131,8 @@ Options defaults = {
 	.screen = 0,
 	.tray = True,
 	.generate = True,
+	.treeflags = 0,
+	.tooltips = 0,
 };
 
 XdeScreen *screens = NULL;
@@ -762,13 +764,18 @@ xde_get_xsessions(void)
 		XdeXsession *xsession;
 		GDesktopAppInfo *info;
 
-		if (!(entry = xde_get_xsession_entry(key, file)))
+		if (!(entry = xde_get_xsession_entry(key, file))) {
+			DPRINTF("could not get xsession entry for %s and %s\n", key, file);
 			continue;
+		}
 		if (xde_bad_xsession(key, entry)) {
+			DPRINTF("bad xsession entry for %s and %s\n", key, file);
 			g_key_file_free(entry);
 			continue;
 		}
+		g_key_file_set_string(entry, G_KEY_FILE_DESKTOP_GROUP, G_KEY_FILE_DESKTOP_KEY_TYPE, "Application");
 		if (!(info = g_desktop_app_info_new_from_keyfile(entry))) {
+			DPRINTF("could not get info for %s and %s\n", key, file);
 			g_key_file_free(entry);
 			continue;
 		}
@@ -1112,33 +1119,43 @@ xde_gtk_common_rootmenu(MenuContext *ctx, GtkMenu *entries)
 	GtkMenu *menu = entries;
 	GtkWidget *item, *image;
 
-	item = GTK_WIDGET(ctx->gtk.ops.pin(ctx));
-	gtk_menu_prepend(menu, item);
-
-	item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL));
-	gtk_menu_append(menu, item);
-	gtk_widget_show_all(item);
-
-	item = gtk_image_menu_item_new();
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Run");
-	if ((image = gtk_image_new_from_icon_name("gtk-execute", GTK_ICON_SIZE_MENU)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), "xde-run");
-	gtk_menu_append(menu, item);
-	gtk_widget_show_all(item);
-
-	item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL));
-	gtk_menu_append(menu, item);
-	gtk_widget_show_all(item);
-
-	item = gtk_image_menu_item_new();
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Exit");
-	if ((image = gtk_image_new_from_icon_name("system-log-out", GTK_ICON_SIZE_MENU)))
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), "xde-logout");
-	gtk_menu_append(menu, item);
-	gtk_widget_show_all(item);
-
+	if ((item = GTK_WIDGET(ctx->gtk.ops.pin(ctx)))) {
+		gtk_menu_prepend(menu, item);
+	}
+	if ((item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL)))) {
+		gtk_menu_append(menu, item);
+		gtk_widget_show_all(item);
+	}
+	if ((item = (GtkWidget *)ctx->gtk.wmspec(ctx))) {
+		gtk_menu_append(menu, item);
+		gtk_widget_show_all(item);
+		if ((item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL)))) {
+			gtk_menu_append(menu, item);
+			gtk_widget_show_all(item);
+		}
+	}
+	if ((item = gtk_image_menu_item_new())) {
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Run");
+		if ((image = gtk_image_new_from_icon_name("gtk-execute", GTK_ICON_SIZE_MENU)))
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated),
+				 "xde-run");
+		gtk_menu_append(menu, item);
+		gtk_widget_show_all(item);
+		if ((item = GTK_WIDGET(xde_gtk_common_separator(ctx, NULL)))) {
+			gtk_menu_append(menu, item);
+			gtk_widget_show_all(item);
+		}
+	}
+	if ((item = gtk_image_menu_item_new())) {
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Exit");
+		if ((image = gtk_image_new_from_icon_name("system-log-out", GTK_ICON_SIZE_MENU)))
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated),
+				 "xde-logout");
+		gtk_menu_append(menu, item);
+		gtk_widget_show_all(item);
+	}
 	return (menu);
 }
 
@@ -1360,7 +1377,7 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GtkMenuItem *item = NULL;
 	GtkMenu *menu;
-	const char *name, *path;
+	const char *name, *path, *value;
 	GdkPixbuf *pixbuf = NULL;
 	GtkWidget *image;
 	GIcon *gicon = NULL;
@@ -1368,6 +1385,10 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 
 	if (!(menu = ctx->gtk.ops.menu(ctx, dir)))
 		return (item);
+	if (gmenu_tree_directory_get_is_nodisplay(dir)) {
+		DPRINTF("directory %s is no display\n", gmenu_tree_directory_get_menu_id(dir));
+		return (item);
+	}
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	if ((name = gmenu_tree_directory_get_name(dir)))
 		gtk_menu_item_set_label(item, name);
@@ -1383,6 +1404,7 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		g_key_file_unref(file);
 	} else
 		icon = xde_get_icon2(ctx, "folder", "unknown");
+	gicon = gmenu_tree_directory_get_icon(dir);
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
@@ -1391,7 +1413,37 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 		pixbuf = NULL;
 	}
 	gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
-	free(icon);
+
+	if (options.tooltips) {
+		gchar **markup = calloc(16, sizeof(*markup));
+		char *myicon = NULL;
+		char *tip;
+		int i = 0;
+
+		if (name)
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", name);
+		if ((value = gmenu_tree_directory_get_generic_name(dir)))
+			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
+		if ((value = gmenu_tree_directory_get_comment(dir)))
+			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
+		if (gicon && (myicon = g_icon_to_string(gicon)))
+			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
+		if ((value = gmenu_tree_directory_get_menu_id(dir)))
+			markup[i++] = g_markup_printf_escaped("<b>menuid:</b> %s\n", value);
+		if ((value = gmenu_tree_directory_get_desktop_file_path(dir)))
+			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", value);
+		if (icon)
+			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
+
+		tip = g_strjoinv(NULL, markup);
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
+		g_free(tip);
+		g_strfreev(markup);
+		g_free(myicon);
+	} else if ((value = gmenu_tree_directory_get_comment(dir))) {
+		gtk_widget_set_tooltip_text(GTK_WIDGET(item), value);
+	}
+	g_free(icon);
 	return (item);
 }
 
@@ -1423,10 +1475,8 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	GdkPixbuf *pixbuf = NULL;
 	GtkWidget *image = NULL;
 	const char *name, *value;
-	char *p, *icon, *appid, *cmd, *myicon = NULL, *tip;
+	char *p, *icon, *appid, *cmd;
 	GIcon *gicon = NULL;
-	int i = 0;
-	gchar **markup;
 
 	if (!(info = gmenu_tree_entry_get_app_info(ent)) || g_desktop_app_info_get_is_hidden(info)
 	    || g_desktop_app_info_get_nodisplay(info) || !g_desktop_app_info_get_show_in(info, NULL)
@@ -1458,32 +1508,39 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
 			      &xde_entry_disconnect, 0);
 
-	markup = calloc(16, sizeof(*markup));
+	if (options.tooltips) {
+		gchar **markup = calloc(16, sizeof(*markup));
+		char *myicon = NULL;
+		char *tip;
+		int i = 0;
 
-	if ((value = g_app_info_get_name(G_APP_INFO(info))))
-		markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", value);
-	if ((value = g_desktop_app_info_get_generic_name(info)))
-		markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
-	if ((value = g_app_info_get_description(G_APP_INFO(info))))
-		markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
-	if ((value = g_app_info_get_commandline(G_APP_INFO(info))))
-		markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
-	if (gicon && (myicon = g_icon_to_string(gicon)))
-		markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
-	if ((value = g_desktop_app_info_get_categories(info)))
-		markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
-	if (appid)
-		markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s\n", appid);
-	if ((value = gmenu_tree_entry_get_desktop_file_path(ent)))
-		markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", value);
-	if (icon)
-		markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
+		if ((value = g_app_info_get_name(G_APP_INFO(info))))
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", value);
+		if ((value = g_desktop_app_info_get_generic_name(info)))
+			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
+		if ((value = g_app_info_get_description(G_APP_INFO(info))))
+			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
+		if ((value = g_app_info_get_commandline(G_APP_INFO(info))))
+			markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
+		if (gicon && (myicon = g_icon_to_string(gicon)))
+			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
+		if ((value = g_desktop_app_info_get_categories(info)))
+			markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
+		if (appid)
+			markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s\n", appid);
+		if ((value = gmenu_tree_entry_get_desktop_file_path(ent)))
+			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", value);
+		if (icon)
+			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
 
-	tip = g_strjoinv(NULL, markup);
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
-	g_free(tip);
-	g_strfreev(markup);
-	g_free(myicon);
+		tip = g_strjoinv(NULL, markup);
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
+		g_free(tip);
+		g_strfreev(markup);
+		g_free(myicon);
+	} else if ((value = g_app_info_get_description(G_APP_INFO(info)))) {
+		gtk_widget_set_tooltip_text(GTK_WIDGET(item), value);
+	}
 	free(icon);
 	free(appid);
 	return (item);
@@ -1571,7 +1628,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		pixbuf = NULL;
 	}
 	free(icon);
-	item = gtk_menu_item_new();
+	item = gtk_image_menu_item_new();
 	gtk_menu_append(menu, item);
 	gtk_widget_show_all(item);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Restart");
@@ -1595,7 +1652,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		item = gtk_menu_item_new();
+		item = gtk_image_menu_item_new();
 		if (ctx->stack)
 			gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 		gtk_widget_show_all(item);
@@ -1648,6 +1705,8 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		free(icon);
 
 		gtk_menu_append(menu, item);
+		gtk_widget_show_all(item);
+		DPRINTF("got xsession %s\n", xsess->name);
 	}
 	gtk_widget_show_all(menu);
 	gtk_widget_show_all(GTK_WIDGET(result));
@@ -2086,14 +2145,7 @@ get_menu(int argc, char *argv[])
 	if (options.desktop)
 		setenv("XDG_CURRENT_DESKTOP", options.desktop, TRUE);
 
-	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, 0
-//                                           | GMENU_TREE_FLAGS_INCLUDE_EXCLUDED
-//                                           | GMENU_TREE_FLAGS_INCLUDE_NODISPLAY
-//                                           | GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
-//                                           | GMENU_TREE_FLAGS_SHOW_EMPTY
-//                                           | GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS
-//                                           | GMENU_TREE_FLAGS_SORT_DISPLAY_NAME
-	      )))
+	if (!(tree = gmenu_tree_new_for_path(options.rootmenu, options.treeflags)))
 		EPRINTF("could not look up menu %s\n", options.rootmenu);
 	return (tree);
 }
@@ -4666,6 +4718,14 @@ main(int argc, char *argv[])
 			{"replace",	no_argument,		NULL,	'R'},
 			{"quit",	no_argument,		NULL,	'q'},
 
+			{"excluded",	no_argument,		NULL,	 10},
+			{"nodisplay",	no_argument,		NULL,	 11},
+			{"unallocated",	no_argument,		NULL,	 12},
+			{"empty",	no_argument,		NULL,	 13},
+			{"separators",	no_argument,		NULL,	 14},
+			{"sort",	no_argument,		NULL,	 15},
+			{"tooltips",	no_argument,		NULL,	 16},
+
 			{"help",	no_argument,		NULL,	'h'},
 			{"version",	no_argument,		NULL,	'V'},
 			{"copying",	no_argument,		NULL,	'C'},
@@ -4817,6 +4877,28 @@ main(int argc, char *argv[])
 			if (options.command == CommandMenugen)
 				goto bad_option;
 			options.generate = False;
+			break;
+
+		case 10: /* --excluded */
+			options.treeflags ^= GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
+			break;
+		case 11: /* --nodisplay */
+			options.treeflags ^= GMENU_TREE_FLAGS_INCLUDE_NODISPLAY;
+			break;
+		case 12: /* --unallocated */
+			options.treeflags ^= GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED;
+			break;
+		case 13: /* --empty */
+			options.treeflags ^= GMENU_TREE_FLAGS_SHOW_EMPTY;
+			break;
+		case 14: /* --separators */
+			options.treeflags ^= GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS;
+			break;
+		case 15: /* --sort */
+			options.treeflags ^= GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+			break;
+		case 16: /* --tooltips */
+			options.tooltips = TRUE;
 			break;
 
 		case 'G':	/* -G, --menugen */

@@ -256,6 +256,8 @@ typedef struct {
 	int screen;
 	Bool tray;
 	Bool generate;
+	int treeflags;
+	Bool tooltips;
 } Options;
 
 typedef struct MenuContext MenuContext;
