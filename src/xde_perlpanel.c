@@ -245,17 +245,20 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	const char *name, *path;
 	char *esc1, *esc2, *s;
 	char *icon = NULL;
+	GIcon *gicon = NULL;
 
 	if (!(dir = gmenu_tree_header_get_directory(hdr)))
 		return (text);
 	name = gmenu_tree_directory_get_name(dir);
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
 		GKeyFile *file = g_key_file_new();
 
 		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+		icon = xde_get_entry_icon(ctx, file, gicon, "folder", "unknown",
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG|
 				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 		g_key_file_unref(file);
@@ -287,15 +290,18 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	const char *name, *path;
 	char *esc1, *esc2;
 	char *icon = NULL;
+	GIcon *gicon = NULL;
 
 	name = gmenu_tree_directory_get_name(dir);
 	esc1 = xde_character_escape(name, ')');
 	esc2 = xde_character_escape(name, '}');
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
 		GKeyFile *file = g_key_file_new();
 
 		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+		icon = xde_get_entry_icon(ctx, file, gicon, "folder", "unknown",
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
 		g_key_file_unref(file);
 	} else
@@ -327,6 +333,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	const char *name;
 	char *esc1, *esc2, *cmd, *p;
 	char *s, *icon = NULL;
+	GIcon *gicon = NULL;
 	char *appid;
 
 	info = gmenu_tree_entry_get_app_info(ent);
@@ -337,7 +344,9 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	    && (p = strstr(appid, ".desktop")))
 		*p = '\0';
 
-	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+	icon = xde_get_app_icon(ctx, info, gicon, "exec", "unknown",
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 
@@ -427,7 +436,7 @@ xde_wmmenu(MenuContext *ctx)
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+		icon = xde_get_entry_icon(ctx, xsess->entry, NULL, "preferences-system-windows",
 				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
 		icon = ctx->wmm.wrap(ctx, icon);
 		esc1 = xde_character_escape(xsess->name, ')');

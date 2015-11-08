@@ -485,6 +485,7 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	const char *name;
 	char *esc1, *esc2, *cmd, *p;
 	char *s, *icon = NULL;
+	GIcon *gicon = NULL;
 	char *appid;
 
 	info = gmenu_tree_entry_get_app_info(ent);
@@ -494,7 +495,9 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
 	    && (p = strstr(appid, ".desktop")))
 		*p = '\0';
-	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+	icon = xde_get_app_icon(ctx, info, gicon, "exec", "unknown",
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 	if (options.launch) {

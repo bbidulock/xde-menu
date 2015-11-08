@@ -278,6 +278,7 @@ struct MenuContext {
 	int level;
 	char *indent;
 	GtkIconLookupFlags iconflags;
+	GList *stack;
 	struct {
 		GList *output;
 		char *(*wrap) (MenuContext *ctx, char *icon);
@@ -374,12 +375,12 @@ char *xde_decrease_indent(MenuContext *ctx);
 char *xde_character_escape(const char *string, char special);
 gint xde_string_compare(gconstpointer a, gconstpointer b);
 
-char *xde_get_icons(MenuContext *ctx, const char *inames[]);
+char *xde_get_icons(MenuContext *ctx, const char **inames);
 char *xde_get_icon(MenuContext *ctx, const char *iname);
 char *xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2);
 gboolean xde_test_icon_ext(MenuContext *ctx, const char *path, int flags);
-char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1, const char *dflt2, int flags);
-char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, const char *dflt1, const char *dflt2, int flags);
+char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
+char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
 
 char *xde_get_command(GDesktopAppInfo *app, const char *appid, const char *icon);
 

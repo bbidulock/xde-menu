@@ -24,6 +24,9 @@
 -ss
 -hnl
 -nbc
+-TGDesktopAppInfo
+-TGAppInfo
+-TGIcon
 -Tabq_item_t
 -Taction_fp_t
 -Taddress_t

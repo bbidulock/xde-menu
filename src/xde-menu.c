@@ -181,7 +181,7 @@ display_invalid(FILE *file, int level)
 }
 
 char *
-xde_get_icons(MenuContext *ctx, const char *inames[])
+xde_get_icons(MenuContext *ctx, const char **inames)
 {
 	GtkIconTheme *theme;
 	GtkIconInfo *info;
@@ -268,13 +268,15 @@ xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
  * any leading path elements and look for the icon by name.  The flags above are used.
  */
 char *
-xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
+xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *dflt1,
 		   const char *dflt2, int flags)
 {
 	char *file = NULL;
-	const char *inames[8];
+	const char **inames;
 	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL;
 	int i = 0;
+
+	inames = calloc(16, sizeof(*inames));
 
 	if ((icon = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
 					  G_KEY_FILE_DESKTOP_KEY_ICON, NULL))) {
@@ -284,6 +286,7 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 			DPRINTF("going with full icon path %s\n", icon);
 			file = strdup(icon);
 			g_free(icon);
+			g_free(inames);
 			return (file);
 		}
 		base = icon;
@@ -292,8 +295,9 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 			base = p + 1;
 		if ((p = strrchr(base, '.')))
 			*p = '\0';
-		inames[i++] = base;
+		inames[i++] = strdup(base);
 		DPRINTF("Choice %d for icon name: %s\n", i, base);
+		g_free(icon);
 	} else {
 		if ((wmcl = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
 						  G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS, NULL))) {
@@ -310,8 +314,9 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 				base = p + 1;
 			if ((p = strrchr(base, '.')))
 				*p = '\0';
-			inames[i++] = base;
+			inames[i++] = strdup(base);
 			DPRINTF("Choice %d for icon name: %s\n", i, base);
+			g_free(tryx);
 		} else if ((exec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
 							 G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
 			char *base, *p;
@@ -322,35 +327,41 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, const char *dflt1,
 				base = p + 1;
 			if ((p = strrchr(base, '.')))
 				*p = '\0';
-			inames[i++] = base;
+			inames[i++] = strdup(base);
 			DPRINTF("Choice %d for icon name: %s\n", i, base);
+			g_free(exec);
 		}
 	}
+	if (gicon) {
+		char *gname;
+
+		inames[i++] = gname = g_icon_to_string(gicon);
+		DPRINTF("Choice %d for icon name: %s\n", i, gname);
+	}
 	if (dflt1) {
-		inames[i++] = dflt1;
+		inames[i++] = strdup(dflt1);
 		DPRINTF("Choice %d for icon name: %s\n", i, dflt1);
 	}
 	if (dflt2) {
-		inames[i++] = dflt2;
+		inames[i++] = strdup(dflt2);
 		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
 	}
 	inames[i++] = NULL;
 	file = xde_get_icons(ctx, inames);
-	g_free(icon);
-	g_free(wmcl);
-	g_free(tryx);
-	g_free(exec);
+	g_strfreev((gchar **)inames);
 	return (file);
 }
 
 char *
-xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
+xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const char *dflt1,
 		 const char *dflt2, int flags)
 {
 	char *file = NULL;
-	const char *inames[8];
+	const char **inames;
 	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL;
 	int i = 0;
+
+	inames = calloc(16, sizeof(*inames));
 
 	if ((icon = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_ICON))) {
 		char *base, *p;
@@ -359,6 +370,7 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
 			DPRINTF("going with full icon path %s\n", icon);
 			file = strdup(icon);
 			g_free(icon);
+			g_free(inames);
 			return (file);
 		}
 		base = icon;
@@ -367,8 +379,9 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
 			base = p + 1;
 		if ((p = strrchr(base, '.')))
 			*p = '\0';
-		inames[i++] = base;
+		inames[i++] = strdup(base);
 		DPRINTF("Choice %d for icon name: %s\n", i, base);
+		g_free(icon);
 	} else {
 		if ((wmcl =
 		     g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS))) {
@@ -384,8 +397,9 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
 				base = p + 1;
 			if ((p = strrchr(base, '.')))
 				*p = '\0';
-			inames[i++] = base;
+			inames[i++] = strdup(base);
 			DPRINTF("Choice %d for icon name: %s\n", i, base);
+			g_free(tryx);
 		} else if ((exec = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_EXEC))) {
 			char *base, *p;
 
@@ -395,24 +409,28 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo * app, const char *dflt1,
 				base = p + 1;
 			if ((p = strrchr(base, '.')))
 				*p = '\0';
-			inames[i++] = base;
+			inames[i++] = strdup(base);
 			DPRINTF("Choice %d for icon name: %s\n", i, base);
+			g_free(exec);
 		}
 	}
+	if (gicon) {
+		char *gname;
+
+		inames[i++] = gname = g_icon_to_string(gicon);
+		DPRINTF("Choice %d for icon name: %s\n", i, gname);
+	}
 	if (dflt1) {
-		inames[i++] = dflt1;
+		inames[i++] = strdup(dflt1);
 		DPRINTF("Choice %d for icon name: %s\n", i, dflt1);
 	}
 	if (dflt2) {
-		inames[i++] = dflt2;
+		inames[i++] = strdup(dflt2);
 		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
 	}
 	inames[i++] = NULL;
 	file = xde_get_icons(ctx, inames);
-	g_free(icon);
-	g_free(wmcl);
-	g_free(tryx);
-	g_free(exec);
+	g_strfreev((gchar **)inames);
 	return (file);
 }
 
@@ -946,8 +964,11 @@ display_directory(FILE *file, GMenuTreeDirectory *directory, int level)
 	display_level(file, level + 1);
 	fprintf(file, "Comment=%s\n", gmenu_tree_directory_get_comment(directory));
 	if ((icon = gmenu_tree_directory_get_icon(directory))) {
+		char *iname = g_icon_to_string(icon);
+
 		display_level(file, level + 1);
-		fprintf(file, "Icon=%s\n", g_icon_to_string(icon));
+		fprintf(file, "Icon=%s\n", iname);
+		g_free(iname);
 	}
 	display_level(file, level + 1);
 	fprintf(file, "Path=%s\n", gmenu_tree_directory_get_desktop_file_path(directory));
@@ -1054,7 +1075,7 @@ GtkMenu *
 xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
 {
 	GtkWidget *image, *item, *menu;
-	GdkPixbuf *pixbuf;
+	GdkPixbuf *pixbuf = NULL;
 	char *icon;
 
 	menu = gtk_menu_new();
@@ -1066,6 +1087,10 @@ xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
 	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
 	free(icon);
 	gtk_menu_append(menu, item);
 	gtk_widget_show_all(item);
@@ -1230,6 +1255,8 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 	GtkMenu *menu;
 	GtkMenuItem *item;
 
+	ctx->stack = g_list_prepend(ctx->stack, gmenu);
+
 	iter = gmenu_tree_directory_iter(gmenu);
 	menu = GTK_MENU(gtk_menu_new());
 
@@ -1266,6 +1293,9 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 		}
 		break;
 	}
+
+	ctx->stack = g_list_delete_link(ctx->stack, ctx->stack);
+
 	gtk_widget_show_all(GTK_WIDGET(menu));
 	return (menu);
 }
@@ -1285,8 +1315,9 @@ xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	GMenuTreeDirectory *dir;
 	GtkMenuItem *item = NULL;
 	const char *name, *path;
-	GdkPixbuf *pixbuf;
+	GdkPixbuf *pixbuf = NULL;
 	GtkWidget *image;
+	GIcon *gicon = NULL;
 	char *icon;
 
 	/* TODO: we should do more here (like center and boldface the label). */
@@ -1295,11 +1326,13 @@ xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	if ((name = gmenu_tree_directory_get_name(dir)))
 		gtk_menu_item_set_label(item, name);
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
 		GKeyFile *file = g_key_file_new();
 
 		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+		icon = xde_get_entry_icon(ctx, file, gicon, "folder", "unknown",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 		g_key_file_unref(file);
@@ -1308,6 +1341,10 @@ xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
 	free(icon);
 	return (item);
 }
@@ -1318,8 +1355,9 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	GtkMenuItem *item = NULL;
 	GtkMenu *menu;
 	const char *name, *path;
-	GdkPixbuf *pixbuf;
+	GdkPixbuf *pixbuf = NULL;
 	GtkWidget *image;
+	GIcon *gicon = NULL;
 	char *icon;
 
 	if (!(menu = ctx->gtk.ops.menu(ctx, dir)))
@@ -1327,11 +1365,13 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	if ((name = gmenu_tree_directory_get_name(dir)))
 		gtk_menu_item_set_label(item, name);
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
 		GKeyFile *file = g_key_file_new();
 
 		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
-		icon = xde_get_entry_icon(ctx, file, "folder", "unknown",
+		icon = xde_get_entry_icon(ctx, file, gicon, "folder", "unknown",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 		g_key_file_unref(file);
@@ -1340,6 +1380,10 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
 	gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
 	free(icon);
 	return (item);
@@ -1370,11 +1414,11 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GtkMenuItem *item = NULL;
 	GDesktopAppInfo *info;
-	GdkPixbuf *pixbuf;
-	GtkWidget *image;
+	GdkPixbuf *pixbuf = NULL;
+	GtkWidget *image = NULL;
 	const char *name, *value;
-	char *p, *icon, *appid, *cmd, *myicon = NULL;
-	GIcon *gicon;
+	char *p, *icon, *appid, *cmd, *myicon = NULL, *tip;
+	GIcon *gicon = NULL;
 	int i = 0;
 	gchar **markup;
 
@@ -1386,9 +1430,12 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
 	    && (p = strstr(appid, ".desktop")))
 		*p = '\0';
-	icon = xde_get_app_icon(ctx, info, "exec", "unknown",
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+	icon = xde_get_app_icon(ctx, info, gicon, "exec", "unknown",
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+	gicon = g_app_info_get_icon(G_APP_INFO(info));
 	if (options.launch)
 		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
 	else
@@ -1396,6 +1443,10 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
 	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
 			      &xde_entry_disconnect, 0);
 
@@ -1409,7 +1460,7 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 		markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
 	if ((value = g_app_info_get_commandline(G_APP_INFO(info))))
 		markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
-	if ((gicon = g_app_info_get_icon(G_APP_INFO(info))) && (myicon = g_icon_to_string(gicon)))
+	if (gicon && (myicon = g_icon_to_string(gicon)))
 		markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
 	if ((value = g_desktop_app_info_get_categories(info)))
 		markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
@@ -1420,7 +1471,9 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if (icon)
 		markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(item), g_strjoinv(NULL, markup));
+	tip = g_strjoinv(NULL, markup);
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
+	g_free(tip);
 	g_strfreev(markup);
 	g_free(myicon);
 	free(icon);
@@ -1534,7 +1587,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		gtk_widget_show_all(item);
 		label = g_strdup_printf("Start %s", xsess->name);
 		gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
-		if ((icon = xde_get_entry_icon(ctx, xsess->entry, "preferences-system-windows",
+		if ((icon = xde_get_entry_icon(ctx, xsess->entry, NULL, "preferences-system-windows",
 					       "metacity",
 					       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG))
@@ -2059,6 +2112,7 @@ make_menu(int argc, char *argv[])
 			EPRINTF("no menu context for screen 0\n");
 			exit(EXIT_FAILURE);
 		}
+		ctx->stack = NULL;
 		ctx->tree = tree;
 		ctx->level = 0;
 		ctx->indent = calloc(64, sizeof(*ctx->indent));
@@ -2088,6 +2142,7 @@ generate_menu(int argc, char *argv[])
 		EPRINTF("%s: could not allocat menu tree\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
+	ctx->stack = NULL;
 	ctx->tree = tree;
 	ctx->level = 0;
 	ctx->indent = calloc(64, sizeof(*ctx->indent));
@@ -2718,6 +2773,7 @@ do_popmenu(int argc, char *argv[])
 			EPRINTF("no menu context for screen 0\n");
 			exit(EXIT_FAILURE);
 		}
+		ctx->stack = NULL;
 		ctx->tree = tree;
 		ctx->level = 0;
 		ctx->indent = calloc(64, sizeof(*ctx->indent));
