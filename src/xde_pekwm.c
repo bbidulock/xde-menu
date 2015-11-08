@@ -498,22 +498,37 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		char *esc1;
+		GDesktopAppInfo *info;
+		const char *name;
+		char *esc1, *esc2, *cmd;
+		GIcon *gicon = NULL;
 
-		esc1 = xde_character_escape(xsess->name, '"');
-		if (strncasecmp(xsess->key, "pekwm", 5) == 0)
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		icon = xde_get_entry_icon(ctx, xsess->entry, NULL, "preferences-system-windows",
+		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
+			continue;
+		if (ctx->stack)
+			gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+		name = g_app_info_get_name(G_APP_INFO(info));
+		icon = xde_get_entry_icon(ctx, xsess->entry, gicon, "preferences-system-windows",
 					  "metacity",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		if (options.launch)
+			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
+		else
+			cmd = xde_get_command(info, xsess->key, icon);
+		esc1 = xde_character_escape(name, '"');
+		esc2 = xde_character_escape(cmd, '"');
 		icon = ctx->wmm.wrap(ctx, icon);
-		s = g_strdup_printf
-		    ("%s  Entry = \"Start %s\" { %sActions = \"RestartOther xdg-launch --pointer -X %s\" }\n",
-		     ctx->indent, esc1, icon, xsess->key);
+		s = g_strdup_printf("%s  Entry = \"Start %s\" { %sActions = \"RestartOther %s\" }\n",
+		     ctx->indent, esc1, icon, esc2);
 		text = g_list_append(text, s);
-		free(esc1);
-		free(icon);
+		g_free(esc2);
+		g_free(esc1);
+		g_free(icon);
+		g_free(cmd);
+		g_object_unref(info);
 	}
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
 	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-redo-ltr"));

@@ -443,23 +443,23 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		char *esc1, *esc2, *qname, *exec;
+		GDesktopAppInfo *info;
+		const char *name;
+		char *esc1, *esc2, *qname, *cmd;
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
+		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
+			continue;
+		name = g_app_info_get_name(G_APP_INFO(info));
 
-		esc1 = xde_character_escape(xsess->name, '"');
+		if (options.launch)
+			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
+		else
+			cmd = xde_get_command(info, xsess->key, NULL);
+		esc1 = xde_character_escape(name, '"');
+		esc2 = xde_character_escape(cmd, '"');
 		qname = g_strdup_printf("\"%s\"", esc1);
-
-		if (options.launch) {
-			exec = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
-		} else {
-			exec = g_key_file_get_string(xsess->entry,
-						     G_KEY_FILE_DESKTOP_GROUP,
-						     G_KEY_FILE_DESKTOP_KEY_EXEC, NULL);
-			exec = exec ? strdup(exec) : strdup("/usr/bin/true");
-		}
-		esc2 = xde_character_escape(exec, '"');
 		if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm"))
 			s = g_strdup_printf("    %-32s  %s \"%s\"\n", qname, "f.restart -", esc2);
 		else if (!strcmp(ctx->name, "twm")||!strcmp(ctx->name, "vtwm"))
@@ -472,7 +472,8 @@ xde_wmmenu(MenuContext *ctx)
 		free(esc1);
 		free(esc2);
 		free(qname);
-		free(exec);
+		free(cmd);
+		g_object_unref(info);
 	}
 	if (gotone)
 		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));

@@ -52,7 +52,7 @@ static GList *
 xde_create(MenuContext *ctx, Style style, const char *name)
 {
 	GMenuTreeDirectory *dir;
-	GList *result = NULL;
+	GList *text = NULL;
 	GList *entries = NULL;
 	char *qname = NULL;
 	char *s;
@@ -64,7 +64,7 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 
 	if (!(dir = gmenu_tree_get_root_directory(ctx->tree))) {
 		EPRINTF("could not get root directory\n");
-		return (result);
+		return (text);
 	}
 	xde_reset_indent(ctx, 0);
 	xde_increase_indent(ctx);
@@ -75,13 +75,13 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 		name = gmenu_tree_directory_get_name(dir);
 
 	if (style == StyleFullmenu) {
-		result = ctx->wmm.wmmenu(ctx);
-		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
-		result = ctx->wmm.wmspec(ctx);
-		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
+		text = ctx->wmm.wmmenu(ctx);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, text);
+		text = ctx->wmm.wmspec(ctx);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, text);
 	}
 	if (style == StyleAppmenu || style == StyleSubmenu) {
-		result = ctx->wmm.appmenu(ctx, entries, name);
+		text = ctx->wmm.appmenu(ctx, entries, name);
 	}
 	if (style == StyleEntries) {
 		return (entries);
@@ -94,14 +94,14 @@ xde_create(MenuContext *ctx, Style style, const char *name)
 		entries = g_list_append(NULL, s);
 	}
 	if (style != StyleAppmenu) {
-		result = ctx->wmm.rootmenu(ctx, entries);
-		ctx->wmm.output = g_list_concat(ctx->wmm.output, result);
+		text = ctx->wmm.rootmenu(ctx, entries);
+		ctx->wmm.output = g_list_concat(ctx->wmm.output, text);
 	}
 
 	s = g_strdup_printf("\n%s\n", "changequote(`,)dnl");
-	result = g_list_append(ctx->wmm.output, s);
+	text = g_list_append(ctx->wmm.output, s);
 	ctx->wmm.output = NULL;
-	return (result);
+	return (text);
 }
 
 static GtkMenu *
@@ -443,23 +443,23 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		char *esc1, *esc2, *qname, *exec;
+		GDesktopAppInfo *info;
+		const char *name;
+		char *esc1, *esc2, *qname, *cmd;
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
+		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
+			continue;
+		name = g_app_info_get_name(G_APP_INFO(info));
 
-		esc1 = xde_character_escape(xsess->name, '"');
+		if (options.launch)
+			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
+		else
+			cmd = xde_get_command(info, xsess->key, NULL);
+		esc1 = xde_character_escape(name, '"');
+		esc2 = xde_character_escape(cmd, '"');
 		qname = g_strdup_printf("\"%s\"", esc1);
-
-		if (options.launch) {
-			exec = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
-		} else {
-			exec = g_key_file_get_string(xsess->entry,
-						     G_KEY_FILE_DESKTOP_GROUP,
-						     G_KEY_FILE_DESKTOP_KEY_EXEC, NULL);
-			exec = exec ? strdup(exec) : strdup("/usr/bin/true");
-		}
-		esc2 = xde_character_escape(exec, '"');
 		if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm"))
 			s = g_strdup_printf("    %-32s  %s \"%s\"\n", qname, "f.restart -", esc2);
 		else if (!strcmp(ctx->name, "twm")||!strcmp(ctx->name, "vtwm"))
@@ -472,7 +472,8 @@ xde_wmmenu(MenuContext *ctx)
 		free(esc1);
 		free(esc2);
 		free(qname);
-		free(exec);
+		free(cmd);
+		g_object_unref(info);
 	}
 	if (gotone)
 		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
@@ -498,11 +499,19 @@ xde_gtk_wmmenu(MenuContext *ctx)
 	return (item);
 }
 
+/*
+ * Don't need to do anything here as the native styles menu is built using a
+ * the script 'getsytyles' and is set using the script 'setstyle'.  Only the
+ * GTK+ version needs to be performed here.
+ */
 static GList *
 xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	/* FIXME: this should just place the "Styles" entry in the menu refering to the
+	   "twmstyles" menu which was built by the getstyles script before m4
+	   configuration. */
 	return (text);
 }
 
@@ -521,6 +530,10 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	/* FIXME: because we have built up the internal twmstyles menu actions for
+	   setting style, it is actually possible to create a "twmthemes" menu here that
+	   will only contain the styles with an equivalent theme and invoke the
+	   corresponding actions defined for the "twmstyles" menu. */
 	return (text);
 }
 

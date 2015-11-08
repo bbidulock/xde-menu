@@ -358,6 +358,7 @@ extern char *xdg_config_last;
 
 typedef struct {
 	char *key;
+	char *file;
 	char *name;
 	GKeyFile *entry;
 } XdeXsession;

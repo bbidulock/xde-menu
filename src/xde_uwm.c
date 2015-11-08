@@ -439,23 +439,40 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		char *esc1;
+		GDesktopAppInfo *info;
+		const char *name;
+		char *esc1, *esc2, *cmd;
+		GIcon *gicon = NULL;
 
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
+			continue;
 		if (strncasecmp(xsess->key, "uwm", strlen("uwm")) == 0 ||
 		    strncasecmp(xsess->key, "μWM", strlen("μWM")) == 0)
 			continue;
-		icon =
-		    xde_get_entry_icon(ctx, xsess->entry, NULL, "preferences-system-windows", "metacity",
+		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
+			continue;
+		if (ctx->stack)
+			gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+		name = g_app_info_get_name(G_APP_INFO(info));
+		icon = xde_get_entry_icon(ctx, xsess->entry, gicon, "preferences-system-windows",
+				       "metacity",
 				       GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				       GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		if (options.launch)
+			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
+		else
+			cmd = xde_get_command(info, xsess->key, icon);
+		esc1 = xde_character_escape(name, '"');
+		esc2 = xde_character_escape(cmd, '"');
 		icon = ctx->wmm.wrap(ctx, icon);
-		esc1 = xde_character_escape(xsess->name, '"');
-		s = g_strdup_printf("xdg-launch -X %s", xsess->key);
-		s = g_strdup_printf("%s[ %stext = \"%s\" exit = \"%s\" ]\n",
-				    ctx->indent, icon, esc1, s);
+		s = g_strdup_printf("%s[ %stext = \"%s\" exit = \"%s\" ]\n", ctx->indent, icon,
+				    esc1, esc2);
 		text = g_list_append(text, s);
+		free(esc2);
 		free(esc1);
 		free(icon);
+		free(cmd);
+		g_object_unref(info);
 	}
 	s = g_strdup_printf("%s] ; menu Window Managers\n", ctx->indent);
 	text = g_list_append(text, s);

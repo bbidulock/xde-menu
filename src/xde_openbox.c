@@ -51,7 +51,7 @@
 static char *
 xde_wrap_icon(MenuContext *ctx, char *file)
 {
-	char *icon = file ? g_strdup_printf(" icon=\"%s\"", file) : strdup("");
+	char *icon = file ? g_markup_printf_escaped(" icon=\"%s\"", file) : strdup("");
 
 	free(file);
 	return (icon);
@@ -532,42 +532,51 @@ xde_wmmenu(MenuContext *ctx)
 	char *s;
 
 	icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-quit"));
-	s = g_strdup_printf("%s<menu id=\"%s\" label=\"%s\"%s>\n",
-			ctx->indent,
-			"Window Managers Menu",
-			"Window Managers",
-			icon);
+	s = g_strdup_printf("%s<menu id=\"%s\" label=\"%s\"%s>\n", ctx->indent,
+				    "Window Managers Menu", "Window Managers", icon);
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
+		GDesktopAppInfo *info;
+		const char *name;
+		char *esc1, *esc2, *cmd;
+		GIcon *gicon = NULL;
 
-		if (strncasecmp(xsess->key, "openbox", 7) == 0)
+		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		icon = xde_get_entry_icon(ctx, xsess->entry, NULL, "preferences-system-windows",
-				"metacity", GET_ENTRY_ICON_FLAG_XPM|GET_ENTRY_ICON_FLAG_PNG);
+		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
+			continue;
+		if (ctx->stack)
+			gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+		name = g_app_info_get_name(G_APP_INFO(info));
+		icon = xde_get_entry_icon(ctx, xsess->entry, gicon, "preferences-system-windows",
+					  "metacity",
+					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
+		if (options.launch)
+			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
+		else
+			cmd = xde_get_command(info, xsess->key, icon);
 		icon = ctx->wmm.wrap(ctx, icon);
-		s = g_strdup_printf("%s<item label=\"%s\"%s>\n",
-				ctx->indent,
-				xsess->name,
-				icon);
+		esc1 = g_markup_printf_escaped("%s", name);
+		esc2 = g_markup_printf_escaped("%s", cmd);
+		s = g_strdup_printf("%s<item label=\"%s\"%s>\n", ctx->indent, esc1, icon);
 		text = g_list_append(text, s);
-		s = g_strdup_printf("%s  <action name=\"Restart\">\n",
-				ctx->indent);
+		s = g_strdup_printf("%s  <action name=\"Restart\">\n", ctx->indent);
 		text = g_list_append(text, s);
-		s = g_strdup_printf("%s    <command>xdg-launch --pointer -X %s</command>\n",
-				ctx->indent,
-				xsess->key);
+		s = g_strdup_printf("%s    <command>%s</command>\n", ctx->indent, esc2);
 		text = g_list_append(text, s);
-		s = g_strdup_printf("%s  </action>\n",
-				ctx->indent);
+		s = g_strdup_printf("%s  </action>\n", ctx->indent);
 		text = g_list_append(text, s);
-		s = g_strdup_printf("%s</item>\n",
-				ctx->indent);
+		s = g_strdup_printf("%s</item>\n", ctx->indent);
 		text = g_list_append(text, s);
-		free(icon);
+		g_free(esc2);
+		g_free(esc1);
+		g_free(icon);
+		g_free(cmd);
+		g_object_unref(info);
 	}
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s</menu>\n\n", ctx->indent);
