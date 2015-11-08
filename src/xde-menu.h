@@ -361,6 +361,7 @@ typedef struct {
 	char *file;
 	char *name;
 	GKeyFile *entry;
+	GDesktopAppInfo *info;
 } XdeXsession;
 
 #define GET_ENTRY_ICON_FLAG_XPM	(1<<0)

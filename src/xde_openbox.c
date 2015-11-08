@@ -540,27 +540,22 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		GDesktopAppInfo *info;
-		const char *name;
 		char *esc1, *esc2, *cmd;
 		GIcon *gicon = NULL;
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
-			continue;
 		if (ctx->stack)
 			gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
-		name = g_app_info_get_name(G_APP_INFO(info));
 		icon = xde_get_entry_icon(ctx, xsess->entry, gicon, "preferences-system-windows",
 					  "metacity",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG);
 		if (options.launch)
 			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
 		else
-			cmd = xde_get_command(info, xsess->key, icon);
+			cmd = xde_get_command(xsess->info, xsess->key, icon);
 		icon = ctx->wmm.wrap(ctx, icon);
-		esc1 = g_markup_printf_escaped("%s", name);
+		esc1 = g_markup_printf_escaped("%s", xsess->name);
 		esc2 = g_markup_printf_escaped("%s", cmd);
 		s = g_strdup_printf("%s<item label=\"%s\"%s>\n", ctx->indent, esc1, icon);
 		text = g_list_append(text, s);
@@ -576,7 +571,6 @@ xde_wmmenu(MenuContext *ctx)
 		g_free(esc1);
 		g_free(icon);
 		g_free(cmd);
-		g_object_unref(info);
 	}
 	xde_decrease_indent(ctx);
 	s = g_strdup_printf("%s</menu>\n\n", ctx->indent);

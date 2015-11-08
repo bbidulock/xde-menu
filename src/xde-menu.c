@@ -760,6 +760,7 @@ xde_get_xsessions(void)
 	while (g_hash_table_iter_next(&xiter, (gpointer *) &key, (gpointer *) &file)) {
 		GKeyFile *entry;
 		XdeXsession *xsession;
+		GDesktopAppInfo *info;
 
 		if (!(entry = xde_get_xsession_entry(key, file)))
 			continue;
@@ -767,12 +768,16 @@ xde_get_xsessions(void)
 			g_key_file_free(entry);
 			continue;
 		}
+		if (!(info = g_desktop_app_info_new_from_keyfile(entry))) {
+			g_key_file_free(entry);
+			continue;
+		}
 		xsession = calloc(1, sizeof(*xsession));
 		xsession->key = g_strdup(key);
 		xsession->file = g_strdup(file);
-		xsession->name = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
-						       G_KEY_FILE_DESKTOP_KEY_NAME, NULL);
+		xsession->name = g_strdup(g_app_info_get_name(G_APP_INFO(info)));
 		xsession->entry = g_key_file_ref(entry);
+		xsession->info = info;
 		result = g_list_prepend(result, xsession);
 	}
 	g_hash_table_destroy(xsessions);
@@ -788,6 +793,7 @@ xde_xsession_free(gpointer data)
 	g_free(xsess->file);
 	g_free(xsess->name);
 	g_key_file_free(xsess->entry);
+	g_object_unref(xsess->info);
 	free(xsess);
 }
 
@@ -1580,8 +1586,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		GDesktopAppInfo *info;
-		const char *name, *value;
+		const char *value;
 		char *cmd, *myicon = NULL, *tip;
 		GIcon *gicon = NULL;
 		gchar **markup;
@@ -1589,23 +1594,20 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
-			continue;
 		item = gtk_menu_item_new();
 		if (ctx->stack)
 			gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 		gtk_widget_show_all(item);
-		if ((name = g_app_info_get_name(G_APP_INFO(info))))
-			gtk_menu_item_set_label(GTK_MENU_ITEM(item), name);
+		gtk_menu_item_set_label(GTK_MENU_ITEM(item), xsess->name);
 		icon = xde_get_entry_icon(ctx, xsess->entry, gicon, "preferences-system-windows",
 					  "metacity",
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
-		gicon = g_app_info_get_icon(G_APP_INFO(info));
+		gicon = g_app_info_get_icon(G_APP_INFO(xsess->info));
 		if (options.launch)
 			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
 		else
-			cmd = xde_get_command(info, xsess->key, icon);
+			cmd = xde_get_command(xsess->info, xsess->key, icon);
 		if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
 		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
 			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
@@ -1618,17 +1620,17 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 
 		markup = calloc(16, sizeof(*markup));
 
-		if ((value = g_app_info_get_name(G_APP_INFO(info))))
-			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", value);
-		if ((value = g_desktop_app_info_get_generic_name(info)))
+		if (xsess->name)
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", xsess->name);
+		if ((value = g_desktop_app_info_get_generic_name(xsess->info)))
 			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
-		if ((value = g_app_info_get_description(G_APP_INFO(info))))
+		if ((value = g_app_info_get_description(G_APP_INFO(xsess->info))))
 			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
-		if ((value = g_app_info_get_commandline(G_APP_INFO(info))))
+		if ((value = g_app_info_get_commandline(G_APP_INFO(xsess->info))))
 			markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
 		if (gicon && (myicon = g_icon_to_string(gicon)))
 			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
-		if ((value = g_desktop_app_info_get_categories(info)))
+		if ((value = g_desktop_app_info_get_categories(xsess->info)))
 			markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
 		if (xsess->key)
 			markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s\n", xsess->key);
@@ -1643,7 +1645,6 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		g_strfreev(markup);
 		g_free(myicon);
 		free(icon);
-		g_object_unref(info);
 
 		gtk_menu_append(menu, item);
 	}

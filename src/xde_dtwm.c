@@ -443,21 +443,15 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		GDesktopAppInfo *info;
-		const char *name;
 		char *esc1, *esc2, *qname, *cmd;
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
-		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
-			continue;
-		name = g_app_info_get_name(G_APP_INFO(info));
-
 		if (options.launch)
 			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
 		else
-			cmd = xde_get_command(info, xsess->key, NULL);
-		esc1 = xde_character_escape(name, '"');
+			cmd = xde_get_command(xsess->info, xsess->key, NULL);
+		esc1 = xde_character_escape(xsess->name, '"');
 		esc2 = xde_character_escape(cmd, '"');
 		qname = g_strdup_printf("\"%s\"", esc1);
 		if (!strcmp(ctx->name, "mwm") || !strcmp(ctx->name, "dtwm"))
@@ -473,7 +467,6 @@ xde_wmmenu(MenuContext *ctx)
 		free(esc2);
 		free(qname);
 		free(cmd);
-		g_object_unref(info);
 	}
 	if (gotone)
 		text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));

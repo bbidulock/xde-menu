@@ -583,8 +583,6 @@ xde_wmmenu(MenuContext *ctx)
 	xsessions = xde_get_xsessions();
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
-		GDesktopAppInfo *info;
-		const char *name;
 		char *esc1, *esc2, *cmd;
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
@@ -592,14 +590,11 @@ xde_wmmenu(MenuContext *ctx)
 		if (strncasecmp(xsess->key, "wmaker", strlen("wmaker")) == 0 ||
 		    strncasecmp(xsess->key, "windowmaker", strlen("windowmaker")) == 0)
 			continue;
-		if (!(info = g_desktop_app_info_new_from_keyfile(xsess->entry)))
-			continue;
-		name = g_app_info_get_name(G_APP_INFO(info));
 		if (options.launch)
 			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
 		else
-			cmd = xde_get_command(info, xsess->key, NULL);
-		esc1 = xde_character_escape(name, '"');
+			cmd = xde_get_command(xsess->info, xsess->key, NULL);
+		esc1 = xde_character_escape(xsess->name, '"');
 		esc2 = xde_character_escape(cmd, '"');
 
 		s = strdup(",\n");
@@ -610,7 +605,6 @@ xde_wmmenu(MenuContext *ctx)
 		free(esc1);
 		free(esc2);
 		free(cmd);
-		g_object_unref(info);
 	}
 	xde_free_xsessions(xsessions);
 	xde_decrease_indent(ctx);
