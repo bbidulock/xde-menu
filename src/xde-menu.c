@@ -1545,6 +1545,7 @@ xde_gtk_common_pin(MenuContext *ctx)
 	GtkMenuItem *item = NULL;
 
 	item = GTK_MENU_ITEM(gtk_tearoff_menu_item_new());
+	gtk_widget_show_all(GTK_WIDGET(item));
 	return (item);
 }
 
