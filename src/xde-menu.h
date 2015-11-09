@@ -388,9 +388,11 @@ char *xde_get_icon(MenuContext *ctx, const char *iname);
 char *xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2);
 gboolean xde_test_icon_ext(MenuContext *ctx, const char *path, int flags);
 char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
+char *xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
 char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
 
 char *xde_get_command(GDesktopAppInfo *app, const char *appid, const char *icon);
+char *xde_get_action(GDesktopAppInfo *app, const char *appid, const char *icon, const char *action);
 
 GList *xde_get_xsessions(void);
 void xde_free_xsessions(GList *list);

@@ -355,6 +355,112 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *
 }
 
 char *
+xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon *gicon,
+		    const char *dflt1, const char *dflt2, int flags)
+{
+	char *file = NULL;
+	const char **inames;
+	char *icon, *wmcl = NULL, *tryx = NULL, *exec = NULL, *aicon, *group;
+	int i = 0;
+
+	aicon = xde_get_entry_icon(ctx, entry, gicon, dflt1, dflt2, flags);
+	if (!action)
+		return (aicon);
+
+	inames = calloc(16, sizeof(*inames));
+	group = g_strdup_printf("Desktop Action %s", action);
+	if ((icon = g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_ICON, NULL))) {
+		char *base, *p;
+
+		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
+			DPRINTF("going with full icon path %s\n", icon);
+			file = strdup(icon);
+			g_free(icon);
+			g_free(inames);
+			g_free(group);
+			g_free(aicon);
+			return (file);
+		}
+		base = icon;
+		*strchrnul(base, ' ') = '\0';
+		if ((p = strrchr(base, '/')))
+			base = p + 1;
+		if ((p = strrchr(base, '.')))
+			*p = '\0';
+		inames[i++] = strdup(base);
+		DPRINTF("Choice %d for icon name: %s\n", i, base);
+		g_free(icon);
+	} else {
+		if ((wmcl =
+		     g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS,
+					   NULL))) {
+			inames[i++] = wmcl;
+			DPRINTF("Choice %d for icon name; %s\n", i, wmcl);
+		}
+		if ((tryx =
+		     g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
+			char *base, *p;
+
+			base = tryx;
+			*strchrnul(base, ' ') = '\0';
+			if ((p = strrchr(base, '/')))
+				base = p + 1;
+			if ((p = strrchr(base, '.')))
+				*p = '\0';
+			inames[i++] = strdup(base);
+			DPRINTF("Choice %d for icon name: %s\n", i, base);
+			g_free(tryx);
+		} else
+		    if ((exec =
+			 g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
+			char *base, *p;
+
+			base = exec;
+			*strchrnul(base, ' ') = '\0';
+			if ((p = strrchr(base, '/')))
+				base = p + 1;
+			if ((p = strrchr(base, '.')))
+				*p = '\0';
+			inames[i++] = strdup(base);
+			DPRINTF("Choice %d for icon name: %s\n", i, base);
+			g_free(exec);
+		}
+	}
+	if (aicon) {
+		char *base, *p;
+
+		base = aicon;
+		*strchrnul(base, ' ') = '\0';
+		if ((p = strrchr(base, '/')))
+			base = p + 1;
+		if ((p = strrchr(base, '.')))
+			*p = '\0';
+		inames[i++] = strdup(base);
+		DPRINTF("Choice %d for icon name: %s\n", i, base);
+		g_free(aicon);
+	}
+	if (gicon) {
+		char *gname;
+
+		inames[i++] = gname = g_icon_to_string(gicon);
+		DPRINTF("Choice %d for icon name: %s\n", i, gname);
+	}
+	if (dflt1) {
+		inames[i++] = strdup(dflt1);
+		DPRINTF("Choice %d for icon name: %s\n", i, dflt1);
+	}
+	if (dflt2) {
+		inames[i++] = strdup(dflt2);
+		DPRINTF("Choice %d for icon name: %s\n", i, dflt2);
+	}
+	inames[i++] = NULL;
+	file = xde_get_icons(ctx, inames);
+	g_strfreev((gchar **) inames);
+	g_free(group);
+	return (file);
+}
+
+char *
 xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const char *dflt1,
 		 const char *dflt2, int flags)
 {
@@ -515,7 +621,7 @@ xde_subst_command(char *cmd, const char *appid, const char *icon, const char *na
 }
 
 char *
-xde_get_command(GDesktopAppInfo * info, const char *appid, const char *icon)
+xde_get_command(GDesktopAppInfo *info, const char *appid, const char *icon)
 {
 	char *cmd, *wmclass;
 	const char *name, *exec;
@@ -541,6 +647,50 @@ xde_get_command(GDesktopAppInfo * info, const char *appid, const char *icon)
 		}
 	}
 	strncat(cmd, exec, 1024);
+	xde_subst_command(cmd, appid, icon, name, wmclass);
+	return (cmd);
+}
+
+char *
+xde_get_action(GDesktopAppInfo *info, const char *appid, const char *icon, const char *action)
+{
+	char *cmd, *wmclass, *aexec = NULL;
+	const char *name, *exec, *path;
+	gboolean terminal;
+
+	name = g_desktop_app_info_get_action_name(info, action);
+	if ((path = g_desktop_app_info_get_filename(info))) {
+		GKeyFile *file = g_key_file_new();
+		char *group = g_strdup_printf("Desktop Action %s", action);
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		aexec = g_key_file_get_string(file, group, G_KEY_FILE_DESKTOP_KEY_EXEC, NULL);
+		g_key_file_unref(file);
+		g_free(group);
+	}
+	if (!aexec && (exec = g_app_info_get_commandline(G_APP_INFO(info))))
+		aexec = strdup(exec);
+	wmclass = g_desktop_app_info_get_string(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS);
+	terminal = g_desktop_app_info_get_boolean(info, G_KEY_FILE_DESKTOP_KEY_TERMINAL);
+
+	if (!aexec)
+		return (NULL);
+	if (!(cmd = calloc(2048, sizeof(*cmd)))) {
+		g_free(aexec);
+		return (cmd);
+	}
+	if (terminal) {
+		if (wmclass) {
+			snprintf(cmd, 1024, "xterm -name \"%s\" -T \"%%c\" -e ", wmclass);
+		} else {
+			/* A little more to be done here: we should set WMCLASS to xterm
+			   to assist the DE.  SLIENT should be set to zero. */
+			strncat(cmd, "xterm -T \"%c\" -e ", 1024);
+			wmclass = "xterm";
+		}
+	}
+	strncat(cmd, aexec, 1024);
+	g_free(aexec);
 	xde_subst_command(cmd, appid, icon, name, wmclass);
 	return (cmd);
 }
@@ -1324,10 +1474,21 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 }
 
 GtkMenu *
-xde_gtk_common_actions(MenuContext *cts, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+xde_gtk_common_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
 {
 	GtkMenu *menu = NULL;
+	const gchar *const *actions;
 
+	actions = g_desktop_app_info_list_actions(info);
+	if (!actions || !*actions)
+		return (menu);
+	menu = GTK_MENU(gtk_menu_new());
+	for (; actions && *actions; actions++) {
+		GtkMenuItem *item;
+
+		if ((item = ctx->gtk.ops.action(ctx, ent, info, *actions)))
+			gtk_menu_append(menu, GTK_WIDGET(item));
+	}
 	return (menu);
 }
 
@@ -1608,7 +1769,66 @@ GtkMenuItem *
 xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action)
 {
 	GtkMenuItem *item = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	GtkWidget *image = NULL;
+	const char *name, *path;
+	char *p, *appid, *icon, *cmd;
+	GIcon *gicon = NULL;
 
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	if ((name = g_desktop_app_info_get_action_name(info, action)))
+		gtk_menu_item_set_label(item, name);
+	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
+			&& (p = strstr(appid, ".desktop")))
+		*p = '\0';
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_action_icon(ctx, file, action, gicon, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "exec", "unknown");
+	gicon = g_app_info_get_icon(G_APP_INFO(info));
+	if (options.launch)
+		cmd = g_strdup_printf("xdg-launch --pointer --action='%s' %s", action, appid);
+	else
+		cmd = xde_get_action(info, appid, icon, action);
+	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
+			(image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
+	}
+	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
+			&xde_entry_disconnect, 0);
+
+	if (options.tooltips) {
+		gchar **markup = calloc(16, sizeof(*markup));
+		char *myicon = NULL;
+		char *tip;
+		int i = 0;
+
+		if (action)
+			markup[i++] = g_markup_printf_escaped("<b>Action:</b> %s\n", action);
+		if (name)
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", name);
+
+		/* TODO: more fields */
+
+		tip = g_strjoinv(NULL, markup);
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
+		g_free(tip);
+		g_strfreev(markup);
+		g_free(myicon);
+	}
+	free(icon);
+	free(appid);
 	return (item);
 }
 
