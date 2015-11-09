@@ -1596,6 +1596,14 @@ xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als)
 	return (item);
 }
 
+GtkMenu *
+xde_gtk_common_actions(MenuContext *cts, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GtkMenu *menu = NULL;
+
+	return (menu);
+}
+
 GtkMenuItem *
 xde_gtk_common_pin(MenuContext *ctx)
 {

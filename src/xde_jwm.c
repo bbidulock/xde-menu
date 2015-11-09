@@ -223,6 +223,23 @@ xde_gtk_alias(MenuContext *ctx, GMenuTreeAlias *als)
 }
 
 static GList *
+xde_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GList *text = NULL;
+
+	return (text);
+}
+
+static GtkMenu *
+xde_gtk_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GtkMenu *item = NULL;
+
+	item = xde_gtk_common_actions(ctx, ent, info);
+	return (item);
+}
+
+static GList *
 xde_pin(MenuContext *ctx)
 {
 	GList *text = NULL;
@@ -373,6 +390,7 @@ MenuContext xde_menu_ops = {
 			.separator = &xde_separator,
 			.entry = &xde_entry,
 			.alias = &xde_alias,
+			.actions = &xde_actions,
 			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
@@ -395,6 +413,7 @@ MenuContext xde_menu_ops = {
 			.separator = &xde_gtk_separator,
 			.entry = &xde_gtk_entry,
 			.alias = &xde_gtk_alias,
+			.actions = &xde_gtk_actions,
 			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,

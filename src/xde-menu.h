@@ -295,6 +295,7 @@ struct MenuContext {
 			GList *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
 			GList *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
 			GList *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+			GList *(*actions) (MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info);
 			GList *(*pin) (MenuContext *ctx);
 		} ops;
 		GList *(*wmmenu) (MenuContext *ctx);
@@ -317,6 +318,7 @@ struct MenuContext {
 			GtkMenuItem *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
 			GtkMenuItem *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
 			GtkMenuItem *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
+			GtkMenu *(*actions) (MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info);
 			GtkMenuItem *(*pin) (MenuContext *ctx);
 		} ops;
 		GtkMenuItem *(*wmmenu) (MenuContext *ctx);
@@ -411,6 +413,7 @@ GtkMenuItem *xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr);
 GtkMenuItem *xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir);
 GtkMenuItem *xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent);
 GtkMenuItem *xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als);
+GtkMenu *xde_gtk_common_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info);
 GtkMenuItem *xde_gtk_common_pin(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_wmmenu(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_themes(MenuContext *ctx);
