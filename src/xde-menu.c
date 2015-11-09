@@ -133,6 +133,7 @@ Options defaults = {
 	.generate = True,
 	.treeflags = 0,
 	.tooltips = 0,
+	.actions = 0,
 };
 
 XdeScreen *screens = NULL;
@@ -1583,28 +1584,28 @@ xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	}
 	gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
 
-	if (options.tooltips) {
+	if (options.debug) {
 		gchar **markup = calloc(16, sizeof(*markup));
 		char *myicon = NULL;
 		char *tip;
 		int i = 0;
 
 		if (name)
-			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", name);
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s", name);
 		if ((value = gmenu_tree_directory_get_generic_name(dir)))
-			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s", value);
 		if ((value = gmenu_tree_directory_get_comment(dir)))
-			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s", value);
 		if (gicon && (myicon = g_icon_to_string(gicon)))
-			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
+			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s", myicon);
 		if ((value = gmenu_tree_directory_get_menu_id(dir)))
-			markup[i++] = g_markup_printf_escaped("<b>menuid:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>menuid:</b> %s", value);
 		if ((value = gmenu_tree_directory_get_desktop_file_path(dir)))
-			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s", value);
 		if (icon)
-			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
+			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s", icon);
 
-		tip = g_strjoinv(NULL, markup);
+		tip = g_strjoinv("\n", markup);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
 		g_free(tip);
 		g_strfreev(markup);
@@ -1643,6 +1644,7 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	GDesktopAppInfo *info;
 	GdkPixbuf *pixbuf = NULL;
 	GtkWidget *image = NULL;
+	GtkMenu *menu;
 	const char *name, *value;
 	char *p, *icon, *appid, *cmd;
 	GIcon *gicon = NULL;
@@ -1670,45 +1672,53 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
-	if (pixbuf) {
-		g_object_unref(pixbuf);
-		pixbuf = NULL;
-	}
-	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
-			      &xde_entry_disconnect, 0);
-
-	if (options.tooltips) {
+	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated),
+			      cmd, &xde_entry_disconnect, 0);
+	if (options.tooltips || options.debug) {
 		gchar **markup = calloc(16, sizeof(*markup));
 		char *myicon = NULL;
 		char *tip;
 		int i = 0;
 
 		if ((value = g_app_info_get_name(G_APP_INFO(info))))
-			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s", value);
 		if ((value = g_desktop_app_info_get_generic_name(info)))
-			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s", value);
 		if ((value = g_app_info_get_description(G_APP_INFO(info))))
-			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s", value);
 		if ((value = g_app_info_get_commandline(G_APP_INFO(info))))
-			markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s", value);
 		if (gicon && (myicon = g_icon_to_string(gicon)))
-			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
+			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s", myicon);
 		if ((value = g_desktop_app_info_get_categories(info)))
-			markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s", value);
 		if (appid)
-			markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s\n", appid);
+			markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s", appid);
 		if ((value = gmenu_tree_entry_get_desktop_file_path(ent)))
-			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", value);
+			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s", value);
 		if (icon)
-			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
+			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s", icon);
 
-		tip = g_strjoinv(NULL, markup);
+		tip = g_strjoinv("\n", markup);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
 		g_free(tip);
 		g_strfreev(markup);
 		g_free(myicon);
 	} else if ((value = g_app_info_get_description(G_APP_INFO(info)))) {
 		gtk_widget_set_tooltip_text(GTK_WIDGET(item), value);
+	}
+	if (options.actions && (menu = ctx->gtk.ops.actions(ctx, ent, info))) {
+		gtk_menu_prepend(menu, GTK_WIDGET(item));
+		item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+		if (name)
+			gtk_menu_item_set_label(item, name);
+		if (pixbuf && (image = gtk_image_new_from_pixbuf(pixbuf)))
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+		gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
+	}
+	if (pixbuf) {
+		g_object_unref(pixbuf);
+		pixbuf = NULL;
 	}
 	free(icon);
 	free(appid);
@@ -1808,20 +1818,20 @@ xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *in
 	g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
 			&xde_entry_disconnect, 0);
 
-	if (options.tooltips) {
+	if (options.tooltips || options.debug) {
 		gchar **markup = calloc(16, sizeof(*markup));
 		char *myicon = NULL;
 		char *tip;
 		int i = 0;
 
 		if (action)
-			markup[i++] = g_markup_printf_escaped("<b>Action:</b> %s\n", action);
+			markup[i++] = g_markup_printf_escaped("<b>Action:</b> %s", action);
 		if (name)
-			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", name);
+			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s", name);
 
 		/* TODO: more fields */
 
-		tip = g_strjoinv(NULL, markup);
+		tip = g_strjoinv("\n", markup);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(item), tip);
 		g_free(tip);
 		g_strfreev(markup);
@@ -1881,10 +1891,8 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
 		const char *value;
-		char *cmd, *myicon = NULL, *tip;
+		char *cmd;
 		GIcon *gicon = NULL;
-		gchar **markup;
-		int i = 0;
 
 		if (strncasecmp(xsess->key, ctx->name, strlen(ctx->name)) == 0)
 			continue;
@@ -1912,34 +1920,40 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		g_signal_connect_data(G_OBJECT(item), "activate", G_CALLBACK(xde_entry_activated), cmd,
 				&xde_entry_disconnect, 0);
 
-		markup = calloc(16, sizeof(*markup));
+		if (options.tooltips || options.debug) {
+			gchar **markup = calloc(16, sizeof(*markup));
+			char *myicon = NULL;
+			char *tip;
+			int i = 0;
 
-		if (xsess->name)
-			markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s\n", xsess->name);
-		if ((value = g_desktop_app_info_get_generic_name(xsess->info)))
-			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s\n", value);
-		if ((value = g_app_info_get_description(G_APP_INFO(xsess->info))))
-			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s\n", value);
-		if ((value = g_app_info_get_commandline(G_APP_INFO(xsess->info))))
-			markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s\n", value);
-		if (gicon && (myicon = g_icon_to_string(gicon)))
-			markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s\n", myicon);
-		if ((value = g_desktop_app_info_get_categories(xsess->info)))
-			markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s\n", value);
-		if (xsess->key)
-			markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s\n", xsess->key);
-		if (xsess->file)
-			markup[i++] = g_markup_printf_escaped("<b>file:</b> %s\n", xsess->file);
-		if (icon)
-			markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s\n", icon);
+			if (xsess->name)
+				markup[i++] = g_markup_printf_escaped("<b>Name:</b> %s", xsess->name);
+			if ((value = g_desktop_app_info_get_generic_name(xsess->info)))
+				markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s", value);
+			if ((value = g_app_info_get_description(G_APP_INFO(xsess->info))))
+				markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s", value);
+			if ((value = g_app_info_get_commandline(G_APP_INFO(xsess->info))))
+				markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s", value);
+			if (gicon && (myicon = g_icon_to_string(gicon)))
+				markup[i++] = g_markup_printf_escaped("<b>Icon:</b> %s", myicon);
+			if ((value = g_desktop_app_info_get_categories(xsess->info)))
+				markup[i++] = g_markup_printf_escaped("<b>Categories:</b> %s", value);
+			if (xsess->key)
+				markup[i++] = g_markup_printf_escaped("<b>appid:</b> %s", xsess->key);
+			if (xsess->file)
+				markup[i++] = g_markup_printf_escaped("<b>file:</b> %s", xsess->file);
+			if (icon)
+				markup[i++] = g_markup_printf_escaped("<b>icon_file:</b> %s", icon);
 
-		tip = g_strjoinv(NULL, markup);
-		gtk_widget_set_tooltip_markup(item, tip);
-		g_free(tip);
-		g_strfreev(markup);
-		g_free(myicon);
+			tip = g_strjoinv("\n", markup);
+			gtk_widget_set_tooltip_markup(item, tip);
+			g_free(tip);
+			g_strfreev(markup);
+			g_free(myicon);
+		} else if ((value = g_app_info_get_description(G_APP_INFO(xsess->info)))) {
+			gtk_widget_set_tooltip_text(item, value);
+		}
 		free(icon);
-
 		gtk_menu_append(menu, item);
 		gtk_widget_show_all(item);
 		DPRINTF("got xsession %s\n", xsess->name);
@@ -4961,6 +4975,7 @@ main(int argc, char *argv[])
 			{"separators",	no_argument,		NULL,	 14},
 			{"sort",	no_argument,		NULL,	 15},
 			{"tooltips",	no_argument,		NULL,	 16},
+			{"actions",	no_argument,		NULL,	 17},
 
 			{"help",	no_argument,		NULL,	'h'},
 			{"version",	no_argument,		NULL,	'V'},
@@ -5135,6 +5150,9 @@ main(int argc, char *argv[])
 			break;
 		case 16: /* --tooltips */
 			options.tooltips = TRUE;
+			break;
+		case 17: /* --actions */
+			options.actions = TRUE;
 			break;
 
 		case 'G':	/* -G, --menugen */

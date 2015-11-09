@@ -258,6 +258,7 @@ typedef struct {
 	Bool generate;
 	int treeflags;
 	Bool tooltips;
+	Bool actions;
 } Options;
 
 typedef struct MenuContext MenuContext;
