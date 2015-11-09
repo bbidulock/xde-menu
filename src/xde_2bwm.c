@@ -137,6 +137,23 @@ xde_gtk_menu(MenuContext *ctx, GMenuTreeDirectory *dir)
 }
 
 static GList *
+xde_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GList *text = NULL;
+
+	return (text);
+}
+
+static GtkMenu *
+xde_gtk_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GtkMenu *menu = NULL;
+
+	menu = xde_gtk_common_actions(ctx, ent, info);
+	return (menu);
+}
+
+static GList *
 xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GList *text = NULL;
@@ -223,20 +240,20 @@ xde_gtk_alias(MenuContext *ctx, GMenuTreeAlias *als)
 }
 
 static GList *
-xde_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action)
 {
 	GList *text = NULL;
 
 	return (text);
 }
 
-static GtkMenu *
-xde_gtk_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+static GtkMenuItem *
+xde_gtk_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action)
 {
-	GtkMenu *menu = NULL;
+	GtkMenuItem *item = NULL;
 
-	menu = xde_gtk_common_actions(ctx, ent, info);
-	return (menu);
+	item = xde_gtk_common_action(ctx, ent, info, action);
+	return (item);
 }
 
 static GList *
@@ -384,12 +401,13 @@ MenuContext xde_menu_ops = {
 		.build = &xde_build,
 		.ops = {
 			.menu = &xde_menu,
+			.actions = &xde_actions,
 			.directory = &xde_directory,
 			.header = &xde_header,
 			.separator = &xde_separator,
 			.entry = &xde_entry,
 			.alias = &xde_alias,
-			.actions = &xde_actions,
+			.action = &xde_action,
 			.pin = &xde_pin,
 			},
 		.wmmenu = &xde_wmmenu,
@@ -407,12 +425,13 @@ MenuContext xde_menu_ops = {
 		.build = &xde_gtk_build,
 		.ops = {
 			.menu = &xde_gtk_menu,
+			.actions = &xde_gtk_actions,
 			.directory = &xde_gtk_directory,
 			.header = &xde_gtk_header,
 			.separator = &xde_gtk_separator,
 			.entry = &xde_gtk_entry,
 			.alias = &xde_gtk_alias,
-			.actions = &xde_gtk_actions,
+			.action = &xde_gtk_action,
 			.pin = &xde_gtk_pin,
 			},
 		.wmmenu = &xde_gtk_wmmenu,

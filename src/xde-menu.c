@@ -1323,6 +1323,14 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 	return (menu);
 }
 
+GtkMenu *
+xde_gtk_common_actions(MenuContext *cts, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GtkMenu *menu = NULL;
+
+	return (menu);
+}
+
 GtkMenuItem *
 xde_gtk_common_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
@@ -1596,12 +1604,12 @@ xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als)
 	return (item);
 }
 
-GtkMenu *
-xde_gtk_common_actions(MenuContext *cts, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+GtkMenuItem *
+xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action)
 {
-	GtkMenu *menu = NULL;
+	GtkMenuItem *item = NULL;
 
-	return (menu);
+	return (item);
 }
 
 GtkMenuItem *
