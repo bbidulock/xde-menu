@@ -1474,6 +1474,26 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 	return (menu);
 }
 
+GList *
+xde_actions_simple(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
+{
+	GList *text = NULL;
+	const gchar *const *actions;
+
+	actions = g_desktop_app_info_list_actions(info);
+	if (!actions || !*actions)
+		return (text);
+	xde_increase_indent(ctx);
+	for (; actions && *actions; actions++) {
+		GList *item;
+
+		if ((item = ctx->wmm.ops.action(ctx, ent, info, *actions)))
+			text = g_list_concat(text, item);
+	}
+	xde_decrease_indent(ctx);
+	return (text);
+}
+
 GtkMenu *
 xde_gtk_common_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
 {

@@ -235,6 +235,7 @@ xde_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
 {
 	GList *text = NULL;
 
+	text = xde_actions_simple(ctx, ent, info);
 	return (text);
 }
 
@@ -370,7 +371,7 @@ static GList *
 xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GDesktopAppInfo *info;
-	GList *text = NULL;
+	GList *text = NULL, *acts;
 	const char *name;
 	char *esc1, *esc2, *cmd, *p;
 	char *s, *icon = NULL;
@@ -401,8 +402,20 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 	}
 	esc2 = xde_character_escape(cmd, '}');
 	icon = ctx->wmm.wrap(ctx, icon);
-	s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
-	text = g_list_append(text, s);
+	if (options.actions && (acts = ctx->wmm.ops.actions(ctx, ent, info))) {
+		xde_increase_indent(ctx);
+		s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
+		xde_decrease_indent(ctx);
+		acts = g_list_prepend(acts, s);
+		s = g_strdup_printf("%s[submenu] (%s) {%s}%s\n", ctx->indent, esc1, esc1, icon);
+		acts = g_list_prepend(acts, s);
+		s = g_strdup_printf("%s[end]\n", ctx->indent);
+		acts = g_list_append(acts, s);
+		text = g_list_concat(text, acts);
+	} else {
+		s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
+		text = g_list_append(text, s);
+	}
 	free(icon);
 	free(appid);
 	free(esc1);
@@ -442,7 +455,44 @@ static GList *
 xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action)
 {
 	GList *text = NULL;
+	const char *name, *path;
+	char *esc1, *esc2, *cmd, *p;
+	char *s, *icon = NULL;
+	GIcon *gicon = NULL;
+	char *appid;
 
+	name = g_desktop_app_info_get_action_name(info, action);
+	esc1 = xde_character_escape(name, ')');
+
+	if ((appid = strdup(gmenu_tree_entry_get_desktop_file_id(ent)))
+			&& (p = strstr(appid, ".desktop")))
+		*p = '\0';
+	if (ctx->stack)
+		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
+	if ((path = gmenu_tree_entry_get_desktop_file_path(ent))) {
+		GKeyFile *file = g_key_file_new();
+
+		g_key_file_load_from_file(file, path, G_KEY_FILE_NONE, NULL);
+		icon = xde_get_action_icon(ctx, file, action, gicon, "exec", "unknown",
+				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
+				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
+		g_key_file_unref(file);
+	} else
+		icon = xde_get_icon2(ctx, "exec", "unknown");
+	gicon = g_app_info_get_icon(G_APP_INFO(info));
+	if (options.launch)
+		cmd = g_strdup_printf("xdg-launch --pointer --action='%s' %s", action, appid);
+	else
+		cmd = xde_get_action(info, appid, icon, action);
+	esc2 = xde_character_escape(cmd, '}');
+	icon = ctx->wmm.wrap(ctx, icon);
+	s = g_strdup_printf("%s[exec] (%s) {%s}%s\n", ctx->indent, esc1, esc2, icon);
+	text = g_list_append(text, s);
+	free(icon);
+	free(appid);
+	free(esc1);
+	free(esc2);
+	free(cmd);
 	return (text);
 }
 

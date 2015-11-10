@@ -400,6 +400,7 @@ void xde_free_xsessions(GList *list);
 GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);
 GList *xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);
 GList *xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu);
+GList *xde_actions_simple(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info);
 GList *xde_alias_simple(MenuContext *ctx, GMenuTreeAlias *als);
 
 GList *xde_common_get_styles(MenuContext *ctx, const char *dname, const char *fname, const char *suffix);

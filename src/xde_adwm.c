@@ -138,6 +138,7 @@ xde_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info)
 {
 	GList *text = NULL;
 
+	text = xde_actions_simple(ctx, ent, info);
 	return (text);
 }
 
