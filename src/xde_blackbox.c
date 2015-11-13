@@ -879,6 +879,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	item = xde_gtk_common_wmspec(ctx);
 	return (item);
 }
 

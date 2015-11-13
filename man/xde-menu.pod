@@ -462,6 +462,50 @@ file.
 When the root menu file is specified with the B<--root-menu> option, the
 filename is determined verbatim.
 
+=item B<--excluded>
+
+Include applications that are otherwise excluded in the menu
+specification.  This option will normally make applications that specify
+multiple categories appear in all categories rather than just the one
+category.
+
+=item B<--nodisplay>
+
+Include applications that are marked no-display.  Applications that are
+marked no-display are typically marked thus because they only a mime
+type for the mime type database, or because they are only to be
+displayed by applications that understand them (e.g. some window manager
+applications).
+
+=item B<--unallocated>
+
+Include applications that would be excluded because they were previously
+allocated a location in the menu.
+
+=item B<--empty>
+
+Include empty sub-menus.  This is not a particularly useful feature for
+generation of the pop-up menu.  For window manager root menus, it
+typically does not matter, as most window managers suppress empty
+sub-menus.
+
+=item B<--separators>
+
+Include all separators in the generated menu, whether required or not.
+This option is the only way to achieve multiple separators between
+items.  Without this option, only one separator will occur between any
+two items, and no separator will occur at the beginning or end of a
+menu.
+
+=item B<--sort>
+
+Sort the entries by display name instead of name.
+
+=item B<--actions>
+
+Provide a sub-menu for selecting actions for an application in those
+applications that have actions.
+
 =back
 
 =head3 POP-UP MENU OPTIONS
@@ -545,6 +589,10 @@ Place the menu in the top-left corner of the current screen and monitor
 work area (considering panels and docks).
 
 =back
+
+=item B<--tooltips>
+
+Include verbose tool-tips for application menu items.
 
 =back
 
