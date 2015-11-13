@@ -32,7 +32,7 @@ xdemod_LTLIBRARIES = \
 	xde-menu-fvwm.la \
 	xde-menu-glasswm.la \
 	xde-menu-goomwwm.la \
-	xde-menu-herbstluftwm \
+	xde-menu-herbstluftwm.la \
 	xde-menu-i3.la \
 	xde-menu-icewm.la \
 	xde-menu-jwm.la \
