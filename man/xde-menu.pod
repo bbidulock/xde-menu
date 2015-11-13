@@ -239,22 +239,32 @@ generated.  Currently recognized window managers are as follows:
 
 L<2bwm(1)>,
 L<adwm(1)>,
+L<aewm(1)>,
+L<aewm++(1)>,
 L<afterstep(1)>,
 L<awesome(1)>,
 L<blackbox(1)>,
+L<bspwm(1)>,
 L<ctwm(1)>,
 L<cwm(1)>,
 L<dtwm(1)>,
 L<dwm(1)>,
 L<echinus(1)>,
 L<etwm(1)>,
+L<failsafewm(1)>,
 L<fluxbox(1)>,
 L<flwm(1)>,
 L<fvwm(1)>,
+L<glasswm(1)>,
+L<goomwwm(1)>,
+L<herbstluftwm(1)>,
+L<i3(1)>,
 L<icewm(1)>,
 L<jwm(1)>,
+L<larswm(1)>,
 L<matwm2(1)>,
 L<metacity(1)>,
+L<mvwm(1)>,
 L<mwm(1)>,
 L<openbox(1)>,
 L<pekwm(1)>,
@@ -264,8 +274,11 @@ L<uwm(1)>,
 L<vtwm(1)>,
 L<waimea(1)>,
 L<wind(1)>,
+L<wm2(1)>,
 L<wmaker(1)>,
-L<wmx(1)> and
+L<wmii(1)>,
+L<wmx(1)>,
+L<xdwm(1)> and
 L<yeahwm(1)>.
 
 When unspecified, or when a window manager change is detected, the
@@ -287,36 +300,46 @@ Specify the output format.  Recognized output formats are as follows:
 
 L<2bwm(1)>,
 L<adwm(1)>,
+L<aewm(1)>,
+L<aewm++(1)>,
 L<afterstep(1)>,
 L<awesome(1)>,
 L<blackbox(1)>,
+L<bspwm(1)>,
 L<ctwm(1)>,
 L<cwm(1)>,
 L<dtwm(1)>,
 L<dwm(1)>,
 L<echinus(1)>,
 L<etwm(1)>,
+L<failsafewm(1)>,
 L<fluxbox(1)>,
 L<flwm(1)>,
 L<fvwm(1)>,
+L<glasswm(1)>,
+L<goomwwm(1)>,
+L<herbstluftwm(1)>,
+L<i3(1)>,
 L<icewm(1)>,
 L<jwm(1)>,
+L<larswm(1)>,
 L<matwm2(1)>,
 L<metacity(1)>,
+L<mvwm(1)>,
 L<mwm(1)>,
 L<openbox(1)>,
-C<openboxold>,
 L<pekwm(1)>,
-L<perlpanel(1)>,
 L<spectrwm(1)>,
 L<twm(1)>,
 L<uwm(1)>,
 L<vtwm(1)>,
 L<waimea(1)>,
 L<wind(1)>,
+L<wm2(1)>,
 L<wmaker(1)>,
-C<wmakerold>,
+L<wmii(1)>,
 L<wmx(1)>,
+L<xdwm(1)>,
 L<yeahwm(1)>.
 
 When unspecified, the setting or implied setting of the B<--wmname>
@@ -623,6 +646,14 @@ pop-up menu).
 L<adwm(1)> provides a user-settable style mechanism.  Therefore, both
 style and theme sub-menus can be generated.
 
+=item B<--wmname=>I<aewm> B<--format=>I<aewm>
+
+L<aewm(1)> is not tested, but should work fine.
+
+=item B<--wmname=>I<aewm++> B<--format=>I<aewm++>
+
+L<aemw++(1)> is barely ICCCM compliant and will likely not work well.
+
 =item B<--wmname=>I<afterstep> B<--format=>I<afterstep>
 
 No support has yet been included for L<afterstep(1)>.  Only generic
@@ -644,6 +675,11 @@ display of icons.
 
 Sub-menus of user-settable L<blackbox(1)> styles and corresponding XDE
 themes can be generated.
+
+=item B<--wmname=>I<bspwm> B<--format=>I<bspwm>
+
+L<bspwm(1)> has fairly good EWMH/NetWM support and should work fine, but
+is untested.
 
 =item B<--wmname=>I<ctwm> B<--format=>I<ctwm>
 
@@ -692,6 +728,10 @@ used to invoke the GTK+ version of the root menu.
 L<etwm(1)> provides a root menu that is formatted similar to L<twm(1)>.
 This root menu format does not support the display of icons.
 
+=item B<--wmname=>I<failsafewm> B<--format=>I<failsafewm>
+
+L<failsafewm(1)> is not supported.
+
 =item B<--wmname=>I<fluxbox> B<--format=>I<fluxbox>
 
 L<fluxbox(1)> provides a root menu that is formatted similar to
@@ -713,6 +753,25 @@ Although at one time L<fvwm(1)> used a L<dtwm(1)>-like menu format, it
 now uses its own unique L<perl(1)> interface.  L<fvwm(1)> supports the
 use of icons in menu items.
 
+=item B<--wmname=>I<glasswm> B<--format=>I<glasswm>
+
+L<glasswm(1)> provides only some ICCCM support and is not supported.
+
+=item B<--wmname=>I<goomwwm> B<--format=>I<goomwwm>
+
+L<goomwwm(1)> provides EWMH/NetWM support and should work well, but is
+untested.
+
+=item B<--wmname=>I<herbstluftwm> B<--format=>I<herbstluftwm>
+
+L<herbstluftwm(1)> provides EWMH/NetWM support and should work well, but
+is untested.
+
+=item B<--wmname=>I<i3> B<--format=>I<i3>
+
+L<i3(1)> provides EWMH/NetWM support and should work well, but is
+untested.
+
 =item B<--wmname=>I<icewm> B<--format=>I<icewm>
 
 L<icewm(1)> provides a programs menu using its own unique menu format.
@@ -728,6 +787,10 @@ support the display of icons in menu items.  L<jwm(1)> recently had a
 rework of its configuration files.  Unless you are on the most current
 versions, your mileage may vary.
 
+=item B<--wmname=>I<larswm> B<--format=>I<larswm>
+
+L<larswm(1)> is barely ICCCM compliant and is, therefore, not supported.
+
 =item B<--wmname=>I<matwm2> B<--format=>I<matwm2>
 
 Like L<dwm(1)>, L<matwm2(1)> does not provide a root menu; however, it
@@ -738,6 +801,10 @@ used to invoke the GTK+ version of the root menu.
 
 L<metacity(1)> does not provide a root menu; however, it has ample
 facility for launching the GTK+ menu.
+
+=item B<--wmname=>I<mvwm> B<--format=>I<mvwm>
+
+L<mvwm(1)> is a derivative of L<fvwm(1)> and should work well.
 
 =item B<--wmname=>I<mwm> B<--format=>I<mwm>
 
@@ -812,6 +879,18 @@ has no mechanism for launching a menu.  However, an external key-binder
 such as L<bbkeys(1)> can be used to launch the menu.  Also, it appears
 that L<wind(1)> does not grab button clicks on the root window.
 
+=item B<--wmname=>I<wm2> B<--format=>I<wm2>
+
+L<wm2(1)> uses a directory of executables instead of a file format in
+the identical fashion to L<flwm(1)> (which as based on L<wmx(1)>, a
+derivative of L<wm2(1)>).  It does not support the use of icons in menu
+items.  In fact, this is an alias for I<flwm> as the two formats are
+completely compatible and interoperable.
+
+However, L<wm2(1)> barely provides ICCCM support and is, therefore,
+poorly supported.  Use its EWMH compliant derivative, L<wmx(1)>, or its
+derivative L<flwm(1)>.
+
 =item B<--wmname=>I<wmaker> B<--format=>I<wmaker> or B<--format=>I<wmakerold>
 
 Two formats are supported for the L<wmaker(1)> window manager: the newer
@@ -820,6 +899,11 @@ window maker lisp-based menu (I<wmaker>) and the older line-based menu
 newer style; however, it still supports both formats.  Neither format
 supports the use of icons in menu items.
 
+=item B<--wmname=>I<wmii> B<--format=>I<wmii>
+
+L<wmii(1)> provides EWMH/NetWM support and should work well, but is
+currently untested.
+
 =item B<--wmname=>I<wmx> B<--format=>I<wmx>
 
 L<wmx(1)> uses a directory of executables instead of a file format in
@@ -827,6 +911,11 @@ the identical fashion to L<flwm(1)> (which was based on L<wmx(1)>).  It
 does not support the use of icons in menu items.  In fact, this is an
 alias for I<flwm> as the two formats are completely compatible and
 interoperable.
+
+=item B<--wmname=>I<xdwm> B<--format=>I<xdwm>
+
+L<xdwm(1)> provides EWMH/NetWM support and should work well, but is
+currently untested.
 
 =item B<--wmname=>I<yeahwm> B<--format=>I<yeahwm>
 

@@ -14,9 +14,12 @@ xde_menu_LDFLAGS = -export-dynamic -R $(xdemoddir) -ldl
 xdemod_LTLIBRARIES = \
 	xde-menu-2bwm.la \
 	xde-menu-adwm.la \
+	xde-menu-aewm.la \
+	xde-menu-aewm++.la \
 	xde-menu-afterstep.la \
 	xde-menu-awesome.la \
 	xde-menu-blackbox.la \
+	xde-menu-bspwm.la \
 	xde-menu-ctwm.la \
 	xde-menu-cwm.la \
 	xde-menu-dtwm.la \
@@ -27,10 +30,16 @@ xdemod_LTLIBRARIES = \
 	xde-menu-fluxbox.la \
 	xde-menu-flwm.la \
 	xde-menu-fvwm.la \
+	xde-menu-glasswm.la \
+	xde-menu-goomwwm.la \
+	xde-menu-herbstluftwm \
+	xde-menu-i3.la \
 	xde-menu-icewm.la \
 	xde-menu-jwm.la \
+	xde-menu-larswm.la \
 	xde-menu-matwm2.la \
 	xde-menu-metacity.la \
+	xde-menu-mvwm.la \
 	xde-menu-mwm.la \
 	xde-menu-openbox.la \
 	xde-menu-openboxold.la \
@@ -42,9 +51,12 @@ xdemod_LTLIBRARIES = \
 	xde-menu-vtwm.la \
 	xde-menu-waimea.la \
 	xde-menu-wind.la \
+	xde-menu-wm2.la \
 	xde-menu-wmaker.la \
 	xde-menu-wmakerold.la \
+	xde-menu-wmii.la \
 	xde-menu-wmx.la \
+	xde-menu-xdwm.la \
 	xde-menu-yeahwm.la
 
 #module_ldflags = -module -export-dynamic -release $(VERSION) -shared -rpath $(xdemoddir) -avoid-version
@@ -64,6 +76,18 @@ xde_menu_adwm_la_SOURCES = xde-menu.h xde_adwm.c
 xde_menu_adwm_la_LIBADD = $(module_libadd)
 xde_menu_adwm_la_LDFLAGS = $(module_ldflags)
 
+xde_menu_aewm_la_CPPFLAGS = -DNAME=\"xde-aewm\"
+xde_menu_aewm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_aewm_la_SOURCES = xde-menu.h xde_aewm.c
+xde_menu_aewm_la_LIBADD = $(module_libadd)
+xde_menu_aewm_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_aewm___la_CPPFLAGS = -DNAME=\"xde-aewm++\"
+xde_menu_aewm___la_CFLAGS = $(AM_CFLAGS)
+xde_menu_aewm___la_SOURCES = xde-menu.h xde_aewm++.c
+xde_menu_aewm___la_LIBADD = $(module_libadd)
+xde_menu_aewm___la_LDFLAGS = $(module_ldflags)
+
 xde_menu_afterstep_la_CPPFLAGS = -DNAME=\"xde-afterstep\"
 xde_menu_afterstep_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_afterstep_la_SOURCES = xde-menu.h xde_afterstep.c
@@ -81,6 +105,12 @@ xde_menu_blackbox_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_blackbox_la_SOURCES = xde-menu.h xde_blackbox.c
 xde_menu_blackbox_la_LIBADD = $(module_libadd)
 xde_menu_blackbox_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_bspwm_la_CPPFLAGS = -DNAME=\"xde-bspwm\"
+xde_menu_bspwm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_bspwm_la_SOURCES = xde-menu.h xde_bspwm.c
+xde_menu_bspwm_la_LIBADD = $(module_libadd)
+xde_menu_bspwm_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_ctwm_la_CPPFLAGS = -DNAME=\"xde-ctwm\"
 xde_menu_ctwm_la_CFLAGS = $(AM_CFLAGS)
@@ -142,6 +172,30 @@ xde_menu_fvwm_la_SOURCES = xde-menu.h xde_fvwm.c
 xde_menu_fvwm_la_LIBADD = $(module_libadd)
 xde_menu_fvwm_la_LDFLAGS = $(module_ldflags)
 
+xde_menu_glasswm_la_CPPFLAGS = -DNAME=\"xde-glasswm\"
+xde_menu_glasswm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_glasswm_la_SOURCES = xde-menu.h xde_glasswm.c
+xde_menu_glasswm_la_LIBADD = $(module_libadd)
+xde_menu_glasswm_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_goomwwm_la_CPPFLAGS = -DNAME=\"xde-goomwwm\"
+xde_menu_goomwwm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_goomwwm_la_SOURCES = xde-menu.h xde_goomwwm.c
+xde_menu_goomwwm_la_LIBADD = $(module_libadd)
+xde_menu_goomwwm_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_herbstluftwm_la_CPPFLAGS = -DNAME=\"xde-herbstluftwm\"
+xde_menu_herbstluftwm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_herbstluftwm_la_SOURCES = xde-menu.h xde_herbstluftwm.c
+xde_menu_herbstluftwm_la_LIBADD = $(module_libadd)
+xde_menu_herbstluftwm_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_i3_la_CPPFLAGS = -DNAME=\"xde-i3\"
+xde_menu_i3_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_i3_la_SOURCES = xde-menu.h xde_i3.c
+xde_menu_i3_la_LIBADD = $(module_libadd)
+xde_menu_i3_la_LDFLAGS = $(module_ldflags)
+
 xde_menu_icewm_la_CPPFLAGS = -DNAME=\"xde-icewm\"
 xde_menu_icewm_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_icewm_la_SOURCES = xde-menu.h xde_icewm.c
@@ -154,6 +208,12 @@ xde_menu_jwm_la_SOURCES = xde-menu.h xde_jwm.c
 xde_menu_jwm_la_LIBADD = $(module_libadd)
 xde_menu_jwm_la_LDFLAGS = $(module_ldflags)
 
+xde_menu_larswm_la_CPPFLAGS = -DNAME=\"xde-larswm\"
+xde_menu_larswm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_larswm_la_SOURCES = xde-menu.h xde_larswm.c
+xde_menu_larswm_la_LIBADD = $(module_libadd)
+xde_menu_larswm_la_LDFLAGS = $(module_ldflags)
+
 xde_menu_matwm2_la_CPPFLAGS = -DNAME=\"xde-matwm2\"
 xde_menu_matwm2_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_matwm2_la_SOURCES = xde-menu.h xde_matwm2.c
@@ -165,6 +225,12 @@ xde_menu_metacity_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(GOBJ_CFLAGS) $(GIO_C
 xde_menu_metacity_la_SOURCES = xde-menu.h xde_metacity.c
 xde_menu_metacity_la_LIBADD = $(module_libadd)
 xde_menu_metacity_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_mvwm_la_CPPFLAGS = -DNAME=\"xde-mvwm\"
+xde_menu_mvwm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_mvwm_la_SOURCES = xde-menu.h xde_mvwm.c
+xde_menu_mvwm_la_LIBADD = $(module_libadd)
+xde_menu_mvwm_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_mwm_la_CPPFLAGS = -DNAME=\"xde-mwm\"
 xde_menu_mwm_la_CFLAGS = $(AM_CFLAGS)
@@ -220,6 +286,12 @@ xde_menu_vtwm_la_SOURCES = xde-menu.h xde_vtwm.c
 xde_menu_vtwm_la_LIBADD = $(module_libadd)
 xde_menu_vtwm_la_LDFLAGS = $(module_ldflags)
 
+xde_menu_wm2_la_CPPFLAGS = -DNAME=\"xde-wm2\"
+xde_menu_wm2_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_wm2_la_SOURCES = xde-menu.h xde_wm2.c
+xde_menu_wm2_la_LIBADD = $(module_libadd)
+xde_menu_wm2_la_LDFLAGS = $(module_ldflags)
+
 xde_menu_waimea_la_CPPFLAGS = -DNAME=\"xde-waimea\"
 xde_menu_waimea_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_waimea_la_SOURCES = xde-menu.h xde_waimea.c
@@ -244,11 +316,23 @@ xde_menu_wmakerold_la_SOURCES = xde-menu.h xde_wmakerold.c
 xde_menu_wmakerold_la_LIBADD = $(module_libadd)
 xde_menu_wmakerold_la_LDFLAGS = $(module_ldflags)
 
+xde_menu_wmii_la_CPPFLAGS = -DNAME=\"xde-wmii\"
+xde_menu_wmii_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_wmii_la_SOURCES = xde-menu.h xde_wmii.c
+xde_menu_wmii_la_LIBADD = $(module_libadd)
+xde_menu_wmii_la_LDFLAGS = $(module_ldflags)
+
 xde_menu_wmx_la_CPPFLAGS = -DNAME=\"xde-wmx\"
 xde_menu_wmx_la_CFLAGS = $(AM_CFLAGS)
 xde_menu_wmx_la_SOURCES = xde-menu.h xde_wmx.c
 xde_menu_wmx_la_LIBADD = $(module_libadd)
 xde_menu_wmx_la_LDFLAGS = $(module_ldflags)
+
+xde_menu_xdwm_la_CPPFLAGS = -DNAME=\"xde-xdwm\"
+xde_menu_xdwm_la_CFLAGS = $(AM_CFLAGS)
+xde_menu_xdwm_la_SOURCES = xde-menu.h xde_xdwm.c
+xde_menu_xdwm_la_LIBADD = $(module_libadd)
+xde_menu_xdwm_la_LDFLAGS = $(module_ldflags)
 
 xde_menu_yeahwm_la_CPPFLAGS = -DNAME=\"xde-yeahwm\"
 xde_menu_yeahwm_la_CFLAGS = $(AM_CFLAGS)
