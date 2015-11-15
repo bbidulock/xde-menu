@@ -1076,8 +1076,8 @@ B<xde-menu> was written for a number of reasons:
 
 =item 1.
 
-Existing L<fluxbox(1)> menu generators that read XDG .desktop files
-(L<fbmenugen(1)>, L<menutray(1)>) do not conform to the XDG menu
+Existing lightweight menu generators that read XDG F<.desktop> files
+(e.g. L<fbmenugen(1)>, L<menutray(1)>) do not conform to the XDG menu
 generation specifications and in particular are incapable of merging
 menus.
 
@@ -1087,11 +1087,11 @@ specifications and, in particular, are incapable of merging menus.
 
 =item 2.
 
-Existing XDG menu generators (such as the SuSE L<xdg_menu(1)> script) do
-not properly merge default merge directories and do not observe
-C<E<lt>LayoutE<gt>> commands.  Also, they are poor at including icons in
-the generated menus.  They, of course, do not generate system tray nor
-pop-up menus either.
+Existing XDG menu generators (such as the SuSE L<xdg_menu(1)> C<perl>
+script) do not properly merge default merge directories and do not
+observe C<E<lt>LayoutE<gt>> commands.  Also, they are poor at including
+icons in the generated menus.  They, of course, do not generate system
+tray nor pop-up menus either.
 
 =item 3.
 
@@ -1103,7 +1103,15 @@ XDG directories for changes and update menus on changes.
 
 The L<lxpanel(1)> and L<pcmanfm(1)> menu generators do not have any of
 the above deficiencies; however, they do not create window manager
-specific sub-menus.
+specific sub-menus.  Also, they are buggy and generally fail to display
+a menu at all when they have a problem.  They do not handle the
+C<E<lt>FileNameE<gt>> tag within a C<E<lt>LayoutE<gt>> tag.
+
+=item 5.
+
+None of the menu-generating facilities that I have found can handle an
+NFS-mounted home directory.  I find this annoying: XDG menus are host
+specific.
 
 =back
 
