@@ -3257,7 +3257,7 @@ update_theme(XdeScreen *xscr, Atom prop)
 			if (list)
 				XFreeStringList(list);
 		} else
-			EPRINTF("could not get text list for property\n");
+			DPRINTF("could not get text list for property\n");
 		if (xtp.value)
 			XFree(xtp.value);
 	} else
@@ -3321,7 +3321,7 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 			if (list)
 				XFreeStringList(list);
 		} else
-			EPRINTF("could not get text list for property\n");
+			DPRINTF("could not get text list for property\n");
 		if (xtp.value)
 			XFree(xtp.value);
 	} else
@@ -3492,7 +3492,7 @@ event_handler_SelectionClear(Display *dpy, XEvent *xev, XdeScreen *xscr)
 	}
 	if (xscr && xev->xselectionclear.window == xscr->selwin) {
 		XDestroyWindow(dpy, xscr->selwin);
-		EPRINTF("selection cleared, exiting\n");
+		DPRINTF("selection cleared, exiting\n");
 		exit(EXIT_SUCCESS);
 	}
 	return GDK_FILTER_CONTINUE;
@@ -4564,10 +4564,10 @@ get_text_property(Display *dpy, Window root, Atom prop, char ***listp, int *stri
 		if (Xutf8TextPropertyToTextList(dpy, &xtp, listp, stringsp) == Success)
 			return True;
 		else
-			EPRINTF("%s: could not get text list for %s property\n", NAME,
+			DPRINTF("%s: could not get text list for %s property\n", NAME,
 				XGetAtomName(dpy, prop));
 	} else
-		EPRINTF("%s: could not get %s for root 0x%lx\n", NAME,
+		DPRINTF("%s: could not get %s for root 0x%lx\n", NAME,
 			XGetAtomName(dpy, prop), root);
 	return False;
 }
@@ -4610,7 +4610,7 @@ get_default_wmname()
 			if (list)
 				XFreeStringList(list);
 		} else
-			EPRINTF("%s: could not get %s for root 0x%lx\n", NAME,
+			DPRINTF("%s: could not get %s for root 0x%lx\n", NAME,
 				XGetAtomName(dpy, prop), root);
 	} else
 		EPRINTF("%s: cannot determine wmname without DISPLAY\n", NAME);
@@ -4655,7 +4655,7 @@ get_default_format()
 			if (list)
 				XFreeStringList(list);
 		} else
-			EPRINTF("%s: could not get %s for root 0x%lx\n", NAME,
+			DPRINTF("%s: could not get %s for root 0x%lx\n", NAME,
 				XGetAtomName(dpy, prop), root);
 	} else
 		EPRINTF("%s: cannot determine format without DISPLAY\n", NAME);
@@ -5295,18 +5295,10 @@ main(int argc, char *argv[])
 			command = CommandHelp;
 			break;
 		case 'V':
-			if (options.command != CommandDefault)
-				goto bad_option;
-			if (command == CommandDefault)
-				command = CommandVersion;
-			defaults.command = options.command = CommandVersion;
+			command = CommandVersion;
 			break;
 		case 'C':	/* -C, --copying */
-			if (options.command != CommandDefault)
-				goto bad_option;
-			if (command == CommandDefault)
-				command = CommandCopying;
-			defaults.command = options.command = CommandCopying;
+			command = CommandCopying;
 			break;
 		case '?':
 		default:

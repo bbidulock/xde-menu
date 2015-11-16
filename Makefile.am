@@ -38,3 +38,15 @@ MENUS.html: MENUS.asciidoc
 
 dist_noinst_SCRIPTS = autogen.sh configure.sh rebuild.sh
 
+scritps = \
+	xde-menugen \
+	xde-menu-monitor \
+	xde-menu-popmenu \
+	xde-menu-quit \
+	xde-menu-refresh \
+	xde-menu-replace \
+	xde-menu-restart
+
+dist_bin_SCRIPTS = $(scripts)
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = $(scripts)
+
