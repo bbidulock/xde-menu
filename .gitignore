@@ -34,6 +34,13 @@ Makefile.in
 !dtwmrc.man
 !mwm.man
 !mwmrc.man
+!xde-menugen.man
+!xde-menu-monitor.man
+!xde-menu-popmenu.man
+!xde-menu-quit.man
+!xde-menu-refresh.man
+!xde-menu-replace.man
+!xde-menu-restart.man
 MENUS.html
 NEWS
 .nfs*
@@ -49,7 +56,7 @@ TODO
 xde-app
 xde-cycle
 xde-dock
-xde-dock-*.tar.xz
+xde-menu-*.tar.xz
 xde-keys
 xde-menu
 xde-menugen
