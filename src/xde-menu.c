@@ -44,6 +44,9 @@
 
 #include "xde-menu.h"
 
+#define GTK_EVENT_STOP		TRUE
+#define GTK_EVENT_PROPAGATE	FALSE
+
 #define XA_SELECTION_NAME	"_XDE_MENU_S%d"
 
 int saveArgc;
@@ -88,6 +91,8 @@ Options current = {
 	.output = 1,
 	.command = CommandDefault,
 	.launch = True,
+	.tray = True,
+	.generate = True,
 };
 
 Options options = {
@@ -95,6 +100,8 @@ Options options = {
 	.output = 1,
 	.command = CommandDefault,
 	.launch = True,
+	.tray = True,
+	.generate = True,
 };
 
 Options defaults = {
@@ -2855,6 +2862,7 @@ static GdkFilterReturn selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpoint
 static GdkFilterReturn root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
 static void update_theme(XdeScreen *xscr, Atom prop);
 static void update_icon_theme(XdeScreen *xscr, Atom prop);
+static void init_statusicon(XdeScreen *xscr);
 
 static void
 setup_x11(Bool replace)
@@ -2915,6 +2923,8 @@ setup_x11(Bool replace)
 		init_wnck(xscr);
 		update_theme(xscr, None);
 		update_icon_theme(xscr, None);
+		if (options.tray)
+			init_statusicon(xscr);
 	}
 }
 
@@ -3212,6 +3222,139 @@ do_popmenu(int argc, char *argv[])
 	}
 }
 
+static gboolean
+on_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+	GdkEventButton *ev;
+	GtkMenu *menu;
+
+	ev = (typeof(ev)) event;
+	if (ev->button != 1)
+		return GTK_EVENT_PROPAGATE;
+	if (!gmenu_tree_load_sync(xscr->context->tree, NULL)) {
+		EPRINTF("could not sync menu %s\n", options.rootmenu);
+		return GTK_EVENT_STOP;
+	}
+	DPRINTF("calling create!\n");
+	menu = xscr->context->gtk.create(xscr->context, options.style, NULL);
+	DPRINTF("done create!\n");
+	gtk_menu_popup(menu, NULL, NULL, position_menu, NULL, ev->button, ev->time);
+	return GTK_EVENT_STOP;
+}
+
+void
+on_refresh_selected(GtkMenuItem *item, gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+
+	if (!gmenu_tree_load_sync(xscr->context->tree, NULL))
+		EPRINTF("could not sync menu %s\n", options.rootmenu);
+	return;
+}
+
+void
+on_about_selected(GtkMenuItem *item, gpointer user_data)
+{
+	gchar *authors[] = { "Brian F. G. Bidulock <bidulock@openss7.org>", NULL };
+	gtk_show_about_dialog(NULL,
+			      "authors", authors,
+			      "comments", "An XDG compliant tray menu.",
+			      "copyright", "Copyright (c) 2013, 2014, 2015  OpenSS7 Corporation",
+			      "license", "Do what thou wilt shall be the whole of the law.\n\n-- Aleister Crowley",
+			      "logo-icon-name", "start-here",
+			      "program-name", "xde-menu",
+			      "version", "0.1",
+			      "website", "http://www.unexicon.com/",
+			      "website-label", "Unexicon - Linux spun for telecom",
+			      NULL);
+	return;
+}
+
+void
+on_redo_selected(GtkMenuItem *item, gpointer user_data)
+{
+	char **argv;
+	int i;
+
+	argv = calloc(saveArgc + 1, sizeof(*argv));
+	for (i = 0; i < saveArgc; i++)
+		argv[i] = saveArgv[i];
+	DPRINTF("%s: restarting the menus\n", NAME);
+	if (execvp(argv[0], argv) == -1)
+		EPRINTF("%s: %s\n", argv[0], strerror(errno));
+	return;
+}
+
+void
+on_quit_selected(GtkMenuItem *item, gpointer user_data)
+{
+	if (options.display)
+		gtk_main_quit();
+	else
+		g_main_loop_quit(loop);
+}
+
+static void
+on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+	GtkWidget *menu, *item;
+
+	menu = gtk_menu_new();
+	item = gtk_image_menu_item_new_from_stock("gtk-refresh", NULL);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_refresh_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	item = gtk_image_menu_item_new_from_stock("gtk-about", NULL);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_about_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	item = gtk_separator_menu_item_new();
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	item = gtk_image_menu_item_new_from_stock("gtk-redo", NULL);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_redo_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	item = gtk_image_menu_item_new_from_stock("gtk-quit", NULL);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_quit_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, NULL, button, time);
+	return;
+}
+
+static void
+init_statusicon(XdeScreen *xscr)
+{
+	GtkStatusIcon *icon;
+#if 1
+	GtkIconTheme *theme;
+	GdkPixbuf *pixbuf;
+
+	theme = gtk_icon_theme_get_default();
+	pixbuf = gtk_icon_theme_load_icon(theme, "arch-logo", 16,
+					  GTK_ICON_LOOKUP_GENERIC_FALLBACK |
+					  GTK_ICON_LOOKUP_FORCE_SIZE |
+					  GTK_ICON_LOOKUP_USE_BUILTIN, NULL);
+	icon = gtk_status_icon_new_from_pixbuf(pixbuf);
+#else
+	icon = gtk_status_icon_new_from_icon_name("start-here");
+#endif
+	gtk_status_icon_set_tooltip_text(icon, "Click for menu...");
+	gtk_status_icon_set_visible(icon, TRUE);
+	g_signal_connect(G_OBJECT(icon), "button_press_event",
+			G_CALLBACK(on_button_press), xscr);
+	g_signal_connect(G_OBJECT(icon), "popup_menu",
+			G_CALLBACK(on_popup_menu), xscr);
+}
+
 static void
 do_quit(int argc, char *argv[])
 {
@@ -3377,10 +3520,9 @@ menu_restart(XEvent *xev)
 		argv[i] = saveArgv[i];
 
 	DPRINTF("%s: restarting the menus\n", NAME);
-	if (execvp(argv[0], argv) == -1) {
+	if (execvp(argv[0], argv) == -1)
 		EPRINTF("%s: %s\n", argv[0], strerror(errno));
-		return;
-	}
+	return;
 }
 
 static void
