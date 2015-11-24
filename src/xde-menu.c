@@ -3173,6 +3173,8 @@ do_monitor(int argc, char *argv[], Bool replace)
 		cmdArgv = NULL;
 		cmdArgc = 0;
 		exit(EXIT_FAILURE);
+	default:
+		break;
 	}
 }
 
@@ -4158,12 +4160,12 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 
 	command = cmd;
 	OPRINTF("%d command received\n", command);
-	if ((scrn = unique_message_data_get_screen(unique)))
+	if ((scrn = unique_message_data_get_screen(msg_data)))
 		screen = gdk_screen_get_number(scrn);
 	OPRINTF("\tscreen is %u\n", screen);
-	workspace = unique_message_data_get_workspace(unique);
+	workspace = unique_message_data_get_workspace(msg_data);
 	OPRINTF("\tworkspace is %u\n", workspace);
-	startup_id = unique_message_data_get_startup_id(unique);
+	startup_id = unique_message_data_get_startup_id(msg_data);
 	OPRINTF("\tstartup id is %s\n", startup_id);
 
 	data = (const char *) unique_message_data_get(msg_data, &len);
@@ -4178,7 +4180,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 		break;
 	case CommandQuit:
 	case CommandRestart:
-	case CommmandReplace:
+	case CommandReplace:
 		/* just quit */
 		if (options.display)
 			gtk_main_quit();
@@ -4231,7 +4233,7 @@ init_unique(int argc, char *argv[])
 		for (len = 0, i = 0; i < argc; i++, len += strlen(argv[i]) + 1) ;
 		data = calloc(len, sizeof(*data));
 		for (p = data, i = 0; i < argc; i++, strcpy(p, argv[i]), p += strlen(p) + 1) ;
-		unique_message_data_set(unique, (guchar *) data, len);
+		unique_message_data_set(msg_data, (guchar *) data, len);
 		res = unique_app_send_message(unique, options.command, msg_data);
 		unique_message_data_free(msg_data);
 		switch (res) {
