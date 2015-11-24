@@ -283,6 +283,7 @@ struct MenuContext {
 		const char *suffix;
 	} styles;
 	GMenuTree *tree;
+	GHashTable *xsessions;
 	int level;
 	char *indent;
 	GtkIconLookupFlags iconflags;
@@ -400,7 +401,7 @@ char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, con
 char *xde_get_command(GDesktopAppInfo *app, const char *appid, const char *icon);
 char *xde_get_action(GDesktopAppInfo *app, const char *appid, const char *icon, const char *action);
 
-GList *xde_get_xsessions(void);
+GList *xde_get_xsessions(MenuContext *ctx);
 void xde_free_xsessions(GList *list);
 GList *xde_create_simple(MenuContext *ctx, Style style, const char *name);
 GList *xde_build_simple(MenuContext *ctx, GMenuTreeItemType type, gpointer item);

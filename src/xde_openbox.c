@@ -572,7 +572,7 @@ xde_wmmenu(MenuContext *ctx)
 	text = g_list_append(text, s);
 	free(icon);
 	xde_increase_indent(ctx);
-	xsessions = xde_get_xsessions();
+	xsessions = xde_get_xsessions(ctx);
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
 		char *esc1, *esc2, *cmd;

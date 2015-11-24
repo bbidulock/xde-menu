@@ -396,7 +396,7 @@ xde_wmmenu(MenuContext *ctx)
 	s = g_strdup_printf("%srestart \"%s\" %s\n", ctx->indent, "Restart", icon);
 	text = g_list_append(text, s);
 	free(icon);
-	xsessions = xde_get_xsessions();
+	xsessions = xde_get_xsessions(ctx);
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
 		char *cmd;

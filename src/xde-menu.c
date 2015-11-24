@@ -838,21 +838,20 @@ xde_xsession_value_free(gpointer filename)
 }
 
 static GHashTable *
-xde_find_xsessions(void)
+xde_find_xsessions(MenuContext *ctx)
 {
 	char **xdg_dirs, **dirs;
 	int i, n = 0;
 	static const char *suffix = ".desktop";
 	static const int suflen = 8;
-	static GHashTable *xsessions = NULL;
 
-	if (xsessions)
-		return (xsessions);
+	if (ctx->xsessions)
+		return (ctx->xsessions);
 
 	if (!(xdg_dirs = xde_get_xsession_dirs(&n)) || !n)
-		return (xsessions);
+		return (ctx->xsessions);
 
-	xsessions = g_hash_table_new_full(g_str_hash, g_str_equal,
+	ctx->xsessions = g_hash_table_new_full(g_str_hash, g_str_equal,
 					  xde_xsession_key_free, xde_xsession_value_free);
 
 	/* go through them backward */
@@ -881,14 +880,14 @@ xde_find_xsessions(void)
 			strcat(file, d->d_name);
 			key = strdup(d->d_name);
 			*strstr(key, suffix) = '\0';
-			g_hash_table_replace(xsessions, key, file);
+			g_hash_table_replace(ctx->xsessions, key, file);
 		}
 		closedir(dir);
 	}
 	for (i = 0; i < n; i++)
 		free(xdg_dirs[i]);
 	free(xdg_dirs);
-	return (xsessions);
+	return (ctx->xsessions);
 }
 
 static gint
@@ -901,12 +900,12 @@ xde_xsession_compare(gconstpointer a, gconstpointer b)
 }
 
 GList *
-xde_get_xsessions(void)
+xde_get_xsessions(MenuContext *ctx)
 {
 	GList *result = NULL;
 	GHashTable *xsessions;
 
-	if (!(xsessions = xde_find_xsessions())) {
+	if (!(xsessions = xde_find_xsessions(ctx))) {
 		EPRINTF("cannot build XSessions\n");
 		return (result);
 	}
@@ -948,7 +947,6 @@ xde_get_xsessions(void)
 		xsession->info = info;
 		result = g_list_prepend(result, xsession);
 	}
-	g_hash_table_destroy(xsessions);
 	return g_list_sort(result, &xde_xsession_compare);
 }
 
@@ -1917,7 +1915,7 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 		pixbuf = NULL;
 	}
 	free(icon);
-	xsessions = xde_get_xsessions();
+	xsessions = xde_get_xsessions(ctx);
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
 		const char *value;
@@ -2490,6 +2488,10 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 		EPRINTF("could not sync menu %s\n", options.rootmenu);
 		return;
 	}
+	if (ctx->xsessions) {
+		g_hash_table_destroy(ctx->xsessions);
+		ctx->xsessions = NULL;
+	}
 	DPRINTF("calling create!\n");
 	menu = ctx->wmm.create(ctx, options.style, NULL);
 	DPRINTF("done create!\n");
@@ -2965,9 +2967,14 @@ void
 on_refresh_selected(GtkMenuItem *item, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
+	MenuContext *ctx = xscr->context;
 
 	if (!gmenu_tree_load_sync(xscr->context->tree, NULL))
 		EPRINTF("could not sync menu %s\n", options.rootmenu);
+	if (ctx->xsessions) {
+		g_hash_table_destroy(ctx->xsessions);
+		ctx->xsessions = NULL;
+	}
 	return;
 }
 
@@ -3044,7 +3051,7 @@ on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, NULL, button, time);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
 	return;
 }
 

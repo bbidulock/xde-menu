@@ -475,7 +475,7 @@ xde_wmmenu(MenuContext *ctx)
 	s = g_strdup_printf("    %-32s  %s\n", "\"Window Managers\"", "f.title");
 	text = g_list_append(text, s);
 
-	xsessions = xde_get_xsessions();
+	xsessions = xde_get_xsessions(ctx);
 	for (xsession = xsessions; xsession; xsession = xsession->next) {
 		XdeXsession *xsess = xsession->data;
 		char *esc1, *esc2, *qname, *cmd;
