@@ -2541,6 +2541,7 @@ make_menu(int argc, char *argv[])
 		ctx->tree = tree;
 		ctx->level = 0;
 		ctx->indent = calloc(64, sizeof(*ctx->indent));
+		ctx->xsessions = NULL;
 		g_signal_connect(G_OBJECT(tree), "changed", G_CALLBACK(menu_tree_changed), ctx);
 		menu_tree_changed(tree, ctx);
 	}
