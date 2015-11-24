@@ -114,8 +114,6 @@
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-tree.h>
 
-#include <unique/unique.h>
-
 #include <pwd.h>
 
 #ifdef _GNU_SOURCE
@@ -155,9 +153,6 @@
 
 extern int saveArgc;
 extern char **saveArgv;
-
-extern int cmdArgc;
-extern char **cmdArgv;
 
 extern Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
 extern Atom _XA_XDE_THEME_NAME;

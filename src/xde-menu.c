@@ -52,9 +52,6 @@
 int saveArgc;
 char **saveArgv;
 
-int cmdArgc;
-char **cmdArgv;
-
 Atom _XA_XDE_ICON_THEME_NAME;		/* XXX */
 Atom _XA_XDE_THEME_NAME;
 Atom _XA_XDE_WM_CLASS;
@@ -2850,6 +2847,210 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 	}
 }
 
+static void
+init_wnck(XdeScreen *xscr)
+{
+	WnckScreen *wnck = xscr->wnck = wnck_screen_get(xscr->index);
+
+	g_signal_connect(G_OBJECT(wnck), "window_manager_changed",
+			 G_CALLBACK(window_manager_changed), xscr);
+
+	window_manager_changed(wnck, xscr);
+}
+
+static GdkFilterReturn selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
+static GdkFilterReturn root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
+static void update_theme(XdeScreen *xscr, Atom prop);
+static void update_icon_theme(XdeScreen *xscr, Atom prop);
+static void init_statusicon(XdeScreen *xscr);
+
+static void
+setup_x11(Bool replace)
+{
+	GdkDisplay *disp;
+	Display *dpy;
+	GdkScreen *scrn;
+	GdkWindow *root, *sel;
+	char selection[64] = { 0, };
+	Window selwin, owner;
+	XdeScreen *xscr;
+	int s, nscr;
+
+	DPRINTF("getting default GDK display\n");
+	disp = gdk_display_get_default();
+	DPRINTF("getting default display\n");
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+	DPRINTF("getting default GDK screen\n");
+	scrn = gdk_display_get_default_screen(disp);
+	DPRINTF("getting default GDK root window\n");
+	root = gdk_screen_get_root_window(scrn);
+
+	DPRINTF("creating select window\n");
+	selwin = XCreateSimpleWindow(dpy, GDK_WINDOW_XID(root), 0, 0, 1, 1, 0, 0, 0);
+
+	DPRINTF("checking for selection\n");
+	if ((owner = get_selection(replace, selwin))) {
+		if (!replace) {
+			XDestroyWindow(dpy, selwin);
+			EPRINTF("%s: instance 0x%08lx is already running\n", NAME, owner);
+			exit(EXIT_FAILURE);
+		}
+	}
+	DPRINTF("selecting inputs on 0x%08lx\n", selwin);
+	XSelectInput(dpy, selwin,
+		     StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask);
+
+	DPRINTF("getting number of screens\n");
+	nscr = gdk_display_get_n_screens(disp);
+	DPRINTF("allocating %d screen structures\n", nscr);
+	screens = calloc(nscr, sizeof(*screens));
+
+	DPRINTF("getting GDK window for 0x%08lx\n", selwin);
+	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
+	DPRINTF("adding a filter for the select window\n");
+	gdk_window_add_filter(sel, selwin_handler, screens);
+
+	DPRINTF("initializing %d screens\n", nscr);
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		xscr->index = s;
+		xscr->atom = XInternAtom(dpy, selection, False);
+		xscr->disp = disp;
+		xscr->scrn = gdk_display_get_screen(disp, s);
+		xscr->root = gdk_screen_get_root_window(xscr->scrn);
+		xscr->selwin = selwin;
+		gdk_window_add_filter(xscr->root, root_handler, xscr);
+		init_wnck(xscr);
+		update_theme(xscr, None);
+		update_icon_theme(xscr, None);
+		if (options.tray)
+			init_statusicon(xscr);
+	}
+}
+
+static void
+do_generate(int argc, char *argv[])
+{
+	if (options.display)
+		setup_x11(False);
+
+	generate_menu(argc, argv);
+}
+
+static void
+do_monitor(int argc, char *argv[], Bool replace)
+{
+	if (options.display)
+		setup_x11(replace);
+
+	make_menu(argc, argv);
+
+	if (options.display)
+		gtk_main();
+	else
+		g_main_loop_run(loop);
+}
+
+static void
+do_refresh(int argc, char *argv[])
+{
+	char selection[64] = { 0, };
+	GdkDisplay *disp;
+	Display *dpy;
+	int s, nscr;
+	Atom atom;
+	Window owner, gotone = None;
+
+	if (!options.display) {
+		EPRINTF("%s: need display to refresh instance\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XEvent ev;
+
+			ev.xclient.type = ClientMessage;
+			ev.xclient.serial = 0;
+			ev.xclient.send_event = False;
+			ev.xclient.display = dpy;
+			ev.xclient.window = RootWindow(dpy, s);
+			ev.xclient.message_type = _XA_XDE_MENU_REFRESH;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = CurrentTime;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = owner;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+
+			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+			XFlush(dpy);
+
+			gotone = owner;
+		}
+	}
+	if (!gotone) {
+		EPRINTF("%s: need running instance to refresh\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void
+do_restart(int argc, char *argv[])
+{
+	char selection[64] = { 0, };
+	GdkDisplay *disp;
+	Display *dpy;
+	int s, nscr;
+	Atom atom;
+	Window owner, gotone = None;
+
+	if (!options.display) {
+		EPRINTF("%s: need display to restart instance\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XEvent ev;
+
+			ev.xclient.type = ClientMessage;
+			ev.xclient.serial = 0;
+			ev.xclient.send_event = False;
+			ev.xclient.display = dpy;
+			ev.xclient.window = RootWindow(dpy, s);
+			ev.xclient.message_type = _XA_XDE_MENU_RESTART;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = CurrentTime;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = owner;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+
+			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+			XFlush(dpy);
+
+			gotone = owner;
+		}
+	}
+	if (!gotone) {
+		EPRINTF("%s: need running instance to restart\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+}
+
 static gboolean
 position_pointer(GtkMenu *menu, gint *x, gint *y)
 {
@@ -2929,15 +3130,96 @@ position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_
 	}
 }
 
-static void
-init_wnck(XdeScreen *xscr)
+void
+on_selection_done(GtkMenuShell *menushell, gpointer user_data)
 {
-	WnckScreen *wnck = xscr->wnck = wnck_screen_get(xscr->index);
+	gtk_main_quit();
+}
 
-	g_signal_connect(G_OBJECT(wnck), "window_manager_changed",
-			 G_CALLBACK(window_manager_changed), xscr);
+static void
+do_popmenu(int argc, char *argv[])
+{
+	char selection[64] = { 0, };
+	GdkDisplay *disp;
+	Display *dpy;
+	int s, nscr;
+	Atom atom;
+	Window owner, gotone = None;
 
-	window_manager_changed(wnck, xscr);
+	if (!options.display) {
+		EPRINTF("%s: need display to pop menu instance\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XEvent ev;
+
+			ev.xclient.type = ClientMessage;
+			ev.xclient.serial = 0;
+			ev.xclient.send_event = False;
+			ev.xclient.display = dpy;
+			ev.xclient.window = RootWindow(dpy, s);
+			ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = CurrentTime;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = owner;
+			ev.xclient.data.l[3] = options.button;
+			ev.xclient.data.l[4] = 0;
+
+			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+			XFlush(dpy);
+
+			gotone = owner;
+		}
+	}
+	if (!gotone) {
+#if 1
+		MenuContext *ctx;
+		GMenuTree *tree;
+		GtkMenu *menu;
+
+		setup_x11(FALSE);
+		/* let's just pop the menu if no other process is running */
+		if (!(tree = get_menu(argc, argv))) {
+			EPRINTF("%s: could not allocate menu tree\n", NAME);
+			exit(EXIT_FAILURE);
+		}
+		if (!(ctx = screens[0].context)) {
+			EPRINTF("no menu context for screen 0\n");
+			exit(EXIT_FAILURE);
+		}
+		ctx->stack = NULL;
+		ctx->tree = tree;
+		ctx->level = 0;
+		ctx->indent = calloc(64, sizeof(*ctx->indent));
+
+		if (!gmenu_tree_load_sync(tree, NULL)) {
+			EPRINTF("could not sync menu %s\n", options.rootmenu);
+			return;
+		}
+		DPRINTF("calling create!\n");
+		menu = ctx->gtk.create(ctx, options.style, NULL);
+		DPRINTF("done create!\n");
+		g_signal_connect(G_OBJECT(menu), "selection-done",
+				G_CALLBACK(on_selection_done), NULL);
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, NULL,
+				options.button, options.timestamp);
+		gtk_main();
+
+		/* the tricky part is exiting when it drops */
+#else
+		EPRINTF("%s: need running instance to pop menu\n", argv[0]);
+		exit(EXIT_FAILURE);
+#endif
+	}
 }
 
 static gboolean
@@ -3071,301 +3353,6 @@ init_statusicon(XdeScreen *xscr)
 			G_CALLBACK(on_button_press), xscr);
 	g_signal_connect(G_OBJECT(icon), "popup_menu",
 			G_CALLBACK(on_popup_menu), xscr);
-}
-
-static GdkFilterReturn selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
-static GdkFilterReturn root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
-static void update_theme(XdeScreen *xscr, Atom prop);
-static void update_icon_theme(XdeScreen *xscr, Atom prop);
-
-static void
-setup_x11(Bool replace)
-{
-	GdkDisplay *disp;
-	Display *dpy;
-	GdkScreen *scrn;
-	GdkWindow *root, *sel;
-	char selection[64] = { 0, };
-	Window selwin, owner;
-	XdeScreen *xscr;
-	int s, nscr;
-
-	DPRINTF("getting default GDK display\n");
-	disp = gdk_display_get_default();
-	DPRINTF("getting default display\n");
-	dpy = GDK_DISPLAY_XDISPLAY(disp);
-	DPRINTF("getting default GDK screen\n");
-	scrn = gdk_display_get_default_screen(disp);
-	DPRINTF("getting default GDK root window\n");
-	root = gdk_screen_get_root_window(scrn);
-
-	DPRINTF("creating select window\n");
-	selwin = XCreateSimpleWindow(dpy, GDK_WINDOW_XID(root), 0, 0, 1, 1, 0, 0, 0);
-
-	DPRINTF("checking for selection\n");
-	if ((owner = get_selection(replace, selwin))) {
-		if (!replace) {
-			XDestroyWindow(dpy, selwin);
-			EPRINTF("%s: instance 0x%08lx is already running\n", NAME, owner);
-			exit(EXIT_FAILURE);
-		}
-	}
-	DPRINTF("selecting inputs on 0x%08lx\n", selwin);
-	XSelectInput(dpy, selwin,
-		     StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask);
-
-	DPRINTF("getting number of screens\n");
-	nscr = gdk_display_get_n_screens(disp);
-	DPRINTF("allocating %d screen structures\n", nscr);
-	screens = calloc(nscr, sizeof(*screens));
-
-	DPRINTF("getting GDK window for 0x%08lx\n", selwin);
-	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
-	DPRINTF("adding a filter for the select window\n");
-	gdk_window_add_filter(sel, selwin_handler, screens);
-
-	DPRINTF("initializing %d screens\n", nscr);
-	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		xscr->index = s;
-		xscr->atom = XInternAtom(dpy, selection, False);
-		xscr->disp = disp;
-		xscr->scrn = gdk_display_get_screen(disp, s);
-		xscr->root = gdk_screen_get_root_window(xscr->scrn);
-		xscr->selwin = selwin;
-		gdk_window_add_filter(xscr->root, root_handler, xscr);
-		init_wnck(xscr);
-		update_theme(xscr, None);
-		update_icon_theme(xscr, None);
-		if (options.tray)
-			init_statusicon(xscr);
-	}
-}
-
-static void
-do_generate(int argc, char *argv[])
-{
-	if (options.display)
-		setup_x11(False);
-
-	generate_menu(argc, argv);
-}
-
-static void
-do_monitor(int argc, char *argv[], Bool replace)
-{
-	if (options.display)
-		setup_x11(replace);
-
-	make_menu(argc, argv);
-
-	if (options.display)
-		gtk_main();
-	else
-		g_main_loop_run(loop);
-	switch (options.command) {
-	case CommandQuit:
-		exit(EXIT_SUCCESS);
-	case CommandRestart:
-		if (execvp(cmdArgv[0], cmdArgv) == -1)
-			EPRINTF("restart failed: %s\n", strerror(errno));
-		g_strfreev(cmdArgv);
-		cmdArgv = NULL;
-		cmdArgc = 0;
-		exit(EXIT_FAILURE);
-	}
-}
-
-static void
-do_refresh(int argc, char *argv[])
-{
-	char selection[64] = { 0, };
-	GdkDisplay *disp;
-	Display *dpy;
-	int s, nscr;
-	Atom atom;
-	Window owner, gotone = None;
-
-	if (!options.display) {
-		EPRINTF("%s: need display to refresh instance\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	disp = gdk_display_get_default();
-	nscr = gdk_display_get_n_screens(disp);
-
-	dpy = GDK_DISPLAY_XDISPLAY(disp);
-
-	for (s = 0; s < nscr; s++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
-			XEvent ev;
-
-			ev.xclient.type = ClientMessage;
-			ev.xclient.serial = 0;
-			ev.xclient.send_event = False;
-			ev.xclient.display = dpy;
-			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_MENU_REFRESH;
-			ev.xclient.format = 32;
-			ev.xclient.data.l[0] = CurrentTime;
-			ev.xclient.data.l[1] = atom;
-			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = 0;
-			ev.xclient.data.l[4] = 0;
-
-			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
-			XFlush(dpy);
-
-			gotone = owner;
-		}
-	}
-	if (!gotone) {
-		EPRINTF("%s: need running instance to refresh\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-}
-
-static void
-do_restart(int argc, char *argv[])
-{
-	char selection[64] = { 0, };
-	GdkDisplay *disp;
-	Display *dpy;
-	int s, nscr;
-	Atom atom;
-	Window owner, gotone = None;
-
-	if (!options.display) {
-		EPRINTF("%s: need display to restart instance\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	disp = gdk_display_get_default();
-	nscr = gdk_display_get_n_screens(disp);
-
-	dpy = GDK_DISPLAY_XDISPLAY(disp);
-
-	for (s = 0; s < nscr; s++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
-			XEvent ev;
-
-			ev.xclient.type = ClientMessage;
-			ev.xclient.serial = 0;
-			ev.xclient.send_event = False;
-			ev.xclient.display = dpy;
-			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_MENU_RESTART;
-			ev.xclient.format = 32;
-			ev.xclient.data.l[0] = CurrentTime;
-			ev.xclient.data.l[1] = atom;
-			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = 0;
-			ev.xclient.data.l[4] = 0;
-
-			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
-			XFlush(dpy);
-
-			gotone = owner;
-		}
-	}
-	if (!gotone) {
-		EPRINTF("%s: need running instance to restart\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-}
-
-void
-on_selection_done(GtkMenuShell *menushell, gpointer user_data)
-{
-	gtk_main_quit();
-}
-
-static void
-do_popmenu(int argc, char *argv[])
-{
-	char selection[64] = { 0, };
-	GdkDisplay *disp;
-	Display *dpy;
-	int s, nscr;
-	Atom atom;
-	Window owner, gotone = None;
-
-	if (!options.display) {
-		EPRINTF("%s: need display to pop menu instance\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	disp = gdk_display_get_default();
-	nscr = gdk_display_get_n_screens(disp);
-
-	dpy = GDK_DISPLAY_XDISPLAY(disp);
-
-	for (s = 0; s < nscr; s++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
-			XEvent ev;
-
-			ev.xclient.type = ClientMessage;
-			ev.xclient.serial = 0;
-			ev.xclient.send_event = False;
-			ev.xclient.display = dpy;
-			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
-			ev.xclient.format = 32;
-			ev.xclient.data.l[0] = CurrentTime;
-			ev.xclient.data.l[1] = atom;
-			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = options.button;
-			ev.xclient.data.l[4] = 0;
-
-			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
-			XFlush(dpy);
-
-			gotone = owner;
-		}
-	}
-	if (!gotone) {
-#if 1
-		MenuContext *ctx;
-		GMenuTree *tree;
-		GtkMenu *menu;
-
-		setup_x11(FALSE);
-		/* let's just pop the menu if no other process is running */
-		if (!(tree = get_menu(argc, argv))) {
-			EPRINTF("%s: could not allocate menu tree\n", NAME);
-			exit(EXIT_FAILURE);
-		}
-		if (!(ctx = screens[0].context)) {
-			EPRINTF("no menu context for screen 0\n");
-			exit(EXIT_FAILURE);
-		}
-		ctx->stack = NULL;
-		ctx->tree = tree;
-		ctx->level = 0;
-		ctx->indent = calloc(64, sizeof(*ctx->indent));
-
-		if (!gmenu_tree_load_sync(tree, NULL)) {
-			EPRINTF("could not sync menu %s\n", options.rootmenu);
-			return;
-		}
-		DPRINTF("calling create!\n");
-		menu = ctx->gtk.create(ctx, options.style, NULL);
-		DPRINTF("done create!\n");
-		g_signal_connect(G_OBJECT(menu), "selection-done",
-				G_CALLBACK(on_selection_done), NULL);
-		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, NULL,
-				options.button, options.timestamp);
-		gtk_main();
-
-		/* the tricky part is exiting when it drops */
-#else
-		EPRINTF("%s: need running instance to pop menu\n", argv[0]);
-		exit(EXIT_FAILURE);
-#endif
-	}
 }
 
 static void
@@ -4122,145 +4109,6 @@ init_smclient(void)
 	g_io_add_watch(chan, mask, on_ifd_watch, smcConn);
 }
 
-static char **
-get_msg_argv(const char *data, int len, int *count)
-{
-	char **argv;
-	int argc, i;
-
-	if (!data) {
-		argc = saveArgc;
-		argv = calloc(argc + 1, sizeof(*argv));
-		for (i = 0; i < argc; argv[i] = g_strdup(saveArgv[i]), i++) ;
-	} else {
-		const char *p, *e;
-
-		p = data;
-		e = data + len;
-		for (argc = 0; p < e; p += strlen(p) + 1, argc++) ;
-		argv = calloc(argc + 1, sizeof(*argv));
-		for (i = 0, p = data; p < e; argv[i++] = g_strdup(p), p += strlen(p) + 1) ;
-	}
-	*count = argc;
-	return (argv);
-}
-
-static UniqueResponse
-on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, guint time,
-		    gpointer user_data)
-{
-	Command command;
-	GdkScreen *scrn;
-	const gchar *startup_id;
-	guint workspace, screen = 0;
-	const char *data = NULL;
-	gsize len = 0;
-
-	command = cmd;
-	OPRINTF("%d command received\n", command);
-	if ((scrn = unique_message_data_get_screen(unique)))
-		screen = gdk_screen_get_number(scrn);
-	OPRINTF("\tscreen is %u\n", screen);
-	workspace = unique_message_data_get_workspace(unique);
-	OPRINTF("\tworkspace is %u\n", workspace);
-	startup_id = unique_message_data_get_startup_id(unique);
-	OPRINTF("\tstartup id is %s\n", startup_id);
-
-	data = (const char *) unique_message_data_get(msg_data, &len);
-	cmdArgv = get_msg_argv(data, len, &cmdArgc);
-
-	switch (options.command = command) {
-	case CommandDefault:
-	case CommandMenugen:
-	default:
-		break;
-	case CommandMonitor:
-		break;
-	case CommandQuit:
-	case CommandRestart:
-	case CommmandReplace:
-		/* just quit */
-		if (options.display)
-			gtk_main_quit();
-		else
-			g_main_loop_quit(loop);
-		return (UNIQUE_RESPONSE_OK);
-	case CommandPopMenu:
-		/* reparse args and pop menu */
-		return (UNIQUE_RESPONSE_OK);
-	case CommandRefresh:
-		/* reparse args and refresh menu */
-		return (UNIQUE_RESPONSE_OK);
-	}
-	return (UNIQUE_RESPONSE_PASSTHROUGH);
-}
-
-
-static void
-init_unique(int argc, char *argv[])
-{
-	GtkWidget *window;
-	UniqueApp *unique;
-
-	unique = unique_app_new_with_commands("com.unexicon.xde-menu",
-					      getenv("DESKTOP_STARTUP_ID"),
-					      "xde-menugen", CommandMenugen,
-					      "xde-menu-popmenu", CommandPopMenu,
-					      "xde-menu-monitor", CommandMonitor,
-					      "xde-menu-replace", CommandReplace,
-					      "xde-menu-refresh", CommandRefresh,
-					      "xde-menu-restart", CommandRestart,
-					      "xde-menu-quit", CommandQuit, NULL);
-
-	if (unique_app_is_running(unique)) {
-		UniqueMessageData *msg_data;
-		UniqueResponse res;
-		char *data, *p;
-		int i, len;
-
-		switch (options.command) {
-		case CommandMonitor:
-			EPRINTF("Another instance of xde-menu is already running.\n");
-			exit(EXIT_FAILURE);
-		case CommandMenugen:
-			return;
-		default:
-			break;
-		}
-		msg_data = unique_message_data_new();
-		for (len = 0, i = 0; i < argc; i++, len += strlen(argv[i]) + 1) ;
-		data = calloc(len, sizeof(*data));
-		for (p = data, i = 0; i < argc; i++, strcpy(p, argv[i]), p += strlen(p) + 1) ;
-		unique_message_data_set(unique, (guchar *) data, len);
-		res = unique_app_send_message(unique, options.command, msg_data);
-		unique_message_data_free(msg_data);
-		switch (res) {
-		case UNIQUE_RESPONSE_INVALID:
-			EPRINTF("internal error code response\n");
-			exit(EXIT_FAILURE);
-		case UNIQUE_RESPONSE_PASSTHROUGH:
-			EPRINTF("the command was not handled\n");
-			exit(EXIT_FAILURE);
-		case UNIQUE_RESPONSE_OK:
-			DPRINTF("the command was successfully executed\n");
-			exit(EXIT_SUCCESS);
-		case UNIQUE_RESPONSE_CANCEL:
-			DPRINTF("the command was cancelled by the user\n");
-			exit(EXIT_SUCCESS);
-		case UNIQUE_RESPONSE_FAIL:
-			EPRINTF("the command failed due to an IPC failure\n");
-			exit(EXIT_FAILURE);
-		}
-		EPRINTF("invalid response code\n");
-		exit(EXIT_FAILURE);
-	}
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	unique_app_watch_window(unique, GTK_WINDOW(window));
-	g_signal_connect(G_OBJECT(unique), "message_received",
-			 G_CALLBACK(on_message_received), NULL);
-	return;
-}
-
 /*
  *  This startup function starts up the X11 protocol connection and initializes GTK+.  Note that the
  *  program can still be run from a console, in which case the "DISPLAY" environment variables should
@@ -4299,8 +4147,6 @@ startup(int argc, char *argv[])
 	free(file);
 
 	gtk_init(&argc, &argv);
-
-	init_unique(argc, argv);
 
 	disp = gdk_display_get_default();
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
