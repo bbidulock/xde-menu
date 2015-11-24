@@ -3174,12 +3174,16 @@ do_monitor(int argc, char *argv[], Bool replace)
 	switch (options.command) {
 	case CommandQuit:
 		exit(EXIT_SUCCESS);
-	case CommandRestart:
+	case CommandReplace:
 		if (execvp(cmdArgv[0], cmdArgv) == -1)
-			EPRINTF("restart failed: %s\n", strerror(errno));
+			EPRINTF("replace failed: %s\n", strerror(errno));
 		g_strfreev(cmdArgv);
 		cmdArgv = NULL;
 		cmdArgc = 0;
+		exit(EXIT_FAILURE);
+	case CommandRestart:
+		if (execvp(saveArgv[0], saveArgv) == -1)
+			EPRINTF("restart failed: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	default:
 		break;
@@ -4143,14 +4147,22 @@ get_msg_argv(const char *data, int len, int *count)
 		argv = calloc(argc + 1, sizeof(*argv));
 		for (i = 0; i < argc; argv[i] = g_strdup(saveArgv[i]), i++) ;
 	} else {
-		const char *p, *e;
+		char *copy, *p, *e;
 
-		p = data;
-		e = data + len;
-		for (argc = 0; p < e; p += strlen(p) + 1, argc++) ;
+		copy = calloc(len + 1, sizeof(*copy));
+		memcpy(copy, data, len);
+		p = copy;
+		e = copy + len;
+		for (argc = 0; p < e; p = strchrnul(p, '\1'), *p++ = '\0', argc++) ;
 		argv = calloc(argc + 1, sizeof(*argv));
-		for (i = 0, p = data; p < e; argv[i++] = g_strdup(p), p += strlen(p) + 1) ;
+		DPRINTF("Arguments are:\n");
+		for (i = 0, p = copy; p < e; argv[i] = g_strdup(p), i++, p += strlen(p) + 1)
+			DPRINTF("\targument %d: '%s'\n", i, p);
+		free(copy);
 	}
+	DPRINTF("Arguments are:\n");
+	for (i = 0; i < argc; i++)
+		DPRINTF("\targument %d: '%s'\n", i, argv[i]);
 	*count = argc;
 	return (argv);
 }
@@ -4177,6 +4189,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 	OPRINTF("\tstartup id is %s\n", startup_id);
 
 	data = (const char *) unique_message_data_get(msg_data, &len);
+	DPRINTF("Received message length is %zd\n", len);
 	cmdArgv = get_msg_argv(data, len, &cmdArgc);
 
 	switch (options.command = command) {
@@ -4207,7 +4220,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 
 
 static void
-init_unique(int argc, char *argv[])
+init_unique(int argc, char *argv[], Command command)
 {
 	GtkWidget *window;
 	UniqueApp *unique;
@@ -4228,21 +4241,34 @@ init_unique(int argc, char *argv[])
 		char *data, *p;
 		int i, len;
 
-		switch (options.command) {
+		switch (command) {
 		case CommandMonitor:
 			EPRINTF("Another instance of xde-menu is already running.\n");
 			exit(EXIT_FAILURE);
 		case CommandMenugen:
+		case CommandHelp:
+		case CommandVersion:
+		case CommandCopying:
 			return;
-		default:
+		case CommandQuit:
+		case CommandPopMenu:
+		case CommandRefresh:
+		case CommandRestart:
+		case CommandReplace:
 			break;
+		case CommandDefault:
+		default:
+			EPRINTF("Illegal command %d\n", command);
+			exit(EXIT_FAILURE);
 		}
 		msg_data = unique_message_data_new();
-		for (len = 0, i = 0; i < argc; i++, len += strlen(argv[i]) + 1) ;
-		data = calloc(len, sizeof(*data));
-		for (p = data, i = 0; i < argc; i++, strcpy(p, argv[i]), p += strlen(p) + 1) ;
+		for (len = 0, i = 0; i < argc; len += strlen(argv[i]) + 1, i++) ;
+		data = calloc(len + 1, sizeof(*data));
+		for (p = data, i = 0; i < argc; strcpy(p, argv[i++]), p += strlen(p), *p++ = '\1') ;
+		DPRINTF("Sent message length was %d\n", len);
+		DPRINTF("Command ID is %d\n", command);
 		unique_message_data_set(msg_data, (guchar *) data, len);
-		res = unique_app_send_message(unique, options.command, msg_data);
+		res = unique_app_send_message(unique, command, msg_data);
 		unique_message_data_free(msg_data);
 		switch (res) {
 		case UNIQUE_RESPONSE_INVALID:
@@ -4277,7 +4303,7 @@ init_unique(int argc, char *argv[])
  *  not be defined: in which case, we will not start up X11 at all.
  */
 static void
-startup(int argc, char *argv[])
+startup(int argc, char *argv[], Command command)
 {
 	static const char *suffix = "/.gtkrc-2.0.xde";
 	const char *home;
@@ -4310,7 +4336,7 @@ startup(int argc, char *argv[])
 
 	gtk_init(&argc, &argv);
 
-	init_unique(argc, argv);
+	init_unique(argc, argv, command);
 
 	disp = gdk_display_get_default();
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
@@ -5332,7 +5358,7 @@ main(int argc, char *argv[])
 			{"menugen",	no_argument,		NULL,	'G'},
 			{"popmenu",	no_argument,		NULL,	'P'},
 			{"monitor",	no_argument,		NULL,	'm'},
-			{"refresh",	no_argument,		NULL,	'F'},
+			{"refresh",	no_argument,		NULL,	'E'},
 			{"restart",	no_argument,		NULL,	'S'},
 			{"replace",	no_argument,		NULL,	'R'},
 			{"quit",	no_argument,		NULL,	'q'},
@@ -5527,50 +5553,64 @@ main(int argc, char *argv[])
 		case 'G':	/* -G, --menugen */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
+			if (command == CommandDefault) {
 				command = CommandMenugen;
+				DPRINTF("Setting command to CommandMenugen\n");
+			}
 			defaults.command = options.command = CommandMenugen;
 			break;
 		case 'P':	/* -P, --popmenu */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
+			if (command == CommandDefault) {
 				command = CommandPopMenu;
+				DPRINTF("Setting command to CommandPopMenu\n");
+			}
 			defaults.command = options.command = CommandPopMenu;
 			break;
 		case 'm':	/* -m, --monitor */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
+			if (command == CommandDefault) {
 				command = CommandMonitor;
+				DPRINTF("Setting command to CommandMonitor\n");
+			}
 			defaults.command = options.command = CommandMonitor;
 			break;
 		case 'R':	/* -R, --replace */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandReplace\n");
 				command = CommandReplace;
+			}
 			defaults.command = options.command = CommandReplace;
 			break;
 		case 'E':	/* -F, --refresh */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandRefresh\n");
 				command = CommandRefresh;
+			}
 			defaults.command = options.command = CommandRefresh;
 			break;
 		case 'S':	/* -S, --restart */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
-				command = CommandRefresh;
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandRestart\n");
+				command = CommandRestart;
+			}
 			defaults.command = options.command = CommandRestart;
 			break;
 		case 'q':	/* -q, --quit */
 			if (options.command != CommandDefault)
 				goto bad_option;
-			if (command == CommandDefault)
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandQuit\n");
 				command = CommandQuit;
+			}
 			defaults.command = options.command = CommandQuit;
 			break;
 
@@ -5598,12 +5638,15 @@ main(int argc, char *argv[])
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
+			DPRINTF("Setting command to CommandHelp\n");
 			command = CommandHelp;
 			break;
 		case 'V':
+			DPRINTF("Setting command to CommandVersion\n");
 			command = CommandVersion;
 			break;
 		case 'C':	/* -C, --copying */
+			DPRINTF("Setting command to CommandCopying\n");
 			command = CommandCopying;
 			break;
 		case '?':
@@ -5643,12 +5686,13 @@ main(int argc, char *argv[])
 		usage(argc, argv);
 		exit(EXIT_SYNTAXERR);
 	}
-	startup(argc, argv);
+	startup(argc, argv, command);
 	get_defaults();
 
 	switch (command) {
 	default:
 	case CommandDefault:
+		defaults.command = options.command = CommandMenugen;
 	case CommandMenugen:
 		DPRINTF("%s: just generating window manager root menu\n", argv[0]);
 		do_generate(argc, argv);
