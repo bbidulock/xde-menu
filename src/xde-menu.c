@@ -88,6 +88,7 @@ Atom _XA_MANAGER;
 Atom _XA_XDE_MENU_REFRESH;
 Atom _XA_XDE_MENU_RESTART;
 Atom _XA_XDE_MENU_POPMENU;
+Atom _XA_XDE_MENU_REQUEST;
 
 Options current = {
 	.debug = 0,
@@ -3294,6 +3295,7 @@ do_refresh(int argc, char *argv[])
 
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
 
+#if 1
 	for (s = 0; s < nscr; s++) {
 		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
 		atom = XInternAtom(dpy, selection, False);
@@ -3323,6 +3325,18 @@ do_refresh(int argc, char *argv[])
 		EPRINTF("%s: need running instance to refresh\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
+#else
+	XdeScreen *xscr;
+
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+			XConvertSelection(dpy, atom, _XA_XDE_MENU_REFRESH,
+					_XA_XDE_MENU_REQUEST, xscr->selwin, CurrentTime);
+		}
+	}
+#endif
 }
 
 static void
@@ -4576,6 +4590,9 @@ startup(int argc, char *argv[], Command command)
 
 	atom = gdk_atom_intern_static_string("_XDE_MENU_POPMENU");
 	_XA_XDE_MENU_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
+	atom = gdk_atom_intern_static_string("_XDE_MENU_REQUEST");
+	_XA_XDE_MENU_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
