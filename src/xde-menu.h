@@ -221,11 +221,13 @@ typedef enum {
 } Which;
 
 typedef enum {
-	XdePositionDefault,
-	XdePositionPointer,
-	XdePositionCenter,
-	XdePositionTopLeft,
-} Position;
+	PositionDefault,                /* default position */
+	PositionPointer,                /* position at pointer */
+	PositionCenter,                 /* center of monitor */
+	PositionTopLeft,                /* top left of work area */
+	PositionBottomRight,		/* bottom right of work area */
+	PositionSpecified,		/* specified position (X geometry) */
+} MenuPosition;
 
 typedef struct {
 	int debug;
@@ -257,7 +259,12 @@ typedef struct {
 	unsigned button;
 	char *keypress;
 	unsigned long int timestamp;
-	Position where;
+	MenuPosition where;
+	struct {
+		int value;
+		int sign;
+	} x, y;
+	unsigned int w, h;
 	int screen;
 	Bool tray;
 	Bool generate;

@@ -137,7 +137,7 @@ Options defaults = {
 	.button = 3,
 	.keypress = NULL,
 	.timestamp = 0,
-	.where = XdePositionDefault,
+	.where = PositionDefault,
 	.screen = 0,
 	.tray = True,
 	.generate = True,
@@ -2854,21 +2854,80 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 }
 
 static gboolean
-position_pointer(GtkMenu *menu, gint *x, gint *y)
+position_pointer(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 {
 	GdkDisplay *disp;
 
 	DPRINT();
 	disp = gtk_widget_get_display(GTK_WIDGET(menu));
-
 	gdk_display_get_pointer(disp, NULL, x, y, NULL);
+	return TRUE;
+}
+
+static gboolean
+position_center_monitor(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+{
+	GdkDisplay *disp;
+	GdkScreen *scr;
+	GdkRectangle rect;
+	gint px, py, nmon;
+	GtkRequisition req;
+
+	DPRINT();
+	disp = gtk_widget_get_display(GTK_WIDGET(menu));
+	gdk_display_get_pointer(disp, &scr, &px, &py, NULL);
+	nmon = gdk_screen_get_monitor_at_point(scr, px, py);
+	gdk_screen_get_monitor_geometry(scr, nmon, &rect);
+	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
+
+	*x = rect.x + (rect.width - req.width) / 2;
+	*y = rect.y + (rect.height - req.height) / 2;
 
 	return TRUE;
 }
 
 static gboolean
-position_center(GtkMenu *menu, gint *x, gint *y)
+position_topleft_workarea(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 {
+#if 1
+	WnckWorkspace *wkspc;
+
+	wkspc = wnck_screen_get_active_workspace(scrn);
+	*x = wnck_workspace_get_viewport_x(wkspc);
+	*y = wnck_workspace_get_viewport_y(wkspc);
+#else
+	GdkDisplay *disp;
+	GdkScreen *scr;
+	GdkRectangle rect;
+	gint px, py, nmon;
+
+	DPRINT();
+	disp = gtk_widget_get_display(GTK_WIDGET(menu));
+	gdk_display_get_pointer(disp, &scr, &px, &py, NULL);
+	nmon = gdk_screen_get_monitor_at_point(scr, px, py);
+	gdk_screen_get_monitor_geometry(scr, nmon, &rect);
+
+	*x = rect.x;
+	*y = rect.y;
+#endif
+
+	return TRUE;
+}
+
+static gboolean
+position_bottomright_workarea(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+{
+#if 1
+	WnckWorkspace *wkspc;
+	GtkRequisition req;
+
+	wkspc = wnck_screen_get_active_workspace(scrn);
+	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
+	*x = wnck_workspace_get_viewport_x(wkspc) +
+		wnck_workspace_get_width(wkspc) - req.width;
+	*y = wnck_workspace_get_viewport_y(wkspc) +
+		wnck_workspace_get_height(wkspc) - req.height;
+#else
 	GdkDisplay *disp;
 	GdkScreen *scrn;
 	GdkRectangle rect;
@@ -2882,52 +2941,84 @@ position_center(GtkMenu *menu, gint *x, gint *y)
 	gdk_screen_get_monitor_geometry(scrn, nmon, &rect);
 	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
 
-	*x = rect.x + (rect.width - req.width) / 2;
-	*y = rect.y + (rect.height - req.height) / 2;
+	*x = rect.x + rect.width - req.width;
+	*y = rect.y + rect.height - req.height;
+#endif
 
 	return TRUE;
 }
 
 static gboolean
-position_topleft(GtkMenu *menu, gint *x, gint *y)
+position_specified(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 {
-	GdkDisplay *disp;
-	GdkScreen *scrn;
-	GdkRectangle rect;
-	gint px, py, nmon;
+	int x1, y1, sw, sh;
 
-	DPRINT();
-	disp = gtk_widget_get_display(GTK_WIDGET(menu));
-	gdk_display_get_pointer(disp, &scrn, &px, &py, NULL);
-	nmon = gdk_screen_get_monitor_at_point(scrn, px, py);
-	gdk_screen_get_monitor_geometry(scrn, nmon, &rect);
+	if (!scrn)
+		return FALSE;
 
-	*x = rect.x;
-	*y = rect.y;
+	sw = wnck_screen_get_width(scrn);
+	sh = wnck_screen_get_height(scrn);
 
+	x1 = (options.x.sign < 0) ? sw - options.x.value : options.x.value;
+	y1 = (options.y.sign < 0) ? sh - options.y.value : options.y.value;
+
+	if (!options.w && !options.h) {
+		*x = x1;
+		*y = y1;
+	} else {
+		GtkRequisition req;
+		int x2, y2;
+
+		gtk_widget_size_request(GTK_WIDGET(menu), &req);
+		x2 = x1 + options.w;
+		y2 = y1 + options.h;
+
+		if (x1 + req.width < sw)
+			*x = x1;
+		else if (x2 - req.width > 0)
+			*x = x2 - req.width;
+		else
+			*x = 0;
+
+		if (y2 + req.height < sh)
+			*y = y2;
+		else if (y1 - req.height > 0)
+			*y = y1 - req.height;
+		else
+			*y = 0;
+	}
 	return TRUE;
 }
 
 static void
 position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
 {
+	WnckScreen *scrn = user_data;
+
+	*push_in = FALSE;
+	if (options.button) {
+		position_pointer(menu, scrn, x, y);
+		return;
+	}
 	switch (options.where) {
-	case XdePositionDefault:
+	case PositionDefault:
 	default:
-		if (options.button) {
-			position_pointer(menu, x, y);
-			break;
-		}
-		position_center(menu, x, y);
+		position_center_monitor(menu, scrn, x, y);
 		break;
-	case XdePositionPointer:
-		position_pointer(menu, x, y);
+	case PositionPointer:
+		position_pointer(menu, scrn, x, y);
 		break;
-	case XdePositionCenter:
-		position_center(menu, x, y);
+	case PositionCenter:
+		position_center_monitor(menu, scrn, x, y);
 		break;
-	case XdePositionTopLeft:
-		position_topleft(menu, x, y);
+	case PositionTopLeft:
+		position_topleft_workarea(menu, scrn, x, y);
+		break;
+	case PositionBottomRight:
+		position_bottomright_workarea(menu, scrn, x, y);
+		break;
+	case PositionSpecified:
+		position_specified(menu, scrn, x, y);
 		break;
 	}
 }
@@ -2960,22 +3051,18 @@ on_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 	DPRINTF("calling create!\n");
 	menu = xscr->context->gtk.create(xscr->context, options.style, NULL);
 	DPRINTF("done create!\n");
-	gtk_menu_popup(menu, NULL, NULL, position_menu, NULL, ev->button, ev->time);
+	gtk_menu_popup(menu, NULL, NULL, gtk_status_icon_position_menu, icon, ev->button, ev->time);
 	return GTK_EVENT_STOP;
 }
+
+static void menu_refresh(XdeScreen *xscr);
 
 void
 on_refresh_selected(GtkMenuItem *item, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
-	MenuContext *ctx = xscr->context;
 
-	if (!gmenu_tree_load_sync(xscr->context->tree, NULL))
-		EPRINTF("could not sync menu %s\n", options.rootmenu);
-	if (ctx->xsessions) {
-		g_hash_table_destroy(ctx->xsessions);
-		ctx->xsessions = NULL;
-	}
+	menu_refresh(xscr);
 	return;
 }
 
@@ -3159,6 +3246,9 @@ do_generate(int argc, char *argv[])
 	generate_menu(argc, argv);
 }
 
+static void menu_replace(void);
+static void menu_restart(void);
+
 static void
 do_monitor(int argc, char *argv[], Bool replace)
 {
@@ -3175,15 +3265,10 @@ do_monitor(int argc, char *argv[], Bool replace)
 	case CommandQuit:
 		exit(EXIT_SUCCESS);
 	case CommandReplace:
-		if (execvp(cmdArgv[0], cmdArgv) == -1)
-			EPRINTF("replace failed: %s\n", strerror(errno));
-		g_strfreev(cmdArgv);
-		cmdArgv = NULL;
-		cmdArgc = 0;
+		menu_replace();
 		exit(EXIT_FAILURE);
 	case CommandRestart:
-		if (execvp(saveArgv[0], saveArgv) == -1)
-			EPRINTF("restart failed: %s\n", strerror(errno));
+		menu_restart();
 		exit(EXIT_FAILURE);
 	default:
 		break;
@@ -3345,6 +3430,7 @@ do_popmenu(int argc, char *argv[])
 		MenuContext *ctx;
 		GMenuTree *tree;
 		GtkMenu *menu;
+		XdeScreen *xscr;
 
 		setup_x11(FALSE);
 		/* let's just pop the menu if no other process is running */
@@ -3352,7 +3438,8 @@ do_popmenu(int argc, char *argv[])
 			EPRINTF("%s: could not allocate menu tree\n", NAME);
 			exit(EXIT_FAILURE);
 		}
-		if (!(ctx = screens[0].context)) {
+		xscr = screens + 0;
+		if (!(ctx = xscr->context)) {
 			EPRINTF("no menu context for screen 0\n");
 			exit(EXIT_FAILURE);
 		}
@@ -3370,7 +3457,7 @@ do_popmenu(int argc, char *argv[])
 		DPRINTF("done create!\n");
 		g_signal_connect(G_OBJECT(menu), "selection-done",
 				G_CALLBACK(on_selection_done), NULL);
-		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, NULL,
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xscr->wnck,
 				options.button, options.timestamp);
 		gtk_main();
 
@@ -3517,13 +3604,13 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 }
 
 static void
-menu_refresh(XEvent *xev)
+menu_refresh(XdeScreen *xscr)
 {
 	/* asked to refresh the menu (as though there was a change) */
 	MenuContext *ctx;
 	GMenuTree *tree;
 
-	if (!(ctx = screens[0].context)) {
+	if (!(ctx = xscr->context)) {
 		EPRINTF("no menu context for screen 0\n");
 		return;
 	}
@@ -3536,7 +3623,16 @@ menu_refresh(XEvent *xev)
 }
 
 static void
-menu_restart(XEvent *xev)
+menu_replace(void)
+{
+	DPRINTF("%s: replacing the menus\n", NAME);
+	if (execvp(cmdArgv[0], cmdArgv) == -1)
+		EPRINTF("%s: %s\n", cmdArgv[0], strerror(errno));
+	return;
+}
+
+static void
+menu_restart(void)
 {
 	/* asked to restart the menu (as though we were re-executed) */
 	char **argv;
@@ -3553,12 +3649,39 @@ menu_restart(XEvent *xev)
 }
 
 static void
-menu_popmenu(XEvent *xev)
+menu_popmenu(XdeScreen *xscr)
 {
-	int button = xev->xclient.data.l[3];
+	MenuContext *ctx;
+	GMenuTree *tree;
+	GtkMenu *menu;
+	int screen = 0;
 
-	/* asked to popup the GTK+ menu */
-	DPRINTF("%s: popping up the menu for button %d\n", NAME, button);
+	if (!(ctx = xscr->context)) {
+		if (xscr->scrn)
+			screen = gdk_screen_get_number(xscr->scrn);
+		EPRINTF("no menu context for screen %d\n", screen);
+		return;
+	}
+	if (!(tree = ctx->tree)) {
+		if (xscr->scrn)
+			screen = gdk_screen_get_number(xscr->scrn);
+		EPRINTF("no menu tree for context for screen %d\n", screen);
+		return;
+	}
+	DPRINTF("%s: poping the GTK+ menu for button %d\n", NAME, options.button);
+	if (!gmenu_tree_load_sync(tree, NULL)) {
+		EPRINTF("could not sync menu %s\n", options.rootmenu);
+		return;
+	}
+	DPRINTF("calling create!\n");
+	if (!(menu = ctx->gtk.create(ctx, options.style, NULL))) {
+		EPRINTF("could not create menu for style %u\n", options.style);
+		return;
+	}
+	DPRINTF("done create!\n");
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xscr->wnck,
+		       options.button, options.timestamp);
+	return;
 }
 
 static GdkFilterReturn
@@ -3633,13 +3756,14 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 		update_icon_theme(xscr, xev->xclient.message_type);
 		return GDK_FILTER_REMOVE;
 	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_REFRESH) {
-		menu_refresh(xev);
+		menu_refresh(xscr);
 		return GDK_FILTER_REMOVE;
 	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_RESTART) {
-		menu_restart(xev);
+		menu_restart();
 		return GDK_FILTER_REMOVE;
 	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_POPMENU) {
-		menu_popmenu(xev);
+		options.button = xev->xclient.data.l[3];
+		menu_popmenu(xscr);
 		return GDK_FILTER_REMOVE;
 	}
 	return GDK_FILTER_CONTINUE;
@@ -4167,6 +4291,8 @@ get_msg_argv(const char *data, int len, int *count)
 	return (argv);
 }
 
+static Command parse_args(int argc, char *argv[]);
+
 static UniqueResponse
 on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, guint time,
 		    gpointer user_data)
@@ -4177,6 +4303,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 	guint workspace, screen = 0;
 	const char *data = NULL;
 	gsize len = 0;
+	XdeScreen *xscr;
 
 	command = cmd;
 	OPRINTF("%d command received\n", command);
@@ -4192,27 +4319,42 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 	DPRINTF("Received message length is %zd\n", len);
 	cmdArgv = get_msg_argv(data, len, &cmdArgc);
 
+	xscr = screens + screen;
+
 	switch (options.command = command) {
 	case CommandDefault:
+		EPRINTF("Unexpected command: CommandDefault\n");
+		break;
 	case CommandMenugen:
-	default:
+		EPRINTF("Unexpected command: CommandMenugen\n");
 		break;
 	case CommandMonitor:
+		EPRINTF("Unexpected command: CommandMonitor\n");
+		break;
+	case CommandHelp:
+		EPRINTF("Unexpected command: CommandHelp\n");
+		break;
+	case CommandVersion:
+		EPRINTF("Unexpected command: CommandVersion\n");
+		break;
+	case CommandCopying:
+		EPRINTF("Unexpected command: CommandCopying\n");
 		break;
 	case CommandQuit:
 	case CommandRestart:
 	case CommandReplace:
-		/* just quit */
 		if (options.display)
 			gtk_main_quit();
 		else
 			g_main_loop_quit(loop);
 		return (UNIQUE_RESPONSE_OK);
 	case CommandPopMenu:
-		/* reparse args and pop menu */
+		parse_args(cmdArgc, cmdArgv);
+		menu_popmenu(xscr);
 		return (UNIQUE_RESPONSE_OK);
 	case CommandRefresh:
-		/* reparse args and refresh menu */
+		parse_args(cmdArgc, cmdArgv);
+		menu_refresh(xscr);
 		return (UNIQUE_RESPONSE_OK);
 	}
 	return (UNIQUE_RESPONSE_PASSTHROUGH);
@@ -4552,19 +4694,28 @@ show_style(Style style)
 }
 
 const char *
-show_where(Position position)
+show_where(MenuPosition where)
 {
-	switch (position) {
-	case XdePositionDefault:
+	static char position[128] = { 0, };
+
+	switch (where) {
+	case PositionDefault:
 		return ("default");
-	case XdePositionPointer:
+	case PositionPointer:
 		return ("pointer");
-	case XdePositionCenter:
+	case PositionCenter:
 		return ("center");
-	case XdePositionTopLeft:
+	case PositionTopLeft:
 		return ("topleft");
+	case PositionBottomRight:
+		return ("bottomright");
+	case PositionSpecified:
+		snprintf(position, sizeof(position), "%ux%u%c%d%c%d", options.w, options.h,
+			 (options.x.sign < 0) ? '-' : '+', options.x.value,
+			 (options.y.sign < 0) ? '-' : '+', options.y.value);
+		return (position);
 	}
-	return ("(unknown)");
+	return NULL;
 }
 
 static void
@@ -5289,20 +5440,11 @@ get_defaults()
 	get_default_theme();
 }
 
-int
-main(int argc, char *argv[])
+static Command
+parse_args(int argc, char *argv[])
 {
 	Command command = CommandDefault;
-	char *loc, *p;
-
-	if ((loc = setlocale(LC_ALL, ""))) {
-		free(options.locale);
-		defaults.locale = options.locale = strdup(loc);
-	}
-	set_defaults();
-
-	saveArgc = argc;
-	saveArgv = argv;
+	char *p;
 
 	if ((p = strstr(argv[0], "-menugen")) && !p[8])
 		defaults.command = options.command = CommandMenugen;
@@ -5320,7 +5462,8 @@ main(int argc, char *argv[])
 		defaults.command = options.command = CommandQuit;
 
 	while (1) {
-		int c, val;
+		int c, val, len;
+		char *endptr = NULL;
 
 #ifdef _GNU_SOURCE
 		int option_index = 0;
@@ -5387,8 +5530,430 @@ main(int argc, char *argv[])
 		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
 #endif
 		if (c == -1) {
-			if (options.debug)
-				fprintf(stderr, "%s: done options processing\n", argv[0]);
+			DPRINTF("%s: done options processing\n", argv[0]);
+			break;
+		}
+		switch (c) {
+		case 0:
+			goto bad_usage;
+
+		case 'w':	/* --wmname, -w WMNAME */
+			free(options.wmname);
+			defaults.wmname = options.wmname = strdup(optarg);
+			break;
+		case 'f':	/* --format, -f FORMAT */
+			free(options.format);
+			defaults.format = options.format = strdup(optarg);
+			break;
+		case 'F':	/* -F, --fullmenu */
+			defaults.style = options.style = StyleFullmenu;
+			break;
+		case 'N':	/* -N, --nofullmenu */
+			defaults.style = options.style = StyleAppmenu;
+			break;
+		case 'd':	/* -d, --desktop DESKTOP */
+			free(options.desktop);
+			defaults.desktop = options.desktop = strdup(optarg);
+			break;
+		case 'c':	/* -c, --charset CHARSET */
+			free(options.charset);
+			defaults.charset = options.charset = strdup(optarg);
+			break;
+		case 'l':	/* -l, --language LANGUAGE */
+			free(options.language);
+			defaults.language = options.language = strdup(optarg);
+			break;
+		case 'r':	/* -r, --root-menu MENU */
+			free(options.rootmenu);
+			defaults.rootmenu = options.rootmenu = strdup(optarg);
+			break;
+		case 'o':	/* -o, --output [OUTPUT] */
+			defaults.fileout = options.fileout = True;
+			if (optarg != NULL) {
+				free(options.filename);
+				defaults.filename = options.filename = strdup(optarg);
+			}
+			break;
+		case 'n':	/* -n, --noicons */
+			defaults.noicons = options.noicons = True;
+			break;
+		case 't':	/* -t, --theme THEME */
+			free(options.theme);
+			defaults.theme = options.theme = strdup(optarg);
+			break;
+		case 'L':	/* -L, --launch */
+			defaults.launch = options.launch = True;
+			break;
+		case '0':	/* -0, --nolaunch */
+			defaults.launch = options.launch = False;
+			break;
+		case 's':	/* -s, --style STYLE */
+			if (!strncmp("fullmenu", optarg, strlen(optarg))) {
+				defaults.style = options.style = StyleFullmenu;
+				break;
+			}
+			if (!strncmp("appmenu", optarg, strlen(optarg))) {
+				defaults.style = options.style = StyleAppmenu;
+				break;
+			}
+			if (!strncmp("submenu", optarg, strlen(optarg))) {
+				defaults.style = options.style = StyleSubmenu;
+				break;
+			}
+			if (!strncmp("entries", optarg, strlen(optarg))) {
+				defaults.style = options.style = StyleEntries;
+				break;
+			}
+			goto bad_option;
+		case 'M':	/* -M, --menu MENUS */
+			free(options.menu);
+			defaults.menu = options.menu = strdup(optarg);
+			break;
+
+		case 'b':	/* -b, --button [BUTTON] */
+			if (options.command != CommandPopMenu)
+				goto bad_option;
+			if (!optarg)
+				break;
+			defaults.button = options.button = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			break;
+		case 'k':	/* -k, --keypress [KEYSPEC] */
+			if (options.command != CommandPopMenu)
+				goto bad_option;
+			defaults.button = options.button = 0;
+			if (!optarg)
+				break;
+			free(options.keypress);
+			defaults.keypress = options.keypress = strdup(optarg);
+			break;
+		case 'T':	/* -T, --timestamp TIMESTAMP */
+			if (options.command != CommandPopMenu)
+				goto bad_option;
+			if (!optarg)
+				break;
+			options.timestamp = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			break;
+		case 'W':	/* -W, --where WHERE */
+			if (options.command != CommandPopMenu)
+				goto bad_option;
+			if (options.where != PositionDefault)
+				goto bad_option;
+			if (!(len = strlen(optarg)))
+				goto bad_option;
+			if (!strncasecmp("pointer", optarg, len))
+				defaults.where = options.where = PositionPointer;
+			else if (!strncasecmp("center", optarg, len))
+				defaults.where = options.where = PositionCenter;
+			else if (!strncasecmp("topleft", optarg, len))
+				defaults.where = options.where = PositionTopLeft;
+			else if (!strncasecmp("bottomright", optarg, len))
+				defaults.where = options.where = PositionBottomRight;
+			else {
+				int mask, x = 0, y = 0;
+				unsigned int w = 0, h = 0;
+
+				mask = XParseGeometry(optarg, &x, &y, &w, &h);
+				if (!(mask & XValue) || !(mask & YValue))
+					goto bad_option;
+				options.where = PositionSpecified;
+				options.x.value = x;
+				options.x.sign = (mask & XNegative) ? -1 : 1;
+				options.y.value = y;
+				options.y.sign = (mask & YNegative) ? -1 : 1;
+				options.w = w;
+				options.h = h;
+			}
+			break;
+
+		case 1:	/* --display DISPLAY */
+			free(options.display);
+			defaults.display = options.display = strdup(optarg);
+			break;
+		case 4:	/* --screen SCREEN */
+			options.screen = atoi(optarg);
+			break;
+		case 'e':	/* -e, --die-on-error */
+			defaults.dieonerr = options.dieonerr = True;
+			break;
+		case 2:	/* --notray */
+			options.tray = False;
+			break;
+		case 3:	/* --nogenerate */
+			if (options.command == CommandMenugen)
+				goto bad_option;
+			options.generate = False;
+			break;
+
+		case 10:	/* --excluded */
+			options.treeflags ^= GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
+			break;
+		case 11:	/* --nodisplay */
+			options.treeflags ^= GMENU_TREE_FLAGS_INCLUDE_NODISPLAY;
+			break;
+		case 12:	/* --unallocated */
+			options.treeflags ^= GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED;
+			break;
+		case 13:	/* --empty */
+			options.treeflags ^= GMENU_TREE_FLAGS_SHOW_EMPTY;
+			break;
+		case 14:	/* --separators */
+			options.treeflags ^= GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS;
+			break;
+		case 15:	/* --sort */
+			options.treeflags ^= GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+			break;
+		case 16:	/* --tooltips */
+			options.tooltips = TRUE;
+			break;
+		case 17:	/* --actions */
+			options.actions = TRUE;
+			break;
+
+		case 'G':	/* -G, --menugen */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				command = CommandMenugen;
+				DPRINTF("Setting command to CommandMenugen\n");
+			}
+			defaults.command = options.command = CommandMenugen;
+			break;
+		case 'P':	/* -P, --popmenu */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				command = CommandPopMenu;
+				DPRINTF("Setting command to CommandPopMenu\n");
+			}
+			defaults.command = options.command = CommandPopMenu;
+			break;
+		case 'm':	/* -m, --monitor */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				command = CommandMonitor;
+				DPRINTF("Setting command to CommandMonitor\n");
+			}
+			defaults.command = options.command = CommandMonitor;
+			break;
+		case 'R':	/* -R, --replace */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandReplace\n");
+				command = CommandReplace;
+			}
+			defaults.command = options.command = CommandReplace;
+			break;
+		case 'E':	/* -F, --refresh */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandRefresh\n");
+				command = CommandRefresh;
+			}
+			defaults.command = options.command = CommandRefresh;
+			break;
+		case 'S':	/* -S, --restart */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandRestart\n");
+				command = CommandRestart;
+			}
+			defaults.command = options.command = CommandRestart;
+			break;
+		case 'q':	/* -q, --quit */
+			if (options.command != CommandDefault)
+				goto bad_option;
+			if (command == CommandDefault) {
+				DPRINTF("Setting command to CommandQuit\n");
+				command = CommandQuit;
+			}
+			defaults.command = options.command = CommandQuit;
+			break;
+
+		case 'D':	/* -D, --debug [LEVEL] */
+			DPRINTF("%s: increasing debug verbosity\n", argv[0]);
+			if (optarg == NULL) {
+				defaults.debug = options.debug = options.debug + 1;
+				break;
+			}
+			if ((val = strtol(optarg, &endptr, 0)) < 0)
+				goto bad_option;
+			if (endptr && *endptr)
+				goto bad_option;
+			defaults.debug = options.debug = val;
+			break;
+		case 'v':	/* -v, --verbose [LEVEL] */
+			DPRINTF("%s: increasing output verbosity\n", argv[0]);
+			if (optarg == NULL) {
+				defaults.output = options.output = options.output + 1;
+				break;
+			}
+			if ((val = strtol(optarg, &endptr, 0)) < 0)
+				goto bad_option;
+			if (endptr && *endptr)
+				goto bad_option;
+			defaults.output = options.output = val;
+			break;
+		case 'h':	/* -h, --help */
+		case 'H':	/* -H, --? */
+			DPRINTF("Setting command to CommandHelp\n");
+			command = CommandHelp;
+			break;
+		case 'V':
+			DPRINTF("Setting command to CommandVersion\n");
+			command = CommandVersion;
+			break;
+		case 'C':	/* -C, --copying */
+			DPRINTF("Setting command to CommandCopying\n");
+			command = CommandCopying;
+			break;
+		case '?':
+		default:
+		      bad_option:
+			optind--;
+			goto bad_nonopt;
+		      bad_nonopt:
+			if (options.output || options.debug) {
+				if (optind < argc) {
+					EPRINTF("%s: syntax error near '", argv[0]);
+					while (optind < argc) {
+						fprintf(stderr, "%s", argv[optind++]);
+						fprintf(stderr, "%s", (optind < argc) ? " " : "");
+					}
+					fprintf(stderr, "'\n");
+				} else {
+					EPRINTF("%s: missing option or argument", argv[0]);
+					fprintf(stderr, "\n");
+				}
+				fflush(stderr);
+			      bad_usage:
+				usage(argc, argv);
+			}
+			exit(EXIT_SYNTAXERR);
+		}
+	}
+	DPRINTF("%s: option index = %d\n", argv[0], optind);
+	DPRINTF("%s: option count = %d\n", argv[0], argc);
+	if (optind < argc) {
+		EPRINTF("%s: excess non-option arguments near '", argv[0]);
+		while (optind < argc) {
+			fprintf(stderr, "%s", argv[optind++]);
+			fprintf(stderr, "%s", (optind < argc) ? " " : "");
+		}
+		fprintf(stderr, "'\n");
+		usage(argc, argv);
+		exit(EXIT_SYNTAXERR);
+	}
+	return (command);
+}
+
+int
+main(int argc, char *argv[])
+{
+	Command command = CommandDefault;
+	char *loc, *p;
+
+	if ((loc = setlocale(LC_ALL, ""))) {
+		free(options.locale);
+		defaults.locale = options.locale = strdup(loc);
+	}
+	set_defaults();
+
+	saveArgc = argc;
+	saveArgv = argv;
+
+	if ((p = strstr(argv[0], "-menugen")) && !p[8])
+		defaults.command = options.command = CommandMenugen;
+	else if ((p = strstr(argv[0], "-popmenu")) && !p[6])
+		defaults.command = options.command = CommandPopMenu;
+	else if ((p = strstr(argv[0], "-monitor")) && !p[8])
+		defaults.command = options.command = CommandMonitor;
+	else if ((p = strstr(argv[0], "-replace")) && !p[8])
+		defaults.command = options.command = CommandReplace;
+	else if ((p = strstr(argv[0], "-refresh")) && !p[8])
+		defaults.command = options.command = CommandRefresh;
+	else if ((p = strstr(argv[0], "-restart")) && !p[8])
+		defaults.command = options.command = CommandRestart;
+	else if ((p = strstr(argv[0], "-quit")) && !p[5])
+		defaults.command = options.command = CommandQuit;
+
+	while (1) {
+		int c, val, len;
+		char *endptr = NULL;
+
+#ifdef _GNU_SOURCE
+		int option_index = 0;
+		/* *INDENT-OFF* */
+		static struct option long_options[] = {
+			{"wmname",	required_argument,	NULL,	'w'},
+			{"format",	required_argument,	NULL,	'f'},
+			{"fullmenu",	no_argument,		NULL,	'F'},
+			{"nofullmenu",	no_argument,		NULL,	'N'},
+			{"desktop",	required_argument,	NULL,	'd'},
+			{"charset",	required_argument,	NULL,	'c'},
+			{"language",	required_argument,	NULL,	'l'},
+			{"root-menu",	required_argument,	NULL,	'r'},
+			{"output",	optional_argument,	NULL,	'o'},
+			{"noicons",	no_argument,		NULL,	'n'},
+			{"theme",	required_argument,	NULL,	't'},
+			{"launch",	no_argument,		NULL,	'L'},
+			{"nolaunch",	no_argument,		NULL,	'0'},
+			{"style",	required_argument,	NULL,	's'},
+			{"menu",	required_argument,	NULL,	'M'},
+
+			{"button",	required_argument,	NULL,	'b'},
+			{"keypress",	optional_argument,	NULL,	'k'},
+			{"timestamp",	required_argument,	NULL,	'T'},
+			{"where",	required_argument,	NULL,	'W'},
+
+			{"display",	required_argument,	NULL,	 1 },
+			{"screen",	required_argument,	NULL,	 4 },
+			{"die-on-error",no_argument,		NULL,	'e'},
+			{"notray",	no_argument,		NULL,	 2 },
+			{"nogenerate",	no_argument,		NULL,	 3 },
+			{"verbose",	optional_argument,	NULL,	'v'},
+			{"debug",	optional_argument,	NULL,	'D'},
+
+			{"menugen",	no_argument,		NULL,	'G'},
+			{"popmenu",	no_argument,		NULL,	'P'},
+			{"monitor",	no_argument,		NULL,	'm'},
+			{"refresh",	no_argument,		NULL,	'E'},
+			{"restart",	no_argument,		NULL,	'S'},
+			{"replace",	no_argument,		NULL,	'R'},
+			{"quit",	no_argument,		NULL,	'q'},
+
+			{"excluded",	no_argument,		NULL,	 10},
+			{"nodisplay",	no_argument,		NULL,	 11},
+			{"unallocated",	no_argument,		NULL,	 12},
+			{"empty",	no_argument,		NULL,	 13},
+			{"separators",	no_argument,		NULL,	 14},
+			{"sort",	no_argument,		NULL,	 15},
+			{"tooltips",	no_argument,		NULL,	 16},
+			{"actions",	no_argument,		NULL,	 17},
+
+			{"help",	no_argument,		NULL,	'h'},
+			{"version",	no_argument,		NULL,	'V'},
+			{"copying",	no_argument,		NULL,	'C'},
+			{"?",		no_argument,		NULL,	'H'},
+			{ 0, }
+		};
+		/* *INDENT-ON* */
+
+		c = getopt_long_only(argc, argv,
+				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:ev::D::GPmFSRqhVCH?",
+				     long_options, &option_index);
+#else
+		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
+#endif
+		if (c == -1) {
+			DPRINTF("%s: done options processing\n", argv[0]);
 			break;
 		}
 		switch (c) {
@@ -5473,7 +6038,9 @@ main(int argc, char *argv[])
 				goto bad_option;
 			if (!optarg)
 				break;
-			defaults.button = options.button = strtoul(optarg, NULL, 0);
+			defaults.button = options.button = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
 			break;
 		case 'k':	/* -k, --keypress [KEYSPEC] */
 			if (options.command != CommandPopMenu)
@@ -5489,21 +6056,40 @@ main(int argc, char *argv[])
 				goto bad_option;
 			if (!optarg)
 				break;
-			options.timestamp = strtoul(optarg, NULL, 0);
+			options.timestamp = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
 			break;
 		case 'W':	/* -W, --where WHERE */
 			if (options.command != CommandPopMenu)
 				goto bad_option;
-			if (!optarg)
-				break;
-			if (!strcasecmp(optarg, "pointer")) {
-				defaults.where = options.where = XdePositionPointer;
-			} else if (!strcasecmp(optarg, "center")) {
-				defaults.where = options.where = XdePositionCenter;
-			} else if (!strcasecmp(optarg, "topleft")) {
-				defaults.where = options.where = XdePositionTopLeft;
-			} else
+			if (options.where != PositionDefault)
 				goto bad_option;
+			if (!(len = strlen(optarg)))
+				goto bad_option;
+			if (!strncasecmp("pointer", optarg, len))
+				defaults.where = options.where = PositionPointer;
+			else if (!strncasecmp("center", optarg, len))
+				defaults.where = options.where = PositionCenter;
+			else if (!strncasecmp("topleft", optarg, len))
+				defaults.where = options.where = PositionTopLeft;
+			else if (!strncasecmp("bottomright", optarg, len))
+				defaults.where = options.where = PositionBottomRight;
+			else {
+				int mask, x = 0, y = 0;
+				unsigned int w = 0, h = 0;
+
+				mask = XParseGeometry(optarg, &x, &y, &w, &h);
+				if (!(mask & XValue) || !(mask & YValue))
+					goto bad_option;
+				options.where = PositionSpecified;
+				options.x.value = x;
+				options.x.sign = (mask & XNegative) ? -1 : 1;
+				options.y.value = y;
+				options.y.sign = (mask & YNegative) ? -1 : 1;
+				options.w = w;
+				options.h = h;
+			}
 			break;
 
 		case 1:	/* --display DISPLAY */
@@ -5615,26 +6201,28 @@ main(int argc, char *argv[])
 			break;
 
 		case 'D':	/* -D, --debug [LEVEL] */
-			if (options.debug)
-				fprintf(stderr, "%s: increasing debug verbosity\n", argv[0]);
-			if (optarg == NULL)
+			DPRINTF("%s: increasing debug verbosity\n", argv[0]);
+			if (optarg == NULL) {
 				defaults.debug = options.debug = options.debug + 1;
-			else {
-				if ((val = strtol(optarg, NULL, 0)) < 0)
-					goto bad_option;
-				defaults.debug = options.debug = val;
+				break;
 			}
+			if ((val = strtol(optarg, &endptr, 0)) < 0)
+				goto bad_option;
+			if (endptr && *endptr)
+				goto bad_option;
+			defaults.debug = options.debug = val;
 			break;
 		case 'v':	/* -v, --verbose [LEVEL] */
-			if (options.debug)
-				fprintf(stderr, "%s: increasing output verbosity\n", argv[0]);
-			if (optarg == NULL)
+			DPRINTF("%s: increasing output verbosity\n", argv[0]);
+			if (optarg == NULL) {
 				defaults.output = options.output = options.output + 1;
-			else {
-				if ((val = strtol(optarg, NULL, 0)) < 0)
-					goto bad_option;
-				defaults.output = options.output = val;
+				break;
 			}
+			if ((val = strtol(optarg, &endptr, 0)) < 0)
+				goto bad_option;
+			if (endptr && *endptr)
+				goto bad_option;
+			defaults.output = options.output = val;
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
@@ -5657,14 +6245,14 @@ main(int argc, char *argv[])
 		      bad_nonopt:
 			if (options.output || options.debug) {
 				if (optind < argc) {
-					fprintf(stderr, "%s: syntax error near '", argv[0]);
+					EPRINTF("%s: syntax error near '", argv[0]);
 					while (optind < argc) {
 						fprintf(stderr, "%s", argv[optind++]);
 						fprintf(stderr, "%s", (optind < argc) ? " " : "");
 					}
 					fprintf(stderr, "'\n");
 				} else {
-					fprintf(stderr, "%s: missing option or argument", argv[0]);
+					EPRINTF("%s: missing option or argument", argv[0]);
 					fprintf(stderr, "\n");
 				}
 				fflush(stderr);
@@ -5677,7 +6265,7 @@ main(int argc, char *argv[])
 	DPRINTF("%s: option index = %d\n", argv[0], optind);
 	DPRINTF("%s: option count = %d\n", argv[0], argc);
 	if (optind < argc) {
-		fprintf(stderr, "%s: excess non-option arguments near '", argv[0]);
+		EPRINTF("%s: excess non-option arguments near '", argv[0]);
 		while (optind < argc) {
 			fprintf(stderr, "%s", argv[optind++]);
 			fprintf(stderr, "%s", (optind < argc) ? " " : "");
