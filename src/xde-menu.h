@@ -221,6 +221,14 @@ typedef enum {
 } Which;
 
 typedef enum {
+	UseScreenDefault,               /* default screen by button */
+	UseScreenActive,                /* screen with active window */
+	UseScreenFocused,               /* screen with focused window */
+	UseScreenPointer,               /* screen with pointer */
+	UseScreenSpecified,             /* specified screen */
+} UseScreen;
+
+typedef enum {
 	PositionDefault,                /* default position */
 	PositionPointer,                /* position at pointer */
 	PositionCenter,                 /* center of monitor */
@@ -256,16 +264,17 @@ typedef struct {
 	char *keep;
 	char *menu;
 	char *display;
+	int screen;
 	unsigned button;
 	char *keypress;
-	unsigned long int timestamp;
+	Time timestamp;
+	UseScreen which;
 	MenuPosition where;
 	struct {
 		int value;
 		int sign;
 	} x, y;
 	unsigned int w, h;
-	int screen;
 	Bool tray;
 	Bool generate;
 	int treeflags;
@@ -355,6 +364,7 @@ typedef struct {
 	char *theme;
 	char *itheme;
 	Window selwin;
+	Window owner;
 	Atom atom;
 	char *wmname;
 	Bool goodwm;

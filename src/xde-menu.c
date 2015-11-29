@@ -2735,6 +2735,7 @@ get_selection(Bool replace, Window selwin)
 				owner);
 			XSetSelectionOwner(dpy, atom, selwin, CurrentTime);
 			XSync(dpy, False);
+			/* XXX: should do XIfEvent for owner window destruction */
 		}
 		if (!gotone && owner)
 			gotone = owner;
@@ -2852,6 +2853,94 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 		for (p = options.desktop; *p; p++)
 			*p = toupper(*p);
 	}
+}
+
+/** @brief find the specified screen
+  * 
+  * Either specified with options.screen, or if the DISPLAY environment variable
+  * specifies a screen, use that screen; otherwise, return NULL.
+  */
+static WnckScreen *
+find_specific_screen(GdkDisplay *disp)
+{
+	WnckScreen *scrn = NULL;
+	int nscr = gdk_display_get_n_screens(disp);
+
+	if (0 <= options.screen && options.screen < nscr)
+		/* user specified a valid screen number */
+		scrn = wnck_screen_get(options.screen);
+	return (scrn);
+}
+
+/** @brief find the screen of window with the focus
+  */
+static WnckScreen *
+find_focus_screen(GdkDisplay *disp)
+{
+	WnckScreen *scrn = NULL;
+	Window focus = None, froot = None;
+	int di;
+	unsigned int du;
+	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
+
+	XGetInputFocus(dpy, &focus, &di);
+	if (focus != PointerRoot && focus != None) {
+		XGetGeometry(dpy, focus, &froot, &di, &di, &du, &du, &du, &du);
+		if (froot)
+			scrn = wnck_screen_get_for_root(froot);
+	}
+	return (scrn);
+}
+
+static WnckScreen *
+find_pointer_screen(GdkDisplay *disp)
+{
+	WnckScreen *scrn = NULL;
+	GdkScreen *screen = NULL;
+
+	gdk_display_get_pointer(disp, &screen, NULL, NULL, NULL);
+	if (screen)
+		scrn = wnck_screen_get(gdk_screen_get_number(screen));
+	return (scrn);
+}
+
+static WnckScreen *
+find_screen(GdkDisplay *disp)
+{
+	WnckScreen *scrn = NULL;
+
+	if ((scrn = find_specific_screen(disp)))
+		return (scrn);
+	switch (options.which) {
+	case UseScreenDefault:
+		if (options.button) {
+			if ((scrn = find_pointer_screen(disp)))
+				return (scrn);
+			if ((scrn = find_focus_screen(disp)))
+				return (scrn);
+		} else {
+			if ((scrn = find_focus_screen(disp)))
+				return (scrn);
+			if ((scrn = find_pointer_screen(disp)))
+				return (scrn);
+		}
+		break;
+	case UseScreenActive:
+		break;
+	case UseScreenFocused:
+		if ((scrn = find_focus_screen(disp)))
+			return (scrn);
+		break;
+	case UseScreenPointer:
+		if ((scrn = find_pointer_screen(disp)))
+			return (scrn);
+		break;
+	case UseScreenSpecified:
+		break;
+	}
+	if (!scrn)
+		scrn = wnck_screen_get_default();
+	return (scrn);
 }
 
 static gboolean
@@ -3171,6 +3260,7 @@ init_statusicon(XdeScreen *xscr)
 
 static GdkFilterReturn selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
 static GdkFilterReturn root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
+static GdkFilterReturn owner_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data);
 static void update_theme(XdeScreen *xscr, Atom prop);
 static void update_icon_theme(XdeScreen *xscr, Atom prop);
 
@@ -3180,7 +3270,7 @@ setup_x11(Bool replace)
 	GdkDisplay *disp;
 	Display *dpy;
 	GdkScreen *scrn;
-	GdkWindow *root, *sel;
+	GdkWindow *root, *sel, *own;
 	char selection[64] = { 0, };
 	Window selwin, owner;
 	XdeScreen *xscr;
@@ -3229,6 +3319,13 @@ setup_x11(Bool replace)
 		xscr->scrn = gdk_display_get_screen(disp, s);
 		xscr->root = gdk_screen_get_root_window(xscr->scrn);
 		xscr->selwin = selwin;
+		if ((xscr->owner = XGetSelectionOwner(dpy, xscr->atom)) && xscr->owner != selwin) {
+			XSelectInput(dpy, xscr->owner,
+				     StructureNotifyMask | SubstructureNotifyMask |
+				     PropertyChangeMask);
+			own = gdk_x11_window_foreign_new_for_display(disp, xscr->owner);
+			gdk_window_add_filter(own, owner_handler, xscr);
+		}
 		gdk_window_add_filter(xscr->root, root_handler, xscr);
 		init_wnck(xscr);
 		update_theme(xscr, None);
@@ -3276,15 +3373,33 @@ do_monitor(int argc, char *argv[], Bool replace)
 	}
 }
 
+Bool
+on_selection_notify(Display *dpy, XEvent *event, XPointer arg)
+{
+	XdeScreen *xscr = (typeof(xscr)) arg;
+
+	switch (event->type) {
+	case SelectionNotify:
+		if (event->xselection.requestor == xscr->selwin &&
+		    event->xselection.selection == xscr->atom)
+			return True;
+		break;
+	case DestroyNotify:
+		if (event->xdestroywindow.window == xscr->owner)
+			return True;
+		break;
+	}
+	return False;
+}
+
 static void
 do_refresh(int argc, char *argv[])
 {
-	char selection[64] = { 0, };
 	GdkDisplay *disp;
 	Display *dpy;
 	int s, nscr;
-	Atom atom;
 	Window owner, gotone = None;
+	XdeScreen *xscr;
 
 	if (!options.display) {
 		EPRINTF("%s: need display to refresh instance\n", argv[0]);
@@ -3296,10 +3411,8 @@ do_refresh(int argc, char *argv[])
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
 
 #if 1
-	for (s = 0; s < nscr; s++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		if ((owner = XGetSelectionOwner(dpy, xscr->atom)) && gotone != owner) {
 			XEvent ev;
 
 			ev.xclient.type = ClientMessage;
@@ -3310,7 +3423,7 @@ do_refresh(int argc, char *argv[])
 			ev.xclient.message_type = _XA_XDE_MENU_REFRESH;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
-			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[1] = xscr->atom;
 			ev.xclient.data.l[2] = owner;
 			ev.xclient.data.l[3] = 0;
 			ev.xclient.data.l[4] = 0;
@@ -3321,22 +3434,23 @@ do_refresh(int argc, char *argv[])
 			gotone = owner;
 		}
 	}
+#else
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		if ((xscr->owner = XGetSelectionOwner(dpy, xscr->atom)) && gotone != owner) {
+			XEvent ev;
+
+			XConvertSelection(dpy, xscr->atom, _XA_XDE_MENU_REFRESH,
+					  _XA_XDE_MENU_REQUEST, xscr->selwin, CurrentTime);
+			XIfEvent(dpy, &ev, &on_selection_notify, (XPointer) xscr)
+			    if (ev.type == SelectionNotify && ev.xselection.property)
+				gotone = owner;
+		}
+	}
+#endif
 	if (!gotone) {
 		EPRINTF("%s: need running instance to refresh\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
-#else
-	XdeScreen *xscr;
-
-	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
-			XConvertSelection(dpy, atom, _XA_XDE_MENU_REFRESH,
-					_XA_XDE_MENU_REQUEST, xscr->selwin, CurrentTime);
-		}
-	}
-#endif
 }
 
 static void
@@ -3398,48 +3512,43 @@ on_selection_done(GtkMenuShell *menushell, gpointer user_data)
 static void
 do_popmenu(int argc, char *argv[])
 {
-	char selection[64] = { 0, };
 	GdkDisplay *disp;
 	Display *dpy;
-	int s, nscr;
-	Atom atom;
-	Window owner, gotone = None;
+	int screen;
+	Window owner;
+	WnckScreen *scrn;
+	XdeScreen *xscr;
 
 	if (!options.display) {
 		EPRINTF("%s: need display to pop menu instance\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	disp = gdk_display_get_default();
-	nscr = gdk_display_get_n_screens(disp);
+	scrn = find_screen(disp);
 
+	xscr = screens;
+	if ((screen = wnck_screen_get_number(scrn)) != -1)
+		xscr += screen;
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
+	if ((owner = XGetSelectionOwner(dpy, xscr->atom))) {
+		XEvent ev;
 
-	for (s = 0; s < nscr; s++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
-			XEvent ev;
+		ev.xclient.type = ClientMessage;
+		ev.xclient.serial = 0;
+		ev.xclient.send_event = False;
+		ev.xclient.display = dpy;
+		ev.xclient.window = RootWindow(dpy, s);
+		ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = CurrentTime;
+		ev.xclient.data.l[1] = atom;
+		ev.xclient.data.l[2] = owner;
+		ev.xclient.data.l[3] = options.button;
+		ev.xclient.data.l[4] = 0;
 
-			ev.xclient.type = ClientMessage;
-			ev.xclient.serial = 0;
-			ev.xclient.send_event = False;
-			ev.xclient.display = dpy;
-			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
-			ev.xclient.format = 32;
-			ev.xclient.data.l[0] = CurrentTime;
-			ev.xclient.data.l[1] = atom;
-			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = options.button;
-			ev.xclient.data.l[4] = 0;
-
-			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
-			XFlush(dpy);
-
-			gotone = owner;
-		}
-	}
-	if (!gotone) {
+		XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
+		XFlush(dpy);
+	} else {
 #if 1
 		MenuContext *ctx;
 		GMenuTree *tree;
@@ -3806,6 +3915,47 @@ event_handler_SelectionClear(Display *dpy, XEvent *xev, XdeScreen *xscr)
 }
 
 static GdkFilterReturn
+event_handler_SelectionRequest(Display *dpy, XEvent *xev, XdeScreen *xscr)
+{
+	DPRINT();
+	if (options.debug > 1) {
+		fprintf(stderr, "==> SelectionRequest: %p\n", xscr);
+		fprintf(stderr, "    --> send_event = %s\n",
+			xev->xselectionrequest.send_event ? "true" : "false");
+		fprintf(stderr, "    --> owner = 0x%08lx\n", xev->xselectionrequest.owner);
+		fprintf(stderr, "    --> requestor = 0x%08lx\n", xev->xselectionrequest.requestor);
+		fprintf(stderr, "    --> selection = %s\n",
+			XGetAtomName(dpy, xev->xselectionrequest.selection));
+		fprintf(stderr, "    --> target = %s\n",
+			XGetAtomName(dpy, xev->xselectionrequest.target));
+		fprintf(stderr, "    --> property = %s\n",
+			XGetAtomName(dpy, xev->xselectionrequest.property));
+		fprintf(stderr, "    --> time = %lu\n", xev->xselectionrequest.time);
+		fprintf(stderr, "<== SelectionRequest: %p\n", xscr);
+	}
+	if (xscr && xev->xselectionrequest.owner == xscr->owner) {
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+event_handler_DestroyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
+{
+	DPRINT();
+	if (options.debug > 1) {
+		fprintf(stderr, "==> DestroyNotify: %p\n", xscr);
+		fprintf(stderr, "    --> send_event = %s\n",
+				xev->xdestroywindow.send_event ? "true" : "false");
+		fprintf(stderr, "    --> event = 0x%08lx\n", xev->xdestroywindow.event);
+		fprintf(stderr, "    --> window = 0x%08lx\n", xev->xdestroywindow.window);
+		fprintf(stderr, "<== DestroyNotify: %p\n", xscr);
+	}
+	if (xscr && xev->xdestroywindow.window == xscr->owner) {
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
 root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 {
 	XEvent *xev = (typeof(xev)) xevent;
@@ -3828,7 +3978,7 @@ static GdkFilterReturn
 selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 {
 	XEvent *xev = (typeof(xev)) xevent;
-	XdeScreen *xscr = (typeof(xscr)) data;
+	XdeScreen *xscr = data;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
 
 	DPRINT();
@@ -3839,6 +3989,22 @@ selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	switch (xev->type) {
 	case SelectionClear:
 		return event_handler_SelectionClear(dpy, xev, xscr);
+	case SelectionRequest:
+		return event_handler_SelectionRequest(dpy, xev, xscr);
+	}
+	EPRINTF("wrong message type for handler %d\n", xev->type);
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+owner_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
+{
+	XEvent *xev = (typeof(xev)) xevent;
+	XdeScreen *xscr = data;
+	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
+	switch (xev->type) {
+	case DestroyNotify:
+		return event_handler_DestroyNotify(dpy, xev, xscr);
 	}
 	EPRINTF("wrong message type for handler %d\n", xev->type);
 	return GDK_FILTER_CONTINUE;
@@ -4710,6 +4876,24 @@ show_style(Style style)
 	return ("(unknown)");
 }
 
+static const char *
+show_which(UseScreen which)
+{
+	switch (which) {
+	case UseScreenDefault:
+		return ("default");
+	case UseScreenActive:
+		return ("active");
+	case UseScreenFocused:
+		return ("focused");
+	case UseScreenPointer:
+		return ("pointer");
+	case UseScreenSpecified:
+		return show_screen(options.screen);
+	}
+	return NULL;
+}
+
 const char *
 show_where(MenuPosition where)
 {
@@ -5505,6 +5689,7 @@ parse_args(int argc, char *argv[])
 			{"button",	required_argument,	NULL,	'b'},
 			{"keypress",	optional_argument,	NULL,	'k'},
 			{"timestamp",	required_argument,	NULL,	'T'},
+			{"which",	required_argument,	NULL,	'i'},
 			{"where",	required_argument,	NULL,	'W'},
 
 			{"display",	required_argument,	NULL,	 1 },
@@ -5653,6 +5838,24 @@ parse_args(int argc, char *argv[])
 			options.timestamp = strtoul(optarg, &endptr, 0);
 			if (endptr && *endptr)
 				goto bad_option;
+			break;
+		case 'w':	/* -i, --which WHICH */
+			if (options.which != UseScreenDefault)
+				goto bad_option;
+			if (!(len = strlen(optarg)))
+				goto bad_option;
+			if (!strncasecmp("active", optarg, len))
+				options.which = UseScreenActive;
+			else if (!strncasecmp("focused", optarg, len))
+				options.which = UseScreenFocused;
+			else if (!strncasecmp("pointer", optarg, len))
+				options.where = UseScreenPointer;
+			else {
+				options.screen = strtoul(optarg, &endptr, 0);
+				if (endptr && *endptr)
+					goto bad_option;
+				options.which = UseScreenSpecified;
+			}
 			break;
 		case 'W':	/* -W, --where WHERE */
 			if (options.command != CommandPopMenu)
@@ -5928,6 +6131,7 @@ main(int argc, char *argv[])
 			{"button",	required_argument,	NULL,	'b'},
 			{"keypress",	optional_argument,	NULL,	'k'},
 			{"timestamp",	required_argument,	NULL,	'T'},
+			{"which",	required_argument,	NULL,	'i'},
 			{"where",	required_argument,	NULL,	'W'},
 
 			{"display",	required_argument,	NULL,	 1 },
@@ -6076,6 +6280,24 @@ main(int argc, char *argv[])
 			options.timestamp = strtoul(optarg, &endptr, 0);
 			if (endptr && *endptr)
 				goto bad_option;
+			break;
+		case 'w':	/* -i, --which WHICH */
+			if (options.which != UseScreenDefault)
+				goto bad_option;
+			if (!(len = strlen(optarg)))
+				goto bad_option;
+			if (!strncasecmp("active", optarg, len))
+				options.which = UseScreenActive;
+			else if (!strncasecmp("focused", optarg, len))
+				options.which = UseScreenFocused;
+			else if (!strncasecmp("pointer", optarg, len))
+				options.where = UseScreenPointer;
+			else {
+				options.screen = strtoul(optarg, &endptr, 0);
+				if (endptr && *endptr)
+					goto bad_option;
+				options.which = UseScreenSpecified;
+			}
 			break;
 		case 'W':	/* -W, --where WHERE */
 			if (options.command != CommandPopMenu)
