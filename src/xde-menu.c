@@ -3537,11 +3537,11 @@ do_popmenu(int argc, char *argv[])
 		ev.xclient.serial = 0;
 		ev.xclient.send_event = False;
 		ev.xclient.display = dpy;
-		ev.xclient.window = RootWindow(dpy, s);
+		ev.xclient.window = RootWindow(dpy, screen);
 		ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
 		ev.xclient.format = 32;
 		ev.xclient.data.l[0] = CurrentTime;
-		ev.xclient.data.l[1] = atom;
+		ev.xclient.data.l[1] = xscr->atom;
 		ev.xclient.data.l[2] = owner;
 		ev.xclient.data.l[3] = options.button;
 		ev.xclient.data.l[4] = 0;
@@ -4879,6 +4879,7 @@ show_style(Style style)
 static const char *
 show_which(UseScreen which)
 {
+	static char screen[64] = { 0, };
 	switch (which) {
 	case UseScreenDefault:
 		return ("default");
@@ -4889,7 +4890,8 @@ show_which(UseScreen which)
 	case UseScreenPointer:
 		return ("pointer");
 	case UseScreenSpecified:
-		return show_screen(options.screen);
+		snprintf(screen, sizeof(screen), "%d", options.screen);
+		return screen;
 	}
 	return NULL;
 }
@@ -4986,30 +4988,52 @@ Format options:\n\
         fullmenu, appmenu, submenu or entries [default: %13$s]\n\
     -M, --menu MENU\n\
         filename stem of root menu filename [default: %14$s]\n\
+    --excluded\n\
+        include otherwise excluded applications [default: %15$s]\n\
+    --nodisplay\n\
+        include applications marked as no-dipslay [default: %16$s]\n\
+    --unallocated\n\
+        include applications already placed in menu [default: %17$s]\n\
+    --empty\n\
+        include empty submenus [default: %18$s]\n\
+    --separators\n\
+        include all (even extraneous) separators [default: %19$s]\n\
+    --sort\n\
+        sort entries by display name instead of name [default: %20$s]\n\
+    --actions\n\
+        provide submenu for actions [default: %21$s]\n\
 Pop up menu options:\n\
     -b, --button [BUTTON]\n\
-        specify the button pressed when popping menu [default: %15$u]\n\
+        specify the button pressed when popping menu [default: %22$u]\n\
     -k, --keypress [KEYSPEC]\n\
-        specify the key sequence active whne popping menu [default: %16$s]\n\
+        specify the key sequence active whne popping menu [default: %23$s]\n\
     -T, --timestamp TIMESTAMP\n\
-        specify the button/keypress event timestamp [default: %17$lu]\n\
+        specify the button/keypress event timestamp [default: %24$lu]\n\
+    -i, --which {active|focused|pointer|SCREEN}\n\
+        specify on which screen to display the menu: [default: %25$s]\n\
+        active  - the screen with the active window\n\
+        focused - the screen with the window with the keyboard focus\n\
+        pointer - the screen containing (or nearest) the pointer\n\
+        SCREEN  - a specific screen number\n\
     -w, --where WHERE\n\
-        where to put menu: pointer, center or topleft [default: %18$s]\n\
+        where to put menu: pointer, center or topleft [default: %26$s]\n\
+    --tooltips\n\
+        include verbose tooltips for application menu items [default: %27$s]\n\
 General options:\n\
     --display DISPLAY\n\
-        specify the X11 display [default: %19$s]\n\
+        specify the X11 display [default: %28$s]\n\
     --screen SCREEN\n\
-        specify the X11 scrfeen [default: %20$d]\n\
+        specify the X11 scrfeen [default: %29$d]\n\
     -e, --die-on-error\n\
-        abort on error [default: %21$s]\n\
+        abort on error [default: %30$s]\n\
     --notray\n\
-        do not install a system tray icon [default: %22$s]\n\
+        do not install a system tray icon [default: %31$s]\n\
     --nogenerate\n\
-        do not generate window manager root menu [default: %23$s]\n\
+        do not generate window manager root menu [default: %32$s]\n\
     -D, --debug [LEVEL]\n\
-        increment or set debug LEVEL [default: %24$d]\n\
+        increment or set debug LEVEL [default: %33$d]\n\
     -v, --verbose [LEVEL]\n\
-        increment or set output verbosity LEVEL [default: %25$d]\n\
+        increment or set output verbosity LEVEL [default: %34$d]\n\
         this option may be repeated.\n\
 ", argv[0]
 	, defaults.wmname
@@ -5025,10 +5049,19 @@ General options:\n\
 	, show_bool(defaults.launch)
 	, show_style(defaults.style)
 	, defaults.menu
+	, show_bool(defaults.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED)
+	, show_bool(defaults.treeflags & GMENU_TREE_FLAGS_INCLUDE_NODISPLAY)
+	, show_bool(defaults.treeflags & GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED)
+	, show_bool(defaults.treeflags & GMENU_TREE_FLAGS_SHOW_EMPTY)
+	, show_bool(defaults.treeflags & GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS)
+	, show_bool(defaults.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME)
+	, show_bool(defaults.actions)
 	, defaults.button
 	, defaults.keypress
 	, defaults.timestamp
+	, show_which(defaults.which)
 	, show_where(defaults.where)
+	, show_bool(defaults.tooltips)
 	, defaults.display
 	, defaults.screen
 	, show_bool(defaults.dieonerr)
@@ -5839,7 +5872,7 @@ parse_args(int argc, char *argv[])
 			if (endptr && *endptr)
 				goto bad_option;
 			break;
-		case 'w':	/* -i, --which WHICH */
+		case 'i':	/* -i, --which WHICH */
 			if (options.which != UseScreenDefault)
 				goto bad_option;
 			if (!(len = strlen(optarg)))
@@ -6281,7 +6314,7 @@ main(int argc, char *argv[])
 			if (endptr && *endptr)
 				goto bad_option;
 			break;
-		case 'w':	/* -i, --which WHICH */
+		case 'i':	/* -i, --which WHICH */
 			if (options.which != UseScreenDefault)
 				goto bad_option;
 			if (!(len = strlen(optarg)))
