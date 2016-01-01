@@ -3517,20 +3517,21 @@ do_popmenu(int argc, char *argv[])
 	int screen;
 	Window owner;
 	WnckScreen *scrn;
-	XdeScreen *xscr;
+	char selection[64] = { 0, };
+	Atom atom;
 
 	if (!options.display) {
 		EPRINTF("%s: need display to pop menu instance\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	disp = gdk_display_get_default();
-	scrn = find_screen(disp);
-
-	xscr = screens;
-	if ((screen = wnck_screen_get_number(scrn)) != -1)
-		xscr += screen;
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
-	if ((owner = XGetSelectionOwner(dpy, xscr->atom))) {
+	scrn = find_screen(disp);
+	if ((screen = wnck_screen_get_number(scrn)) == -1)
+		screen = 0;
+	snprintf(selection, sizeof(selection), XA_SELECTION_NAME, screen);
+	atom = XInternAtom(dpy, selection, False);
+	if ((owner = XGetSelectionOwner(dpy, atom))) {
 		XEvent ev;
 
 		ev.xclient.type = ClientMessage;
@@ -3541,7 +3542,7 @@ do_popmenu(int argc, char *argv[])
 		ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
 		ev.xclient.format = 32;
 		ev.xclient.data.l[0] = CurrentTime;
-		ev.xclient.data.l[1] = xscr->atom;
+		ev.xclient.data.l[1] = atom;
 		ev.xclient.data.l[2] = owner;
 		ev.xclient.data.l[3] = options.button;
 		ev.xclient.data.l[4] = 0;
