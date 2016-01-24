@@ -49,6 +49,14 @@
 
 #define XA_SELECTION_NAME	"_XDE_MENU_S%d"
 
+#if 0
+#define LOGO_NAME		"start-here"
+#else
+#define LOGO_NAME		"arch-logo"
+#endif
+
+SmcConn smcConn = NULL;
+
 int saveArgc;
 char **saveArgv;
 
@@ -1258,7 +1266,7 @@ xde_gtk_common_appmenu(MenuContext *ctx, GtkMenu *entries, const char *name)
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(entries));
 	if (name)
 		gtk_menu_item_set_label(GTK_MENU_ITEM(item), name);
-	if ((icon = xde_get_icon2(ctx, "start-here", "folder")) &&
+	if ((icon = xde_get_icon2(ctx, LOGO_NAME, "folder")) &&
 	    (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
@@ -3165,7 +3173,7 @@ on_about_selected(GtkMenuItem *item, gpointer user_data)
 			      "comments", "An XDG compliant tray menu.",
 			      "copyright", "Copyright (c) 2013, 2014, 2015  OpenSS7 Corporation",
 			      "license", "Do what thou wilt shall be the whole of the law.\n\n-- Aleister Crowley",
-			      "logo-icon-name", "start-here",
+			      "logo-icon-name", LOGO_NAME,
 			      "program-name", "xde-menu",
 			      "version", "0.1",
 			      "website", "http://www.unexicon.com/",
@@ -3189,13 +3197,28 @@ on_redo_selected(GtkMenuItem *item, gpointer user_data)
 	return;
 }
 
-void
-on_quit_selected(GtkMenuItem *item, gpointer user_data)
+static void
+mainloop(void)
+{
+	if (options.display)
+		gtk_main();
+	else
+		g_main_loop_run(loop);
+}
+
+static void
+mainloop_quit(void)
 {
 	if (options.display)
 		gtk_main_quit();
 	else
 		g_main_loop_quit(loop);
+}
+
+void
+on_quit_selected(GtkMenuItem *item, gpointer user_data)
+{
+	mainloop_quit();
 }
 
 static void
@@ -3237,19 +3260,8 @@ static void
 init_statusicon(XdeScreen *xscr)
 {
 	GtkStatusIcon *icon;
-#if 1
-	GtkIconTheme *theme;
-	GdkPixbuf *pixbuf;
 
-	theme = gtk_icon_theme_get_default();
-	pixbuf = gtk_icon_theme_load_icon(theme, "arch-logo", 16,
-					  GTK_ICON_LOOKUP_GENERIC_FALLBACK |
-					  GTK_ICON_LOOKUP_FORCE_SIZE |
-					  GTK_ICON_LOOKUP_USE_BUILTIN, NULL);
-	icon = gtk_status_icon_new_from_pixbuf(pixbuf);
-#else
-	icon = gtk_status_icon_new_from_icon_name("start-here");
-#endif
+	icon = gtk_status_icon_new_from_icon_name(LOGO_NAME);
 	gtk_status_icon_set_tooltip_text(icon, "Click for menu...");
 	gtk_status_icon_set_visible(icon, TRUE);
 	g_signal_connect(G_OBJECT(icon), "button_press_event",
@@ -3355,10 +3367,7 @@ do_monitor(int argc, char *argv[], Bool replace)
 
 	make_menu(argc, argv);
 
-	if (options.display)
-		gtk_main();
-	else
-		g_main_loop_run(loop);
+	mainloop();
 	switch (options.command) {
 	case CommandQuit:
 		exit(EXIT_SUCCESS);
@@ -3576,7 +3585,7 @@ do_restart(int argc, char *argv[])
 void
 on_selection_done(GtkMenuShell *menushell, gpointer user_data)
 {
-	gtk_main_quit();
+	mainloop_quit();
 }
 
 static void
@@ -3653,7 +3662,7 @@ do_popmenu(int argc, char *argv[])
 				G_CALLBACK(on_selection_done), NULL);
 		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xscr->wnck,
 				options.button, options.timestamp);
-		gtk_main();
+		mainloop();
 
 		/* the tricky part is exiting when it drops */
 #else
@@ -3825,12 +3834,25 @@ menu_replace(void)
 	return;
 }
 
+/** @brief restart the menu
+  *
+  * We restart the menu by executing ourselves with the same arguments that were
+  * provided in the command that started us.  However, if we are running under
+  * session management with restart hint SmRestartImmediately, the session
+  * manager will restart us if we simply exit.
+  */
 static void
 menu_restart(void)
 {
 	/* asked to restart the menu (as though we were re-executed) */
 	char **argv;
 	int i;
+
+	if (smcConn) {
+		/* When running under a session manager, simply exit and the session
+		   manager will restart us immediately. */
+		exit(EXIT_SUCCESS);
+	}
 
 	argv = calloc(saveArgc + 1, sizeof(*argv));
 	for (i = 0; i < saveArgc; i++)
@@ -4047,6 +4069,15 @@ event_handler_SelectionClear(Display *dpy, XEvent *xev, XdeScreen *xscr)
 	if (xscr && xev->xselectionclear.window == xscr->selwin) {
 		XDestroyWindow(dpy, xscr->selwin);
 		DPRINTF("selection cleared, exiting\n");
+		if (smcConn) {
+			/* Care must be taken where if we are running under a session
+			   manager. We set the restart hint to SmRestartImmediately
+			   which means that the session manager will re-execute us if we
+			   exit.  We should really request a local shutdown. */
+			SmcRequestSaveYourself(smcConn, SmSaveLocal, True, SmInteractStyleNone,
+					       False, False);
+			return GDK_FILTER_CONTINUE;
+		}
 		exit(EXIT_SUCCESS);
 	}
 	return GDK_FILTER_CONTINUE;
@@ -4209,7 +4240,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	}
 	j++;
 
-#if 0
+#if 1
 	/* CurrentDirectory: On POSIX-based systems, specifies the value of the current
 	   directory that needs to be set up prior to starting the program and should be
 	   of type ARRAY8. */
@@ -4248,7 +4279,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	j++;
 #endif
 
-#if 0
+#if 1
 	char **env;
 
 	/* Environment: On POSIX based systems, this will be of type LISTofARRAY8 where
@@ -4277,7 +4308,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	j++;
 #endif
 
-#if 0
+#if 1
 	char procID[20];
 
 	/* ProcessID: This specifies an OS-specific identifier for the process. On POSIX
@@ -4472,10 +4503,7 @@ clientDieCB(SmcConn smcConn, SmPointer data)
 {
 	SmcCloseConnection(smcConn, 0, NULL);
 	shutting_down = False;
-	if (options.display)
-		gtk_main_quit();
-	else
-		g_main_loop_quit(loop);
+	mainloop_quit();
 }
 
 static void
@@ -4483,10 +4511,7 @@ clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
 {
 	if (saving_yourself) {
 		saving_yourself = False;
-		if (options.display)
-			gtk_main_quit();
-		else
-			g_main_loop_quit(loop);
+		mainloop_quit();
 	}
 
 }
@@ -4506,10 +4531,7 @@ static void
 clientShutdownCancelledCB(SmcConn smcConn, SmPointer data)
 {
 	shutting_down = False;
-	if (options.display)
-		gtk_main_quit();
-	else
-		g_main_loop_quit(loop);
+	mainloop_quit();
 }
 
 /* *INDENT-OFF* */
@@ -4563,7 +4585,6 @@ init_smclient(void)
 	GIOChannel *chan;
 	int ifd, mask = G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_PRI;
 	char *env;
-	SmcConn smcConn;
 	IceConn iceConn;
 
 	if (!(env = getenv("SESSION_MANAGER"))) {
@@ -4667,10 +4688,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 	case CommandQuit:
 	case CommandRestart:
 	case CommandReplace:
-		if (options.display)
-			gtk_main_quit();
-		else
-			g_main_loop_quit(loop);
+		mainloop_quit();
 		return (UNIQUE_RESPONSE_OK);
 	case CommandPopMenu:
 		parse_args(cmdArgc, cmdArgv);
