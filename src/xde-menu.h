@@ -221,18 +221,18 @@ typedef enum {
 } Which;
 
 typedef enum {
-	UseScreenDefault,               /* default screen by button */
-	UseScreenActive,                /* screen with active window */
-	UseScreenFocused,               /* screen with focused window */
-	UseScreenPointer,               /* screen with pointer */
-	UseScreenSpecified,             /* specified screen */
+	UseScreenDefault,		/* default screen by button */
+	UseScreenActive,		/* screen with active window */
+	UseScreenFocused,		/* screen with focused window */
+	UseScreenPointer,		/* screen with pointer */
+	UseScreenSpecified,		/* specified screen */
 } UseScreen;
 
 typedef enum {
-	PositionDefault,                /* default position */
-	PositionPointer,                /* position at pointer */
-	PositionCenter,                 /* center of monitor */
-	PositionTopLeft,                /* top left of work area */
+	PositionDefault,		/* default position */
+	PositionPointer,		/* position at pointer */
+	PositionCenter,			/* center of monitor */
+	PositionTopLeft,		/* top left of work area */
 	PositionBottomRight,		/* bottom right of work area */
 	PositionSpecified,		/* specified position (X geometry) */
 } MenuPosition;
@@ -280,7 +280,24 @@ typedef struct {
 	int treeflags;
 	Bool tooltips;
 	Bool actions;
+	Bool unique;
 } Options;
+
+#define XDE_MENU_FLAG_DIEONERR		(1<< 0)
+#define XDE_MENU_FLAG_FILEOUT		(1<< 1)
+#define XDE_MENU_FLAG_NOICONS		(1<< 2)
+#define XDE_MENU_FLAG_LAUNCH		(1<< 3)
+#define XDE_MENU_FLAG_TRAY		(1<< 4)
+#define XDE_MENU_FLAG_GENERATE		(1<< 5)
+#define XDE_MENU_FLAG_TOOLTIPS		(1<< 6)
+#define XDE_MENU_FLAG_ACTIONS		(1<< 7)
+#define XDE_MENU_FLAG_UNIQUE		(1<< 8)
+#define XDE_MENU_FLAG_EXCLUDED		(1<< 9)
+#define XDE_MENU_FLAG_NODISPLAY		(1<<10)
+#define XDE_MENU_FLAG_UNALLOCATED	(1<<11)
+#define XDE_MENU_FLAG_EMPTY		(1<<12)
+#define XDE_MENU_FLAG_SEPARATORS	(1<<13)
+#define XDE_MENU_FLAG_SORT		(1<<14)
 
 typedef struct MenuContext MenuContext;
 

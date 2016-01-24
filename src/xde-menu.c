@@ -3392,14 +3392,79 @@ on_selection_notify(Display *dpy, XEvent *event, XPointer arg)
 	return False;
 }
 
+static long
+get_flags(void)
+{
+	long flags = 0;
+
+	if (options.dieonerr)
+		flags |= XDE_MENU_FLAG_DIEONERR;
+	if (options.fileout)
+		flags |= XDE_MENU_FLAG_FILEOUT;
+	if (options.noicons)
+		flags |= XDE_MENU_FLAG_NOICONS;
+	if (options.launch)
+		flags |= XDE_MENU_FLAG_LAUNCH;
+	if (options.tray)
+		flags |= XDE_MENU_FLAG_TRAY;
+	if (options.generate)
+		flags |= XDE_MENU_FLAG_GENERATE;
+	if (options.tooltips)
+		flags |= XDE_MENU_FLAG_TOOLTIPS;
+	if (options.actions)
+		flags |= XDE_MENU_FLAG_ACTIONS;
+	if (options.unique)
+		flags |= XDE_MENU_FLAG_UNIQUE;
+	if (options.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED)
+		flags |= XDE_MENU_FLAG_EXCLUDED;
+	if (options.treeflags & GMENU_TREE_FLAGS_INCLUDE_NODISPLAY)
+		flags |= XDE_MENU_FLAG_NODISPLAY;
+	if (options.treeflags & GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED)
+		flags |= XDE_MENU_FLAG_UNALLOCATED;
+	if (options.treeflags & GMENU_TREE_FLAGS_SHOW_EMPTY)
+		flags |= XDE_MENU_FLAG_EMPTY;
+	if (options.treeflags & GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS)
+		flags |= XDE_MENU_FLAG_SEPARATORS;
+	if (options.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME)
+		flags |= XDE_MENU_FLAG_SORT;
+	flags |= ((long)(options.button & 0x0f) << 16);
+	flags |= ((long)(options.which  & 0x0f) << 20);
+	flags |= ((long)(options.screen & 0x0f) << 24);
+	flags |= ((long)(options.where  & 0x0f) << 28);
+	return (flags);
+}
+
+static long
+get_word1(void)
+{
+	long word1 = 0;
+
+	word1 |= ((long)(options.w & 0x0ff) << 0);
+	word1 |= ((long)(options.h & 0x0ff) << 16);
+	return (word1);
+}
+
+static long
+get_word2(void)
+{
+	long word2 = 0;
+
+	word2 |= ((long)(options.x.value & 0x07f) << 0);
+	word2 |= ((long)(options.x.sign < 0 ? 1 : 0) << 15);
+	word2 |= ((long)(options.y.value & 0x07f) << 16);
+	word2 |= ((long)(options.y.sign < 0 ? 1 : 0) << 31);
+	return (word2);
+}
+
 static void
 do_refresh(int argc, char *argv[])
 {
+	char selection[64] = { 0, };
 	GdkDisplay *disp;
 	Display *dpy;
 	int s, nscr;
+	Atom atom;
 	Window owner, gotone = None;
-	XdeScreen *xscr;
 
 	if (!options.display) {
 		EPRINTF("%s: need display to refresh instance\n", argv[0]);
@@ -3411,8 +3476,10 @@ do_refresh(int argc, char *argv[])
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
 
 #if 1
-	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-		if ((owner = XGetSelectionOwner(dpy, xscr->atom)) && gotone != owner) {
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom)) && gotone != owner) {
 			XEvent ev;
 
 			ev.xclient.type = ClientMessage;
@@ -3423,18 +3490,20 @@ do_refresh(int argc, char *argv[])
 			ev.xclient.message_type = _XA_XDE_MENU_REFRESH;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
-			ev.xclient.data.l[1] = xscr->atom;
-			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = 0;
-			ev.xclient.data.l[4] = 0;
+			ev.xclient.data.l[1] = atom;
+			ev.xclient.data.l[2] = get_flags();
+			ev.xclient.data.l[3] = get_word1();
+			ev.xclient.data.l[4] = get_word2();
 
 			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
 			XFlush(dpy);
 
 			gotone = owner;
+			break;
 		}
 	}
 #else
+	XdeScreen *xscr;
 	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
 		if ((xscr->owner = XGetSelectionOwner(dpy, xscr->atom)) && gotone != owner) {
 			XEvent ev;
@@ -3487,14 +3556,15 @@ do_restart(int argc, char *argv[])
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
-			ev.xclient.data.l[2] = owner;
-			ev.xclient.data.l[3] = 0;
-			ev.xclient.data.l[4] = 0;
+			ev.xclient.data.l[2] = get_flags();
+			ev.xclient.data.l[3] = get_word1();
+			ev.xclient.data.l[4] = get_word2();
 
 			XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
 			XFlush(dpy);
 
 			gotone = owner;
+			break;
 		}
 	}
 	if (!gotone) {
@@ -3543,9 +3613,9 @@ do_popmenu(int argc, char *argv[])
 		ev.xclient.format = 32;
 		ev.xclient.data.l[0] = CurrentTime;
 		ev.xclient.data.l[1] = atom;
-		ev.xclient.data.l[2] = owner;
-		ev.xclient.data.l[3] = options.button;
-		ev.xclient.data.l[4] = 0;
+		ev.xclient.data.l[2] = get_flags();
+		ev.xclient.data.l[3] = get_word1();
+		ev.xclient.data.l[4] = get_word2();
 
 		XSendEvent(dpy, owner, False, StructureNotifyMask, &ev);
 		XFlush(dpy);
@@ -3836,6 +3906,65 @@ event_handler_PropertyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
 	return GDK_FILTER_CONTINUE;
 }
 
+static void
+set_flags(long flags)
+{
+	options.dieonerr = (flags & XDE_MENU_FLAG_DIEONERR) ? True : False;
+	options.fileout = (flags & XDE_MENU_FLAG_FILEOUT) ? True : False;
+	options.noicons = (flags & XDE_MENU_FLAG_NOICONS) ? True : False;
+	options.launch = (flags & XDE_MENU_FLAG_LAUNCH) ? True : False;
+	options.tray = (flags & XDE_MENU_FLAG_TRAY) ? True : False;
+	options.generate = (flags & XDE_MENU_FLAG_GENERATE) ? True : False;
+	options.tooltips = (flags & XDE_MENU_FLAG_TOOLTIPS) ? True : False;
+	options.actions = (flags & XDE_MENU_FLAG_ACTIONS) ? True : False;
+	options.unique = (flags & XDE_MENU_FLAG_UNIQUE) ? True : False;
+	if (flags & XDE_MENU_FLAG_EXCLUDED)
+		options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
+	else
+		options.treeflags &= ~GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
+	if (flags & XDE_MENU_FLAG_NODISPLAY)
+		options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_NODISPLAY;
+	else
+		options.treeflags &= ~GMENU_TREE_FLAGS_INCLUDE_NODISPLAY;
+	if (flags & XDE_MENU_FLAG_UNALLOCATED)
+		options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED;
+	else
+		options.treeflags &= ~GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED;
+	if (flags & XDE_MENU_FLAG_EMPTY)
+		options.treeflags |= GMENU_TREE_FLAGS_SHOW_EMPTY;
+	else
+		options.treeflags &= ~GMENU_TREE_FLAGS_SHOW_EMPTY;
+	if (flags & XDE_MENU_FLAG_SEPARATORS)
+		options.treeflags |= GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS;
+	else
+		options.treeflags &= ~GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS;
+	if (flags & XDE_MENU_FLAG_SORT)
+		options.treeflags |= GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+	else
+		options.treeflags &= ~GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+	options.button = (flags >> 16) & 0x0f;
+	options.which = (flags >> 20) & 0x0f;
+	options.screen = (flags >> 24) & 0x0f;
+	options.where = (flags >> 28) & 0x0f;
+}
+
+static void
+set_word1(long word1)
+{
+	options.w = (word1 >> 0) & 0x0ff;
+	options.h = (word1 >> 16) & 0x0ff;
+}
+
+static void
+set_word2(long word2)
+{
+	options.x.value = (word2 >> 0) & 0x07f;
+	options.x.sign = ((word2 >> 15) & 0x01) ? -1 : 1;
+	options.y.value = (word2 >> 16) & 0x07f;
+	options.y.sign = ((word2 >> 31) & 0x01) ? -1 : 1;
+}
+
+
 static GdkFilterReturn
 event_handler_ClientMessage(Display *dpy, XEvent *xev)
 {
@@ -3880,13 +4009,21 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 		update_icon_theme(xscr, xev->xclient.message_type);
 		return GDK_FILTER_REMOVE;
 	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_REFRESH) {
+		// set_flags(xev->xclient.data.l[2]);
+		// set_word1(xev->xclient.data.l[3]);
+		// set_word2(xev->xclient.data.l[4]);
 		menu_refresh(xscr);
 		return GDK_FILTER_REMOVE;
 	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_RESTART) {
+		// set_flags(xev->xclient.data.l[2]);
+		// set_word1(xev->xclient.data.l[3]);
+		// set_word2(xev->xclient.data.l[4]);
 		menu_restart();
 		return GDK_FILTER_REMOVE;
 	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_POPMENU) {
-		options.button = xev->xclient.data.l[3];
+		set_flags(xev->xclient.data.l[2]);
+		set_word1(xev->xclient.data.l[3]);
+		set_word2(xev->xclient.data.l[4]);
 		menu_popmenu(xscr);
 		return GDK_FILTER_REMOVE;
 	}
@@ -3971,6 +4108,8 @@ root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	switch (xev->type) {
 	case PropertyNotify:
 		return event_handler_PropertyNotify(dpy, xev, xscr);
+	case ClientMessage:
+		return event_handler_ClientMessage(dpy, xev);
 	}
 	return GDK_FILTER_CONTINUE;
 }
@@ -3992,6 +4131,8 @@ selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 		return event_handler_SelectionClear(dpy, xev, xscr);
 	case SelectionRequest:
 		return event_handler_SelectionRequest(dpy, xev, xscr);
+	case ClientMessage:
+		return event_handler_ClientMessage(dpy, xev);
 	}
 	EPRINTF("wrong message type for handler %d\n", xev->type);
 	return GDK_FILTER_CONTINUE;
@@ -4006,6 +4147,8 @@ owner_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	switch (xev->type) {
 	case DestroyNotify:
 		return event_handler_DestroyNotify(dpy, xev, xscr);
+	case ClientMessage:
+		return event_handler_ClientMessage(dpy, xev);
 	}
 	EPRINTF("wrong message type for handler %d\n", xev->type);
 	return GDK_FILTER_CONTINUE;
@@ -4659,7 +4802,8 @@ startup(int argc, char *argv[], Command command)
 
 	gtk_init(&argc, &argv);
 
-	init_unique(argc, argv, command);
+	if (options.unique)
+		init_unique(argc, argv, command);
 
 	disp = gdk_display_get_default();
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
