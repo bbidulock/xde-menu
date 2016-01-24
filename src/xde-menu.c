@@ -3182,19 +3182,13 @@ on_about_selected(GtkMenuItem *item, gpointer user_data)
 	return;
 }
 
+static void menu_replace(void);
+static void menu_restart(void);
+
 void
 on_redo_selected(GtkMenuItem *item, gpointer user_data)
 {
-	char **argv;
-	int i;
-
-	argv = calloc(saveArgc + 1, sizeof(*argv));
-	for (i = 0; i < saveArgc; i++)
-		argv[i] = saveArgv[i];
-	DPRINTF("%s: restarting the menus\n", NAME);
-	if (execvp(argv[0], argv) == -1)
-		EPRINTF("%s: %s\n", argv[0], strerror(errno));
-	return;
+	menu_restart();
 }
 
 static void
@@ -3355,9 +3349,6 @@ do_generate(int argc, char *argv[])
 
 	generate_menu(argc, argv);
 }
-
-static void menu_replace(void);
-static void menu_restart(void);
 
 static void
 do_monitor(int argc, char *argv[], Bool replace)
