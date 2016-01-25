@@ -351,7 +351,7 @@ xde_gtk_wkspcs(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
-	/* FIXME */
+	item = xde_gtk_common_wkspcs(ctx);
 	return (item);
 }
 

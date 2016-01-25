@@ -468,6 +468,7 @@ GtkMenuItem *xde_gtk_common_themes(MenuContext *ctx);
 GtkMenuItem *xde_gtk_styles_simple(MenuContext *ctx);
 GtkMenuItem *xde_gtk_themes_simple(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_wmspec(MenuContext *ctx);
+GtkMenuItem *xde_gtk_common_wkspcs(MenuContext *ctx);
 
 void xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data);
 void xde_entry_disconnect(gpointer data, GClosure *closure);

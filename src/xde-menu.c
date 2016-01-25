@@ -2467,6 +2467,336 @@ xde_gtk_common_wmspec(MenuContext *ctx)
 	return (GTK_MENU_ITEM(item));
 }
 
+static WnckScreen * find_screen(GdkDisplay *disp);
+
+void
+workspace_activate(GtkMenuItem *item, gpointer user_data)
+{
+	OPRINTF("Menu item [%s] activated\n", gtk_menu_item_get_label(GTK_MENU_ITEM(item)));
+	wnck_workspace_activate(user_data, gtk_get_current_event_time());
+}
+
+void
+window_activate(GtkMenuItem *item, gpointer user_data)
+{
+	WnckWindow *win = user_data;
+	WnckWorkspace *work = wnck_window_get_workspace(win);
+
+	OPRINTF("Menu item [%s] activated\n", gtk_menu_item_get_label(GTK_MENU_ITEM(item)));
+	wnck_workspace_activate(work, gtk_get_current_event_time());
+	wnck_window_activate(win, gtk_get_current_event_time());
+}
+
+void
+add_workspace(GtkMenuItem *item, gpointer user_data)
+{
+	WnckScreen *scrn = user_data;
+	int count;
+
+	if ((count = wnck_screen_get_workspace_count(scrn)) && count < 32)
+		wnck_screen_change_workspace_count(scrn, count + 1);
+}
+
+void
+del_workspace(GtkMenuItem *item, gpointer user_data)
+{
+	WnckScreen *scrn = user_data;
+	int count;
+
+	if ((count = wnck_screen_get_workspace_count(scrn)) && count > 1)
+		wnck_screen_change_workspace_count(scrn, count - 1);
+}
+
+GtkMenuItem *
+xde_gtk_common_wkspcs(MenuContext *ctx)
+{
+	GdkDisplay *disp;
+	WnckScreen *scrn;
+	GtkWidget *image, *menu, *sep;
+	GtkMenuItem *item;
+	GdkPixbuf *pixbuf = NULL;
+	GList *workspaces, *workspace;
+	GList *windows, *window;
+	GSList *group = NULL;
+	WnckWorkspace *active;
+	int anum;
+	const char *inames[4] = { ctx->name, "preferences-system-windows", "metacity", NULL };
+	char *icon;
+
+	if (!(disp = gdk_display_get_default())) {
+		EPRINTF("cannot get default display\n");
+		return (NULL);
+	}
+	if (!(scrn = find_screen(disp))) {
+		EPRINTF("cannot find screen\n");
+		return (NULL);
+	}
+	wnck_screen_force_update(scrn);
+	menu = gtk_menu_new();
+	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
+	gtk_menu_item_set_submenu(item, menu);
+	gtk_menu_item_set_label(item, "Workspaces");
+	if ((icon = xde_get_icons(ctx, inames))
+	    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
+	    && (image = gtk_image_new_from_pixbuf(pixbuf)))
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_widget_show_all(menu);
+	gtk_widget_show_all(GTK_WIDGET(item));
+	workspaces = wnck_screen_get_workspaces(scrn);
+	windows = wnck_screen_get_windows(scrn);
+	active = wnck_screen_get_active_workspace(scrn);
+	anum = wnck_workspace_get_number(active);
+	{
+		GtkWidget *item, *submenu, *icon;
+		int window_count = 0;
+
+		icon = gtk_image_new_from_icon_name("preferences-system-windows", GTK_ICON_SIZE_MENU);
+		item = gtk_image_menu_item_new_with_label("Iconified Windows");
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
+		gtk_menu_append(menu, item);
+		gtk_widget_show(item);
+
+		submenu = gtk_menu_new();
+
+		for (window = windows; window; window = window->next) {
+			GdkPixbuf *pixbuf;
+			const char *wname;
+			char *label, *p;
+			WnckWindow *win;
+			GtkWidget *witem, *image;
+
+			win = window->data;
+			if (wnck_window_is_skip_tasklist(win))
+				continue;
+			if (wnck_window_is_pinned(win))
+				continue;
+			if (!wnck_window_is_minimized(win))
+				continue;
+			wname = wnck_window_get_name(win);
+			witem = gtk_image_menu_item_new();
+			label = g_strdup(wname);
+			if ((p = strstr(label, " - GVIM")))
+				*p = '\0';
+			if ((p = strstr(label, " - VIM")))
+				*p = '\0';
+			if ((p = strstr(label, " - Mozilla Firefox")))
+				*p = '\0';
+			if (strlen(label) > 44) {
+				strcpy(label + 41, "...");
+				gtk_widget_set_tooltip_text(witem, wname);
+			}
+			p = label;
+			label = g_strdup_printf(" ○ %s", p);
+			g_free(p);
+			gtk_menu_item_set_label(GTK_MENU_ITEM(witem), wname);
+			pixbuf = wnck_window_get_mini_icon(win);
+			if ((image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(witem), image);
+			gtk_menu_append(submenu, witem);
+			gtk_widget_show(witem);
+			g_signal_connect(G_OBJECT(witem), "activate", G_CALLBACK(window_activate), win);
+			window_count++;
+		}
+		if (window_count) {
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+			gtk_widget_show(submenu);
+			gtk_widget_set_sensitive(item, TRUE);
+		} else {
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+			gtk_widget_show(submenu);
+			gtk_widget_set_sensitive(item, FALSE);
+		}
+	}
+	sep = gtk_separator_menu_item_new();
+	gtk_menu_append(menu, sep);
+	gtk_widget_show(sep);
+	for (workspace = workspaces; workspace; workspace = workspace->next) {
+		int wnum, len;
+		const char *name;
+		WnckWorkspace *work;
+		GtkWidget *item, *submenu, *title, *icon;
+		char *label, *wkname, *p;
+		int window_count = 0;
+
+		work = workspace->data;
+		wnum = wnck_workspace_get_number(work);
+		name = wnck_workspace_get_name(work);
+		wkname = strdup(name);
+		while ((p = strrchr(wkname, ' ')) && p[1] == '\0')
+			*p = '\0';
+		for (p = wkname; *p == ' '; p++) ;
+		len = strlen(p);
+		if (len < 6 || strspn(p, " 0123456789") == len)
+			label = g_strdup_printf("Workspace %s", p);
+		else
+			label = g_strdup_printf("[%d] %s", wnum + 1, p);
+		free(wkname);
+#if 1
+		(void) group;
+		(void) anum;
+		icon = gtk_image_new_from_icon_name("preferences-system-windows", GTK_ICON_SIZE_MENU);
+		item = gtk_image_menu_item_new_with_label(label);
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
+#else
+		item = gtk_radio_menu_item_new_with_label(group, label);
+		group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+		if (wnum == anum)
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+		else
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
+#endif
+		gtk_menu_append(menu, item);
+		gtk_widget_show(item);
+
+		submenu = gtk_menu_new();
+
+#if 1
+		icon = gtk_image_new_from_icon_name("preferences-desktop-display", GTK_ICON_SIZE_MENU);
+#if 0
+		p = label;
+		label = g_strdup_printf("%s ——", p);
+		g_free(p);
+#endif
+		title = gtk_image_menu_item_new_with_label(label);
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(title), icon);
+		gtk_menu_append(submenu, title);
+		gtk_widget_show(title);
+		g_signal_connect(G_OBJECT(title), "activate", G_CALLBACK(workspace_activate), work);
+		sep = gtk_separator_menu_item_new();
+		gtk_menu_append(submenu, sep);
+		gtk_widget_show(sep);
+		window_count++;
+#endif
+		g_free(label);
+
+		for (window = windows; window; window = window->next) {
+			GdkPixbuf *pixbuf;
+			const char *wname;
+			char *label;
+			WnckWindow *win;
+			GtkWidget *witem, *image;
+
+			win = window->data;
+			if (!wnck_window_is_on_workspace(win, work))
+				continue;
+			if (wnck_window_is_skip_tasklist(win))
+				continue;
+			if (wnck_window_is_pinned(win))
+				continue;
+			if (wnck_window_is_minimized(win))
+				continue;
+			wname = wnck_window_get_name(win);
+			witem = gtk_image_menu_item_new();
+			label = g_strdup(wname);
+			if ((p = strstr(label, " - GVIM")))
+				*p = '\0';
+			if ((p = strstr(label, " - VIM")))
+				*p = '\0';
+			if ((p = strstr(label, " - Mozilla Firefox")))
+				*p = '\0';
+			if (strlen(label) > 44) {
+				strcpy(label + 41, "...");
+				gtk_widget_set_tooltip_text(witem, wname);
+			}
+			p = label;
+			label = g_strdup_printf(" ● %s", p);
+			g_free(p);
+			gtk_menu_item_set_label(GTK_MENU_ITEM(witem), label);
+			g_free(label);
+			pixbuf = wnck_window_get_mini_icon(win);
+			if ((image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(witem), image);
+			gtk_menu_append(submenu, witem);
+			gtk_widget_show(witem);
+			g_signal_connect(G_OBJECT(witem), "activate", G_CALLBACK(window_activate), win);
+			window_count++;
+		}
+		if (window_count) {
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+			gtk_widget_show(submenu);
+			gtk_widget_set_sensitive(item, TRUE);
+		} else {
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+			gtk_widget_hide(submenu);
+			gtk_widget_set_sensitive(item, FALSE);
+		}
+	}
+	sep = gtk_separator_menu_item_new();
+	gtk_menu_append(menu, sep);
+	gtk_widget_show(sep);
+	{
+		GtkWidget *item, *submenu, *icon;
+		int window_count = 0;
+		
+		icon = gtk_image_new_from_icon_name("preferences-system-windows", GTK_ICON_SIZE_MENU);
+		item = gtk_image_menu_item_new_with_label("All Workspaces");
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
+		gtk_menu_append(menu, item);
+		gtk_widget_show(item);
+
+		submenu = gtk_menu_new();
+
+		for (window = windows; window; window = window->next) {
+			GdkPixbuf *pixbuf;
+			const char *wname;
+			WnckWindow *win;
+			GtkWidget *witem, *image;
+
+			win = window->data;
+			if (wnck_window_is_skip_tasklist(win))
+				continue;
+			if (!wnck_window_is_pinned(win))
+				continue;
+			if (wnck_window_is_minimized(win))
+				continue;
+			wname = wnck_window_get_name(win);
+			witem = gtk_image_menu_item_new_with_label(wname);
+			pixbuf = wnck_window_get_mini_icon(win);
+			if ((image = gtk_image_new_from_pixbuf(pixbuf)))
+				gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(witem), image);
+			gtk_menu_append(submenu, witem);
+			gtk_widget_show(witem);
+			g_signal_connect(G_OBJECT(witem), "activate", G_CALLBACK(window_activate), win);
+			window_count++;
+		}
+		if (window_count) {
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+			gtk_widget_show(submenu);
+			gtk_widget_set_sensitive(item, TRUE);
+		} else {
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+			gtk_widget_hide(submenu);
+			gtk_widget_set_sensitive(item, FALSE);
+		}
+	}
+	sep = gtk_separator_menu_item_new();
+	gtk_menu_append(menu, sep);
+	gtk_widget_show(sep);
+	{
+		GtkWidget *item, *icon;
+		int count;
+
+		icon = gtk_image_new_from_icon_name("preferences-desktop-display", GTK_ICON_SIZE_MENU);
+		item = gtk_image_menu_item_new_with_label("Append a workspace");
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
+		gtk_menu_append(menu, item);
+		gtk_widget_show(item);
+		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(add_workspace), scrn);
+		gtk_widget_set_sensitive(item, ((count = wnck_screen_get_workspace_count(scrn)) && count < 32));
+
+		icon = gtk_image_new_from_icon_name("preferences-desktop-display", GTK_ICON_SIZE_MENU);
+		item = gtk_image_menu_item_new_with_label("Remove last workspace");
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
+		gtk_menu_append(menu, item);
+		gtk_widget_show(item);
+		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(del_workspace), scrn);
+		gtk_widget_set_sensitive(item, ((count = wnck_screen_get_workspace_count(scrn)) && count > 1));
+	}
+
+	gtk_widget_show_all(menu);
+	return (item);
+}
+
 static GMenuTree *
 get_menu(int argc, char *argv[])
 {
