@@ -317,6 +317,7 @@ struct MenuContext {
 	} styles;
 	GMenuTree *tree;
 	GHashTable *xsessions;
+	GtkMenu *menu;
 	int level;
 	char *indent;
 	GtkIconLookupFlags iconflags;

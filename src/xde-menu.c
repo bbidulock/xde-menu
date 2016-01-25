@@ -2515,6 +2515,10 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 	if (file && file != stdout)
 		fclose(file);
 	g_list_free_full(menu, &xde_menu_free);
+	if (ctx->menu) {
+		g_object_unref(ctx->menu);
+		ctx->menu = NULL;
+	}
 }
 
 
@@ -2831,6 +2835,8 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 	free(xscr->wmname);
 	xscr->wmname = NULL;
 	xscr->goodwm = False;
+	/* FIXME: need to check and free tree, xsessions and menu in old context before
+	   assigning a new one. */
 	if ((name = wnck_screen_get_window_manager_name(wnck))) {
 		xscr->wmname = strdup(name);
 		*strchrnul(xscr->wmname, ' ') = '\0';
@@ -3136,20 +3142,41 @@ static gboolean
 on_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
+	MenuContext *ctx;
+	GMenuTree *tree;
 	GdkEventButton *ev;
-	GtkMenu *menu;
+	int screen = 0;
 
 	ev = (typeof(ev)) event;
 	if (ev->button != 1)
 		return GTK_EVENT_PROPAGATE;
-	if (!gmenu_tree_load_sync(xscr->context->tree, NULL)) {
-		EPRINTF("could not sync menu %s\n", options.rootmenu);
+	if (!(ctx = xscr->context)) {
+		if (xscr->scrn)
+			screen = gdk_screen_get_number(xscr->scrn);
+		EPRINTF("no menu context for screen %d\n", screen);
 		return GTK_EVENT_STOP;
 	}
-	DPRINTF("calling create!\n");
-	menu = xscr->context->gtk.create(xscr->context, options.style, NULL);
-	DPRINTF("done create!\n");
-	gtk_menu_popup(menu, NULL, NULL, gtk_status_icon_position_menu, icon, ev->button, ev->time);
+	if (!ctx->menu) {
+		if (!(tree = ctx->tree)) {
+			if (xscr->scrn)
+				screen = gdk_screen_get_number(xscr->scrn);
+			EPRINTF("no menu tree for context for screen %d\n", screen);
+			return GTK_EVENT_STOP;
+		}
+		if (!gmenu_tree_load_sync(tree, NULL)) {
+			EPRINTF("could not sync menu %s\n", options.rootmenu);
+			return GTK_EVENT_STOP;
+		}
+		DPRINTF("calling create!\n");
+		if (!(ctx->menu = ctx->gtk.create(ctx, options.style, NULL))) {
+			EPRINTF("could not create menu for style %u\n", options.style);
+			return GTK_EVENT_STOP;
+		}
+		g_object_ref(ctx->menu);
+		DPRINTF("done create!\n");
+	}
+	gtk_menu_popup(ctx->menu, NULL, NULL, gtk_status_icon_position_menu, icon, ev->button,
+		       ev->time);
 	return GTK_EVENT_STOP;
 }
 
@@ -3860,7 +3887,6 @@ menu_popmenu(XdeScreen *xscr)
 {
 	MenuContext *ctx;
 	GMenuTree *tree;
-	GtkMenu *menu;
 	int screen = 0;
 
 	if (!(ctx = xscr->context)) {
@@ -3869,24 +3895,27 @@ menu_popmenu(XdeScreen *xscr)
 		EPRINTF("no menu context for screen %d\n", screen);
 		return;
 	}
-	if (!(tree = ctx->tree)) {
-		if (xscr->scrn)
-			screen = gdk_screen_get_number(xscr->scrn);
-		EPRINTF("no menu tree for context for screen %d\n", screen);
-		return;
+	if (!ctx->menu) {
+		if (!(tree = ctx->tree)) {
+			if (xscr->scrn)
+				screen = gdk_screen_get_number(xscr->scrn);
+			EPRINTF("no menu tree for context for screen %d\n", screen);
+			return;
+		}
+		DPRINTF("%s: poping the GTK+ menu for button %d\n", NAME, options.button);
+		if (!gmenu_tree_load_sync(tree, NULL)) {
+			EPRINTF("could not sync menu %s\n", options.rootmenu);
+			return;
+		}
+		DPRINTF("calling create!\n");
+		if (!(ctx->menu = ctx->gtk.create(ctx, options.style, NULL))) {
+			EPRINTF("could not create menu for style %u\n", options.style);
+			return;
+		}
+		// g_object_ref(ctx->menu);
+		DPRINTF("done create!\n");
 	}
-	DPRINTF("%s: poping the GTK+ menu for button %d\n", NAME, options.button);
-	if (!gmenu_tree_load_sync(tree, NULL)) {
-		EPRINTF("could not sync menu %s\n", options.rootmenu);
-		return;
-	}
-	DPRINTF("calling create!\n");
-	if (!(menu = ctx->gtk.create(ctx, options.style, NULL))) {
-		EPRINTF("could not create menu for style %u\n", options.style);
-		return;
-	}
-	DPRINTF("done create!\n");
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xscr->wnck,
+	gtk_menu_popup(GTK_MENU(ctx->menu), NULL, NULL, position_menu, xscr->wnck,
 		       options.button, options.timestamp);
 	return;
 }
