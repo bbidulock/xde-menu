@@ -2520,7 +2520,6 @@ xde_gtk_common_wkspcs(MenuContext *ctx)
 	GSList *group = NULL;
 	WnckWorkspace *active;
 	int anum;
-	const char *inames[4] = { ctx->name, "preferences-system-windows", "metacity", NULL };
 	char *icon;
 
 	if (!(disp = gdk_display_get_default())) {
@@ -2535,8 +2534,8 @@ xde_gtk_common_wkspcs(MenuContext *ctx)
 	menu = gtk_menu_new();
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	gtk_menu_item_set_submenu(item, menu);
-	gtk_menu_item_set_label(item, "Workspaces");
-	if ((icon = xde_get_icons(ctx, inames))
+	gtk_menu_item_set_label(item, "Workspace List");
+	if ((icon = xde_get_icon(ctx, "preferences-desktop-display"))
 	    && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
 	    && (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
