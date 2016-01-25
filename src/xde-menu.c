@@ -3062,9 +3062,16 @@ position_specified(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 
 	sw = wnck_screen_get_width(scrn);
 	sh = wnck_screen_get_height(scrn);
+	DPRINTF("screen width = %d\n", sw);
+	DPRINTF("screen height = %d\n", sh);
 
 	x1 = (options.x.sign < 0) ? sw - options.x.value : options.x.value;
 	y1 = (options.y.sign < 0) ? sh - options.y.value : options.y.value;
+
+	DPRINTF("geometry x1 = %d\n", x1);
+	DPRINTF("geometry y1 = %d\n", y1);
+	DPRINTF("geometry w = %d\n", options.w);
+	DPRINTF("geometry h = %d\n", options.h);
 
 	if (!options.w && !options.h) {
 		*x = x1;
@@ -3076,6 +3083,8 @@ position_specified(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 		gtk_widget_size_request(GTK_WIDGET(menu), &req);
 		x2 = x1 + options.w;
 		y2 = y1 + options.h;
+		DPRINTF("geometry x2 = %d\n", x2);
+		DPRINTF("geometry y2 = %d\n", y2);
 
 		if (x1 + req.width < sw)
 			*x = x1;
@@ -3091,6 +3100,7 @@ position_specified(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 		else
 			*y = 0;
 	}
+	DPRINTF("placing menu at +%d+%d\n", *x, *y);
 	return TRUE;
 }
 
