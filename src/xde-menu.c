@@ -1550,7 +1550,6 @@ xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 	GIcon *gicon = NULL;
 	char *icon;
 
-	/* TODO: we should do more here (like center and boldface the label). */
 	if (!(dir = gmenu_tree_header_get_directory(hdr)))
 		return (item);
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
@@ -1576,6 +1575,23 @@ xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 		pixbuf = NULL;
 	}
 	free(icon);
+	if (GTK_IS_BIN(item)) {
+		GtkWidget *child = gtk_bin_get_child(GTK_BIN(item));
+
+		if (GTK_IS_LABEL(child)) {
+			gchar *markup;
+			gint xpad = 0, ypad = 0;
+
+			markup = g_markup_printf_escaped("<b><u>%s</u></b>", name);
+			gtk_label_set_markup(GTK_LABEL(child), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(child), 0.5, 0.5);
+			gtk_misc_get_padding(GTK_MISC(child), &xpad, &ypad);
+			if (ypad < 3)
+				ypad = 3;
+			gtk_misc_set_padding(GTK_MISC(child), xpad, ypad);
+		}
+	}
 	return (item);
 }
 
