@@ -674,7 +674,7 @@ xde_get_command(GDesktopAppInfo *info, const char *appid, const char *icon)
 }
 
 char *
-xde_get_action_command(GDesktopAppInfo *info, const char *action)
+xde_get_action_exec(GDesktopAppInfo *info, const char *action)
 {
 	char *aexec = NULL;
 	const char *exec, *path;
@@ -703,7 +703,7 @@ xde_get_action(GDesktopAppInfo *info, const char *appid, const char *icon, const
 	const char *name;
 	gboolean terminal;
 
-	if (!(aexec = xde_get_action_command(info, action)))
+	if (!(aexec = xde_get_action_exec(info, action)))
 		return (NULL);
 
 	name = g_desktop_app_info_get_action_name(info, action);
@@ -1977,7 +1977,7 @@ xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *in
 			markup[i++] = g_markup_printf_escaped("<b>GenericName:</b> %s", value);
 		if ((value = g_app_info_get_description(G_APP_INFO(info))))
 			markup[i++] = g_markup_printf_escaped("<b>Comment:</b> %s", value);
-		if ((exec = xde_get_action_command(info, action))) {
+		if ((exec = xde_get_action_exec(info, action))) {
 			markup[i++] = g_markup_printf_escaped("<b>Exec:</b> %s", exec);
 			g_free(exec);
 		}
