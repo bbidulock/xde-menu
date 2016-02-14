@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src man data
 
-EXTRA_DIST = INSTALL COPYING AUTHORS AUTHORS.in NEWS NEWS.in README README.in THANKS THANKS.in TODO TODO.in ChangeLog MENUS.html MENUS.asciidoc
+EXTRA_DIST = INSTALL COPYING AUTHORS AUTHORS.in NEWS NEWS.in README README.in README.md README.md.in THANKS THANKS.in TODO TODO.in ChangeLog
 
 ChangeLog:
 	( \
@@ -17,6 +17,9 @@ AUTHORS.in:
 	  echo "" ; \
 	  git log|grep '^Author:'|awk '{if(!authors[$$0]){print$$0;authors[$$0]=1;}}'|tac \
 	)>$@
+
+README.md: README.md.in
+	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
 
 README: README.in
 	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
@@ -33,10 +36,12 @@ THANKS: THANKS.in
 TODO: TODO.in
 	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
 
+dist_noinst_SCRIPTS = autogen.sh configure.sh rebuild.sh
+
 MENUS.html: MENUS.asciidoc
 	asciidoc -o - $< >$@
 
-dist_noinst_SCRIPTS = autogen.sh configure.sh rebuild.sh
+EXTRA_DIST += MENUS.html MENUS.asciidoc
 
 scritps = \
 	xde-menugen \
