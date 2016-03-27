@@ -10,5 +10,6 @@ This is the todo list for xde-menu:
 - [ ] Include window arrangement submenus.
 - [ ] Provide option to exit main process after window-manager root menu
       has been generated.
+- [X] Panel integration.
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
