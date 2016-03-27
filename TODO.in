@@ -11,5 +11,7 @@ This is the todo list for xde-menu:
 - [ ] Provide option to exit main process after window-manager root menu
       has been generated.
 - [X] Panel integration.
+- [ ] Provide right-click technique to pop-up action menus, allowing
+      left click to perform the default action.
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
