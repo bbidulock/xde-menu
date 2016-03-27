@@ -1,3 +1,14 @@
 @PACKAGE@ -- TODO file.  @DATE@
 
+This is the todo list for xde-menu:
+
+- [ ] Complete documentation (manual page).
+- [ ] Implement more window-manager-specific submenus.
+- [ ] Include workspaces submenu.
+- [ ] Include windows submenu.
+- [ ] Include desktop configuration submenus.
+- [ ] Include window arrangement submenus.
+- [ ] Provide option to exit main process after window-manager root menu
+      has been generated.
+
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
