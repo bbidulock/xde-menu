@@ -207,6 +207,15 @@ no command option is specified, or when the program is invoked as
 B<xde-menugen>.  When combined with the B<--notray> option, the program
 will background itself and service B<--popmenu> requests only.
 
+=item B<-x>, B<--exit>
+
+When running in the foreground and generating window manager root menus,
+exit the main process immediately after generating menus.  This permits
+window manager root menus to be generated before launching the window
+manager, but not waiting longer than necessary.  The default is to run
+in the foreground and continue to run in the foreground, even after
+generating window manager root menus.
+
 =item B<--verbose>, B<-v> [I<LEVEL>]
 
 When generating output, generate more verbose output.  Increments or

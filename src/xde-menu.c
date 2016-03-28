@@ -107,6 +107,7 @@ Options current = {
 	.launch = True,
 	.tray = True,
 	.generate = True,
+	.exit = False,
 };
 
 Options options = {
@@ -116,6 +117,7 @@ Options options = {
 	.launch = True,
 	.tray = True,
 	.generate = True,
+	.exit = False,
 };
 
 Options defaults = {
@@ -155,6 +157,7 @@ Options defaults = {
 	.treeflags = 0,
 	.tooltips = 0,
 	.actions = 0,
+	.exit = False,
 };
 
 XdeScreen *screens = NULL;
@@ -2974,6 +2977,22 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 	}
 }
 
+static void
+fork_and_exit()
+{
+	pid_t pid = getpid();
+
+	if ((pid = fork()) < 0) {
+		EPRINTF("%s\n", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	if (!pid)
+		/* child continues */
+		return;
+	/* parent exits */
+	exit(EXIT_SUCCESS);
+}
+
 
 static void
 make_menu(int argc, char *argv[])
@@ -3010,6 +3029,8 @@ make_menu(int argc, char *argv[])
 		ctx->xsessions = NULL;
 		g_signal_connect(G_OBJECT(tree), "changed", G_CALLBACK(menu_tree_changed), ctx);
 		menu_tree_changed(tree, ctx);
+		if (options.exit)
+			fork_and_exit();
 	}
 #endif
 }
@@ -3039,6 +3060,8 @@ generate_menu(int argc, char *argv[])
 	ctx->level = 0;
 	ctx->indent = calloc(64, sizeof(*ctx->indent));
 	menu_tree_changed(tree, ctx);
+	if (options.exit)
+		fork_and_exit();
 }
 
 #else				/* HAVE_GNOME_MENUS_3 */
@@ -5676,10 +5699,12 @@ General options:\n\
         do not install a system tray icon [default: %31$s]\n\
     --nogenerate\n\
         do not generate window manager root menu [default: %32$s]\n\
+    -x, --exit\n\
+        exit main process after generating menu [default: %33$s]\n\
     -D, --debug [LEVEL]\n\
-        increment or set debug LEVEL [default: %33$d]\n\
+        increment or set debug LEVEL [default: %34$d]\n\
     -v, --verbose [LEVEL]\n\
-        increment or set output verbosity LEVEL [default: %34$d]\n\
+        increment or set output verbosity LEVEL [default: %35$d]\n\
         this option may be repeated.\n\
 ", argv[0]
 	, defaults.wmname
@@ -5713,6 +5738,7 @@ General options:\n\
 	, show_bool(defaults.dieonerr)
 	, show_bool(!defaults.tray)
 	, show_bool(!defaults.generate)
+	, show_bool(defaults.exit)
 	, defaults.debug
 	, defaults.output
 );
@@ -6376,6 +6402,7 @@ parse_args(int argc, char *argv[])
 			{"die-on-error",no_argument,		NULL,	'e'},
 			{"notray",	no_argument,		NULL,	 2 },
 			{"nogenerate",	no_argument,		NULL,	 3 },
+			{"exit",	no_argument,		NULL,	'x'},
 			{"verbose",	optional_argument,	NULL,	'v'},
 			{"debug",	optional_argument,	NULL,	'D'},
 
@@ -6405,10 +6432,10 @@ parse_args(int argc, char *argv[])
 		/* *INDENT-ON* */
 
 		c = getopt_long_only(argc, argv,
-				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:ev::D::GPmFSRqhVCH?",
+				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:exv::D::GPmFSRqhVCH?",
 				     long_options, &option_index);
 #else
-		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
+		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:exv:D:GPmFSRqhVCH?");
 #endif
 		if (c == -1) {
 			DPRINTF("%s: done options processing\n", argv[0]);
@@ -6585,6 +6612,9 @@ parse_args(int argc, char *argv[])
 			if (options.command == CommandMenugen)
 				goto bad_option;
 			options.generate = False;
+			break;
+		case 'x':	/* -x, --exit */
+			options.exit = True;
 			break;
 
 		case 10:	/* --excluded */
@@ -6818,6 +6848,7 @@ main(int argc, char *argv[])
 			{"die-on-error",no_argument,		NULL,	'e'},
 			{"notray",	no_argument,		NULL,	 2 },
 			{"nogenerate",	no_argument,		NULL,	 3 },
+			{"exit",	no_argument,		NULL,	'x'},
 			{"verbose",	optional_argument,	NULL,	'v'},
 			{"debug",	optional_argument,	NULL,	'D'},
 
@@ -6847,10 +6878,10 @@ main(int argc, char *argv[])
 		/* *INDENT-ON* */
 
 		c = getopt_long_only(argc, argv,
-				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:ev::D::GPmFSRqhVCH?",
+				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:exv::D::GPmFSRqhVCH?",
 				     long_options, &option_index);
 #else
-		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
+		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:exv:D:GPmFSRqhVCH?");
 #endif
 		if (c == -1) {
 			DPRINTF("%s: done options processing\n", argv[0]);
@@ -7027,6 +7058,9 @@ main(int argc, char *argv[])
 			if (options.command == CommandMenugen)
 				goto bad_option;
 			options.generate = False;
+			break;
+		case 'x':	/* -x, --exit */
+			options.exit = True;
 			break;
 
 		case 10: /* --excluded */

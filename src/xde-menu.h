@@ -281,6 +281,7 @@ typedef struct {
 	Bool tooltips;
 	Bool actions;
 	Bool unique;
+	Bool exit;
 } Options;
 
 #define XDE_MENU_FLAG_DIEONERR		(1<< 0)
