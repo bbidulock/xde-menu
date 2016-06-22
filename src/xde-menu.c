@@ -62,6 +62,13 @@ SmcConn smcConn = NULL;
 int saveArgc;
 char **saveArgv;
 
+#define RESNAME "xde-menu"
+#define RESCLAS "XDE-Menu"
+#define RESTITL "XDG Compliant Menu"
+
+#define USRDFLT "%s/.config/xde-menu/rc"
+#define APPDFLT	"/usr/share/X11/app-defaults/" RESCLAS
+
 int cmdArgc;
 char **cmdArgv;
 
@@ -5745,6 +5752,519 @@ General options:\n\
 	/* *INDENT-ON* */
 }
 
+void
+put_nc_resource(XrmDatabase *xrdb, const char *res_name, const char *resource, const char *value)
+{
+	static char clas[64];
+
+	snprintf(clas, sizeof(clas), "%s.%s", res_name, resource);
+	XrmPutStringResource(xrdb, clas, value);
+}
+
+void
+put_resource(XrmDatabase *xrdb, const char *resource, const char *value)
+{
+	put_nc_resource(xrdb, RESNAME, resource, value);
+}
+
+const char *
+putXrmColor(const GdkColor *color)
+{
+	static gchar *string = NULL;
+
+	if (string)
+		g_free(string);
+	string = gdk_color_to_string(color);
+	return (string);
+}
+
+const char *
+putXrmFont(const PangoFontDescription *font)
+{
+	return pango_font_description_to_string(font);
+}
+
+const char *
+putXrmInt(int val)
+{
+	static char string[64] = { 0, };
+
+	snprintf(string, sizeof(string), "%d", val);
+	return (string);
+}
+
+const char *
+putXrmUint(int val)
+{
+	static char string[64] = { 0, };
+
+	snprintf(string, sizeof(string), "%u", val);
+	return (string);
+}
+
+const char *
+putXrmDouble(double floating)
+{
+	static char string[64] = { 0, };
+
+	snprintf(string, sizeof(string), "%f", floating);
+	return (string);
+}
+
+const char *
+putXrmBool(Bool boolean)
+{
+	return (boolean ? "true" : "false");
+}
+
+const char *
+putXrmString(const char *string)
+{
+	if (!string)
+		return ("");
+	return (string);
+}
+
+const char *
+putXrmWhich(const UseScreen which)
+{
+	switch (which) {
+	case UseScreenDefault:
+		return ("default");
+	case UseScreenActive:
+		return ("active");
+	case UseScreenFocused:
+		return ("focused");
+	case UseScreenPointer:
+		return ("pointer");
+	case UseScreenSpecified:
+		return putXrmInt(options.screen);
+	}
+	return ("");
+}
+
+const char *
+putXrmWhere(const MenuPosition where)
+{
+	static char string[64] = { 0, };
+
+	switch (where) {
+	case PositionDefault:
+		return ("default");
+	case PositionPointer:
+		return ("pointer");
+	case PositionCenter:
+		return ("center");
+	case PositionTopLeft:
+		return ("topleft");
+	case PositionBottomRight:
+		return ("bottomright");
+	case PositionSpecified:
+		snprintf(string, sizeof(string), "%dx%d%c%u%c%u", options.w, options.h,
+			 (options.x.sign < 0) ? '-' : '+', (unsigned) abs(options.x.value),
+			 (options.y.sign < 0) ? '-' : '+', (unsigned) abs(options.y.value));
+		return (string);
+	}
+	return ("");
+}
+
+void
+put_resources(void)
+{
+	XrmDatabase rdb = NULL;
+	Display *dpy;
+
+	if (!options.display)
+		return;
+
+	if (!(dpy = XOpenDisplay(NULL))) {
+		EPRINTF("could not open display %s\n", options.display);
+		exit(EXIT_FAILURE);
+	}
+	rdb = XrmGetDatabase(dpy);
+
+	put_resource(&rdb, "debug", putXrmInt(options.debug));
+	put_resource(&rdb, "rootmenu", putXrmString(options.rootmenu));
+	put_resource(&rdb, "dieonerr", putXrmBool(options.dieonerr));
+	put_resource(&rdb, "fileout", putXrmBool(options.fileout));
+	put_resource(&rdb, "filename", putXrmString(options.filename));
+	put_resource(&rdb, "noicons", putXrmBool(options.noicons));
+	put_resource(&rdb, "theme", putXrmString(options.theme));
+	put_resource(&rdb, "launch", putXrmBool(options.launch));
+	put_resource(&rdb, "runhist", putXrmString(options.runhist));
+	put_resource(&rdb, "recapps", putXrmString(options.recapps));
+	put_resource(&rdb, "recently", putXrmString(options.recently));
+	put_resource(&rdb, "recent", putXrmString(options.recent));
+	put_resource(&rdb, "keep", putXrmString(options.keep));
+	put_resource(&rdb, "menu", putXrmString(options.menu));
+	put_resource(&rdb, "display", putXrmString(options.display));
+	put_resource(&rdb, "button", putXrmUint(options.button));
+	put_resource(&rdb, "keypress", putXrmString(options.keypress));
+	put_resource(&rdb, "which", putXrmWhich(options.which));
+	put_resource(&rdb, "where", putXrmWhere(options.where));
+	put_resource(&rdb, "tray", putXrmBool(options.tray));
+	put_resource(&rdb, "generate", putXrmBool(options.generate));
+	put_resource(&rdb, "excluded", putXrmBool(options.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED));
+	put_resource(&rdb, "nodisplay", putXrmBool(options.treeflags & GMENU_TREE_FLAGS_INCLUDE_NODISPLAY));
+	put_resource(&rdb, "unallocated", putXrmBool(options.treeflags & GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED));
+	put_resource(&rdb, "empty", putXrmBool(options.treeflags & GMENU_TREE_FLAGS_SHOW_EMPTY));
+	put_resource(&rdb, "separators", putXrmBool(options.treeflags & GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS));
+	put_resource(&rdb, "sort", putXrmBool(options.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME));
+	put_resource(&rdb, "tooltips", putXrmBool(options.tooltips));
+	put_resource(&rdb, "actions", putXrmBool(options.actions));
+	put_resource(&rdb, "unique", putXrmBool(options.unique));
+	put_resource(&rdb, "exit", putXrmBool(options.exit));
+	if (rdb)
+		XrmSetDatabase(dpy, rdb);
+	XCloseDisplay(dpy);
+}
+
+const char *
+get_nc_resource(XrmDatabase xrdb, const char *res_name, const char *res_class,
+		const char *resource)
+{
+	char *type;
+	static char name[64];
+	static char clas[64];
+	XrmValue value = { 0, NULL };
+
+	snprintf(name, sizeof(name), "%s.%s", res_name, resource);
+	snprintf(clas, sizeof(clas), "%s.%s", res_class, resource);
+	if (XrmGetResource(xrdb, name, clas, &type, &value)) {
+		if (value.addr && *(char *) value.addr) {
+			DPRINTF("%s:\t\t%s\n", clas, value.addr);
+			return (const char *) value.addr;
+		} else
+			DPRINTF("%s:\t\t%s\n", clas, value.addr);
+	} else
+		DPRINTF("%s:\t\t%s\n", clas, "ERROR!");
+	return (NULL);
+}
+
+const char *
+get_resource(XrmDatabase xrdb, const char *resource, const char *dflt)
+{
+	const char *value;
+
+	if (!(value = get_nc_resource(xrdb, RESNAME, RESCLAS, resource)))
+		value = dflt;
+	return (value);
+}
+
+const char *
+get_xlogin_resource(XrmDatabase xrdb, const char *resource, const char *dflt)
+{
+	const char *value;
+
+	if (!(value = get_nc_resource(xrdb, "xlogin.Login", "Xlogin.Login", resource)))
+		value = dflt;
+	return (value);
+}
+
+const char *
+get_any_resource(XrmDatabase xrdb, const char *resource, const char *dflt)
+{
+	const char *value;
+
+	if (!(value = get_resource(xrdb, resource, NULL)))
+		if (!(value = get_xlogin_resource(xrdb, resource, NULL)))
+			value = dflt;
+	return (value);
+}
+
+const char *
+get_chooser_resource(XrmDatabase xrdb, const char *resource, const char *dflt)
+{
+	const char *value;
+
+	if (!(value = get_nc_resource(xrdb, "chooser", "Chooser", resource)))
+		value = dflt;
+	return (value);
+}
+
+gboolean
+getXrmColor(const char *val, GdkColor **color)
+{
+	GdkColor c, *p;
+
+	if (gdk_color_parse(val, &c) && (p = calloc(1, sizeof(*p)))) {
+		*p = c;
+		free(*color);
+		*color = p;
+		return TRUE;
+	}
+	EPRINTF("could not parse color '%s'\n", val);
+	return FALSE;
+}
+
+gboolean
+getXrmFont(const char *val, PangoFontDescription **face)
+{
+	FcPattern *pattern;
+	PangoFontDescription *font;
+
+	if ((pattern = FcNameParse((FcChar8 *)val))) {
+		if ((font = pango_fc_font_description_from_pattern(pattern, TRUE))) {
+			pango_font_description_free(*face);
+			*face = font;
+			DPRINTF("Font description is: %s\n",
+					pango_font_description_to_string(font));
+			return TRUE;
+		}
+		FcPatternDestroy(pattern);
+	}
+	EPRINTF("could not parse font descriptikon '%s'\n", val);
+	return FALSE;
+}
+
+gboolean
+getXrmInt(const char *val, int *integer)
+{
+	*integer = strtol(val, NULL, 0);
+	return TRUE;
+}
+
+gboolean
+getXrmUint(const char *val, unsigned int *integer)
+{
+	*integer = strtoul(val, NULL, 0);
+	return TRUE;
+}
+
+gboolean
+getXrmDouble(const char *val, double *floating)
+{
+	const struct lconv *lc = localeconv();
+	char radix, *copy = strdup(val);
+
+	if ((radix = lc->decimal_point[0]) != '.' && strchr(copy, '.'))
+		*strchr(copy, '.') = radix;
+
+	*floating = strtod(copy, NULL);
+	DPRINTF("Got decimal value %s, translates to %f\n", val, *floating);
+	free(copy);
+	return TRUE;
+}
+
+gboolean
+getXrmBool(const char *val, Bool *boolean)
+{
+	if (!strncasecmp(val, "true", strlen(val))) {
+		*boolean = True;
+		return TRUE;
+	}
+	if (!strncasecmp(val, "false", strlen(val))) {
+		*boolean = False;
+		return TRUE;
+	}
+	EPRINTF("could not parse boolean'%s'\n", val);
+	return FALSE;
+}
+
+gboolean
+getXrmString(const char *val, char **string)
+{
+	char *tmp = NULL;
+
+	if (val && val[0])
+		tmp = strdup(val);
+	free(*string);
+	*string = tmp;
+	return TRUE;
+}
+
+static void
+get_resources(void)
+{
+	XrmDatabase rdb;
+	Display *dpy;
+	const char *val;
+	char *usrdflt;
+	Bool flag = False;
+
+	DPRINT();
+	XrmInitialize();
+	if (options.display) {
+		if (!(dpy = XOpenDisplay(NULL))) {
+			EPRINTF("could not open display %s\n", options.display);
+			exit(EXIT_FAILURE);
+		}
+		rdb = XrmGetDatabase(dpy);
+		if (!rdb)
+			DPRINTF("no resource manager database allocated\n");
+		XCloseDisplay(dpy);
+	}
+	usrdflt = g_strdup_printf(USRDFLT, getenv("HOME"));
+	if (!XrmCombineFileDatabase(usrdflt, &rdb, False))
+		EPRINTF("could not open rcfile %s\n", usrdflt);
+	g_free(usrdflt);
+	if (!XrmCombineFileDatabase(APPDFLT, &rdb, False))
+		EPRINTF("could not open rcfile %s\n", APPDFLT);
+	if (!rdb) {
+		DPRINTF("no resource manager database found\n");
+		rdb = XrmGetStringDatabase("");
+	}
+	if ((val = get_resource(rdb, "debug", "0"))) {
+		getXrmInt(val, &options.debug);
+	}
+	if ((val = get_resource(rdb, "rootmenu", NULL))) {
+		getXrmString(val, &options.rootmenu);
+	}
+	if ((val = get_resource(rdb, "dieonerr", NULL))) {
+		getXrmBool(val, &options.dieonerr);
+	}
+	if ((val = get_resource(rdb, "fileout", NULL))) {
+		getXrmBool(val, &options.fileout);
+	}
+	if ((val = get_resource(rdb, "filename", NULL))) {
+		getXrmString(val, &options.filename);
+	}
+	if ((val = get_resource(rdb, "noicons", NULL))) {
+		getXrmBool(val, &options.noicons);
+	}
+	if ((val = get_resource(rdb, "theme", NULL))) {
+		getXrmString(val, &options.theme);
+	}
+	if ((val = get_resource(rdb, "launch", NULL))) {
+		getXrmBool(val, &options.launch);
+	}
+	if ((val = get_resource(rdb, "runhist", NULL))) {
+		getXrmString(val, &options.runhist);
+	}
+	if ((val = get_resource(rdb, "recapps", NULL))) {
+		getXrmString(val, &options.recapps);
+	}
+	if ((val = get_resource(rdb, "recently", NULL))) {
+		getXrmString(val, &options.recently);
+	}
+	if ((val = get_resource(rdb, "recent", NULL))) {
+		getXrmString(val, &options.recent);
+	}
+	if ((val = get_resource(rdb, "keep", NULL))) {
+		getXrmString(val, &options.keep);
+	}
+	if ((val = get_resource(rdb, "menu", NULL))) {
+		getXrmString(val, &options.menu);
+	}
+	if ((val = get_resource(rdb, "display", NULL))) {
+		getXrmString(val, &options.display);
+	}
+	if ((val = get_resource(rdb, "button", NULL))) {
+		getXrmUint(val, &options.button);
+	}
+	if ((val = get_resource(rdb, "keypress", NULL))) {
+		getXrmString(val, &options.keypress);
+	}
+	if ((val = get_resource(rdb, "which", NULL))) {
+		if (!strncasecmp(val, "default", strlen(val)))
+			options.which = UseScreenDefault;
+		else if (!strncasecmp(val, "active", strlen(val)))
+			options.which = UseScreenActive;
+		else if (!strncasecmp(val, "focused", strlen(val)))
+			options.which = UseScreenFocused;
+		else if (!strncasecmp(val, "pointer", strlen(val)))
+			options.which = UseScreenPointer;
+		else {
+			options.which = UseScreenSpecified;
+			getXrmInt(val, &options.screen);
+		}
+	}
+	if ((val = get_resource(rdb, "where", NULL))) {
+		if (!strncasecmp(val, "default", strlen(val)))
+			options.where = PositionDefault;
+		else if (!strncasecmp(val, "pointer", strlen(val)))
+			options.where = PositionPointer;
+		else if (!strncasecmp(val, "center", strlen(val)))
+			options.where = PositionCenter;
+		else if (!strncasecmp(val, "topleft", strlen(val)))
+			options.where = PositionTopLeft;
+		else if (!strncasecmp(val, "bottomright", strlen(val)))
+			options.where = PositionBottomRight;
+		else {
+			int mask, x = 0, y = 0;
+			unsigned int w = 0, h = 0;
+
+			mask = XParseGeometry(val, &x, &y, &w, &h);
+			if ((mask & XValue) && (mask & YValue)) {
+				options.where = PositionSpecified;
+				options.x.value = x;
+				options.x.sign = (mask & XNegative) ? -1 : 1;
+				options.y.value = y;
+				options.y.sign = (mask & YNegative) ? -1 : 1;
+				options.w = w;
+				options.h = h;
+			}
+		}
+	}
+	if ((val = get_resource(rdb, "tray", NULL))) {
+		getXrmBool(val, &options.tray);
+	}
+	if ((val = get_resource(rdb, "generate", NULL))) {
+		getXrmBool(val, &options.generate);
+	}
+	if ((val = get_resource(rdb, "excluded", NULL))) {
+		if (getXrmBool(val, &flag)) {
+			if (flag)
+				options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
+			else
+				options.treeflags &= ~GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
+		}
+	}
+	if ((val = get_resource(rdb, "nodisplay", NULL))) {
+		if (getXrmBool(val, &flag)) {
+			if (flag)
+				options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_NODISPLAY;
+			else
+				options.treeflags &= ~GMENU_TREE_FLAGS_INCLUDE_NODISPLAY;
+		}
+	}
+	if ((val = get_resource(rdb, "unallocated", NULL))) {
+		if (getXrmBool(val, &flag)) {
+			if (flag)
+				options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED;
+			else
+				options.treeflags &= ~GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED;
+		}
+	}
+	if ((val = get_resource(rdb, "empty", NULL))) {
+		if (getXrmBool(val, &flag)) {
+			if (flag)
+				options.treeflags |= GMENU_TREE_FLAGS_SHOW_EMPTY;
+			else
+				options.treeflags &= ~GMENU_TREE_FLAGS_SHOW_EMPTY;
+		}
+	}
+	if ((val = get_resource(rdb, "separators", NULL))) {
+		if (getXrmBool(val, &flag)) {
+			if (flag)
+				options.treeflags |= GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS;
+			else
+				options.treeflags &= ~GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS;
+		}
+	}
+	if ((val = get_resource(rdb, "sort", NULL))) {
+		if (getXrmBool(val, &flag)) {
+			if (flag)
+				options.treeflags |= GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+			else
+				options.treeflags &= ~GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+		}
+	}
+	if ((val = get_resource(rdb, "tooltips", NULL))) {
+		getXrmBool(val, &options.tooltips);
+	}
+	if ((val = get_resource(rdb, "actions", NULL))) {
+		getXrmBool(val, &options.actions);
+	}
+	if ((val = get_resource(rdb, "unique", NULL))) {
+		getXrmBool(val, &options.unique);
+	}
+	if ((val = get_resource(rdb, "exit", NULL))) {
+		getXrmBool(val, &options.exit);
+	}
+	XrmDestroyDatabase(rdb);
+}
+
 static void
 set_default_paths()
 {
@@ -6375,58 +6895,64 @@ parse_args(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
-			{"wmname",	required_argument,	NULL,	'w'},
-			{"format",	required_argument,	NULL,	'f'},
-			{"fullmenu",	no_argument,		NULL,	'F'},
-			{"nofullmenu",	no_argument,		NULL,	'N'},
-			{"desktop",	required_argument,	NULL,	'd'},
-			{"charset",	required_argument,	NULL,	'c'},
-			{"language",	required_argument,	NULL,	'l'},
-			{"root-menu",	required_argument,	NULL,	'r'},
-			{"output",	optional_argument,	NULL,	'o'},
-			{"noicons",	no_argument,		NULL,	'n'},
-			{"theme",	required_argument,	NULL,	't'},
-			{"launch",	no_argument,		NULL,	'L'},
-			{"nolaunch",	no_argument,		NULL,	'0'},
-			{"style",	required_argument,	NULL,	's'},
-			{"menu",	required_argument,	NULL,	'M'},
+			{"wmname",		required_argument,	NULL,	'w'},
+			{"format",		required_argument,	NULL,	'f'},
+			{"fullmenu",		no_argument,		NULL,	'F'},
+			{"nofullmenu",		no_argument,		NULL,	'N'},
+			{"desktop",		required_argument,	NULL,	'd'},
+			{"charset",		required_argument,	NULL,	'c'},
+			{"language",		required_argument,	NULL,	'l'},
+			{"root-menu",		required_argument,	NULL,	'r'},
+			{"output",		optional_argument,	NULL,	'o'},
+			{"noicons",		no_argument,		NULL,	'n'},
+			{"theme",		required_argument,	NULL,	't'},
+			{"launch",		no_argument,		NULL,	'L'},
+			{"nolaunch",		no_argument,		NULL,	'0'},
+			{"style",		required_argument,	NULL,	's'},
+			{"menu",		required_argument,	NULL,	'M'},
 
-			{"button",	required_argument,	NULL,	'b'},
-			{"keypress",	optional_argument,	NULL,	'k'},
-			{"timestamp",	required_argument,	NULL,	'T'},
-			{"which",	required_argument,	NULL,	'i'},
-			{"where",	required_argument,	NULL,	'W'},
+			{"button",		required_argument,	NULL,	'b'},
+			{"keypress",		optional_argument,	NULL,	'k'},
+			{"timestamp",		required_argument,	NULL,	'T'},
+			{"which",		required_argument,	NULL,	'i'},
+			{"where",		required_argument,	NULL,	'W'},
 
-			{"display",	required_argument,	NULL,	 1 },
-			{"screen",	required_argument,	NULL,	 4 },
-			{"die-on-error",no_argument,		NULL,	'e'},
-			{"notray",	no_argument,		NULL,	 2 },
-			{"nogenerate",	no_argument,		NULL,	 3 },
-			{"exit",	no_argument,		NULL,	'x'},
-			{"verbose",	optional_argument,	NULL,	'v'},
-			{"debug",	optional_argument,	NULL,	'D'},
+			{"display",		required_argument,	NULL,	 1 },
+			{"screen",		required_argument,	NULL,	 4 },
+			{"die-on-error",	no_argument,		NULL,	'e'},
+			{"nodie-on-error",	no_argument,		NULL,	 18},
+			{"tray",		no_argument,		NULL,	 19},
+			{"notray",		no_argument,		NULL,	 2 },
+			{"generate",		no_argument,		NULL,	 20},
+			{"nogenerate",		no_argument,		NULL,	 3 },
+			{"exit",		no_argument,		NULL,	'x'},
+			{"noexit",		no_argument,		NULL,	 21},
+			{"verbose",		optional_argument,	NULL,	'v'},
+			{"debug",		optional_argument,	NULL,	'D'},
 
-			{"menugen",	no_argument,		NULL,	'G'},
-			{"popmenu",	no_argument,		NULL,	'P'},
-			{"monitor",	no_argument,		NULL,	'm'},
-			{"refresh",	no_argument,		NULL,	'E'},
-			{"restart",	no_argument,		NULL,	'S'},
-			{"replace",	no_argument,		NULL,	'R'},
-			{"quit",	no_argument,		NULL,	'q'},
+			{"menugen",		no_argument,		NULL,	'G'},
+			{"popmenu",		no_argument,		NULL,	'P'},
+			{"monitor",		no_argument,		NULL,	'm'},
+			{"refresh",		no_argument,		NULL,	'E'},
+			{"restart",		no_argument,		NULL,	'S'},
+			{"replace",		no_argument,		NULL,	'R'},
+			{"quit",		no_argument,		NULL,	'q'},
 
-			{"excluded",	no_argument,		NULL,	 10},
-			{"nodisplay",	no_argument,		NULL,	 11},
-			{"unallocated",	no_argument,		NULL,	 12},
-			{"empty",	no_argument,		NULL,	 13},
-			{"separators",	no_argument,		NULL,	 14},
-			{"sort",	no_argument,		NULL,	 15},
-			{"tooltips",	no_argument,		NULL,	 16},
-			{"actions",	no_argument,		NULL,	 17},
+			{"excluded",		no_argument,		NULL,	 10},
+			{"nodisplay",		no_argument,		NULL,	 11},
+			{"unallocated",		no_argument,		NULL,	 12},
+			{"empty",		no_argument,		NULL,	 13},
+			{"separators",		no_argument,		NULL,	 14},
+			{"sort",		no_argument,		NULL,	 15},
+			{"tooltips",		no_argument,		NULL,	 16},
+			{"notooltips",		no_argument,		NULL,	 28},
+			{"actions",		no_argument,		NULL,	 17},
+			{"noactions",		no_argument,		NULL,	 29},
 
-			{"help",	no_argument,		NULL,	'h'},
-			{"version",	no_argument,		NULL,	'V'},
-			{"copying",	no_argument,		NULL,	'C'},
-			{"?",		no_argument,		NULL,	'H'},
+			{"help",		no_argument,		NULL,	'h'},
+			{"version",		no_argument,		NULL,	'V'},
+			{"copying",		no_argument,		NULL,	'C'},
+			{"?",			no_argument,		NULL,	'H'},
 			{ 0, }
 		};
 		/* *INDENT-ON* */
@@ -6605,16 +7131,28 @@ parse_args(int argc, char *argv[])
 		case 'e':	/* -e, --die-on-error */
 			defaults.dieonerr = options.dieonerr = True;
 			break;
-		case 2:	/* --notray */
+		case 18:	/* --nodie-on-error */
+			defaults.dieonerr = options.dieonerr = False;
+			break;
+		case 2:		/* --notray */
 			options.tray = False;
 			break;
-		case 3:	/* --nogenerate */
+		case 19:	/* --tray */
+			options.tray = True;
+			break;
+		case 20:	/* --generate */
+			options.generate = True;
+			break;
+		case 3:		/* --nogenerate */
 			if (options.command == CommandMenugen)
 				goto bad_option;
 			options.generate = False;
 			break;
 		case 'x':	/* -x, --exit */
 			options.exit = True;
+			break;
+		case 21:	/* --noexit */
+			options.exit = False;
 			break;
 
 		case 10:	/* --excluded */
@@ -6636,10 +7174,16 @@ parse_args(int argc, char *argv[])
 			options.treeflags ^= GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
 			break;
 		case 16:	/* --tooltips */
-			options.tooltips = TRUE;
+			options.tooltips = True;
+			break;
+		case 28:	/* --notooltips */
+			options.tooltips = False;
 			break;
 		case 17:	/* --actions */
-			options.actions = TRUE;
+			options.actions = True;
+			break;
+		case 29:	/* --noactions */
+			options.actions = False;
 			break;
 
 		case 'G':	/* -G, --menugen */
@@ -6789,14 +7333,17 @@ main(int argc, char *argv[])
 	Command command = CommandDefault;
 	char *loc, *p;
 
+	saveArgc = argc;
+	saveArgv = argv;
+
 	if ((loc = setlocale(LC_ALL, ""))) {
 		free(options.locale);
 		defaults.locale = options.locale = strdup(loc);
 	}
+
 	set_defaults();
 
-	saveArgc = argc;
-	saveArgv = argv;
+	get_resources();
 
 	if ((p = strstr(argv[0], "-menugen")) && !p[8])
 		defaults.command = options.command = CommandMenugen;

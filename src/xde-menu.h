@@ -97,16 +97,26 @@
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
+#ifdef VNC_SUPPORTED
+#include <X11/extensions/Xvnc.h>
+#endif
+#include <X11/extensions/scrnsaver.h>
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
 #endif
+#include <X11/Xdmcp.h>
+#include <X11/Xauth.h>
 #include <X11/SM/SMlib.h>
 #include <glib.h>
+#include <gio/gio.h>
 #include <gdk/gdkx.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gtk/gtk.h>
 #include <cairo.h>
+
+#define GTK_EVENT_STOP		TRUE
+#define GTK_EVENT_PROPAGATE	FALSE
 
 #define WNCK_I_KNOW_THIS_IS_UNSTABLE
 #include <libwnck/libwnck.h>
@@ -117,10 +127,15 @@
 #include <unique/unique.h>
 
 #include <pwd.h>
+#include <fontconfig/fontconfig.h>
+#include <pango/pangofc-fontmap.h>
 
 #ifdef _GNU_SOURCE
 #include <getopt.h>
 #endif
+
+#include <langinfo.h>
+#include <locale.h>
 
 #define XPRINTF(args...) do { } while (0)
 #define OPRINTF(args...) do { if (options.output > 1) { \
