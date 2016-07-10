@@ -1,11 +1,175 @@
-xde-menu -- NEWS file.  2016-06-22
+xde-menu -- history of user-visible changes.  2016-07-09
 
-History of major user-visible changes:
-======================================
+Release xde-menu-0.3 released 2016-07-09
+----------------------------------------
 
-Release xde-menu-0.2.1 released 2016-06-22
--------------------------------------------
+git shortlog -e -n -w80,6,8 0.2...0.3
 
-This is the initial development release of xde-menu.
+Brian Bidulock <bidulock@openss7.org> (3):
+      read X resources from files
+      simplify distribution
+      try to get click on submenu working
 
-# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
+
+Release xde-menu-0.2 released 2016-03-28
+----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.1...0.2
+
+Brian Bidulock <bidulock@openss7.org> (146):
+      set up for loadable modules
+      fleshing out loadable modules
+      detect window manager even when generating
+      filling out blackbox output
+      basic blackbox menu
+      basically generating blackbox menu
+      sort as xdg-menugen
+      updates for fluxbox menu
+      be quiet when compiling
+      get fluxbox icons working properly
+      move icon routines to common, general fixups for fluxbox
+      completed icewm menu generation support
+      flushed out openbox (old) menu generator
+      add openbox3 format
+      add openbox-3 XML menu generation
+      updated manual page
+      added TWM, CTWM and VTWM menu generation
+      add ETWM as well
+      added FVWM menu generator
+      added PEKWM root menu generator
+      added menu generation for UWM
+      added menu generator for waimea window manager
+      rationalize blackbox-like menus
+      add old WindowMaker format library
+      menu generator for old WindowMaker menus
+      rename openbox->openboxold openbox3->openbox
+      added windowmaker menu generator
+      add menu generator for perlpanel (fluxbox-like)
+      more documentation updates
+      add menu generation for MWM
+      start building up options better
+      add number processing to software
+      spelling
+      add MENUS.html documentation to distribution
+      add MWM and DTWM man pages for dev doc
+      more man updates
+      updates to xde-menu
+      menu updates
+      more menu updates and docs
+      updated manpage
+      start to handle messages
+      corrections to ctwm menu
+      corrections to etwm menu
+      corrections to vtwm menu
+      corrections to twm menu
+      do proper command substitution
+      proper command substitution for blackbox
+      proper command substitution for ctwm
+      proper command substitution for etwm
+      proper command substitution for fluxbox
+      proper command substitution for fvwm
+      proper command substitution for icewm
+      proper command substitution for mwm
+      proper command substitution for openbox
+      proper command substitution for wmaker
+      proper command substitution for waimea
+      proper command substitution for vtwm
+      proper command substitution for uwm
+      proper command substitution for twm
+      proper command substitution for perlpanel
+      proper command substitution for pekwm
+      better icon handling
+      get monitor mode working
+      some updates to waimea menus
+      no force on autoconf
+      add hook for window manager gtk submenu
+      reorganize context operations
+      start working in GTK menu
+      strapping in more gtk menu
+      strap in more *box gtk menu routines
+      more gtk updates
+      add format and root menu changes
+      make perlpanel work too
+      fill out more gtk support
+      rework module functions
+      split wmspec out of xboxes
+      add gtk separators
+      add pinnable gtk menus
+      factor common gtk functions
+      first stab at gtk menu items
+      factor appmenu
+      more factoring and gtk work
+      remove unnecessary dependencies fix issue #1
+      handle gtk themes and styles better
+      factor gtk theme code
+      more gtk+ factoring
+      turn wrapping icons into a method
+      more style menu factoring
+      more style and theme support
+      add module for generic EWMH WM support
+      work in dtwm
+      more gtk menu workup
+      first working gtk popup
+      add tooltips to entries
+      handle icons a bit better
+      careful of exluded (unnecessary I know)
+      handle xsessions better
+      xsession factoring
+      show tearoff
+      add some options
+      add actions submenus
+      more action methods
+      building up actions
+      handle actions and tooltips optionally
+      unnecessary to link libraries to modules
+      working up native menu actions
+      updates
+      add more window managers
+      typo
+      update history
+      get distcheck working
+      add scripts and manpage stubs
+      ignore intermediate manual pages
+      basic status icon support
+      add again libunique requirement
+      Revert "add again libunique requirement"
+      Revert "Revert "add again libunique requirement""
+      corrections
+      do not always load xsessions
+      safety first
+      libunique will not transfer data, just strings
+      position functionality
+      roughing in selection conversion
+      taking a different approach
+      update usage message
+      cannot use xscr before setup_x11
+      pass options with client messages
+      autostart in monitor mode
+      handle quit better
+      correct restart
+      do not update menu when unnecessary
+      add debugs for position
+      build common gtk workspaces menu
+      proper icon and label
+      bold, underline, center headers
+      dual action items for actions
+      print additional action tooltips
+      rename function
+      update copyright date
+      minor build system modifications
+      update todo list
+      update todo list
+      update todo list
+      add option to exit after generation
+      update release files
+      update release date
+
+
+Release xde-menu-0.1 released 2015-07-19
+----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.1
+
+Brian Bidulock <bidulock@openss7.org> (1):
+      Initial commit of separate xde-menu package
+

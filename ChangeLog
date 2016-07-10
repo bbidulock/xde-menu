@@ -1,5 +1,42 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit 1def4f635f17eec3e3dcfe9a4a86e318feda6abe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 18:11:03 2016 -0600
+
+    try to get click on submenu working
+
+ src/xde-menu.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
+
+commit 281895a1f3b96fd4bd4876e94dcac1fc3f9e7597
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 18:06:06 2016 -0600
+
+    simplify distribution
+
+ .gitignore                         |   51 +-
+ AUTHORS.in => AUTHORS              |    2 +-
+ ChangeLog                          | 2457 ++++++++++++++++++++++++++++++++
+ Makefile.am                        |   83 +-
+ NEWS.in => NEWS                    |    6 +-
+ README.in                          |   70 -
+ README.md                          |   22 +-
+ README.md.in                       |   18 +-
+ THANKS.in => THANKS                |    2 +-
+ TODO.in => TODO                    |    2 +-
+ autogen.sh                         |   55 +-
+ configure.template => configure.ac |    6 +-
+ dist.sh                            |    9 +
+ docbook-xsl.css                    |  329 +++++
+ gennews.sh                         |   34 +
+ man/dtwmrc.sgm                     | 1071 ++++++++++++++
+ man/sys.dtwmrc.src                 |  123 ++
+ man/sys.dtwmrc.tmsg                |  214 +++
+ rebuild.sh                         |    4 +-
+ src/xde-menu.c                     |   22 +-
+ 20 files changed, 4370 insertions(+), 210 deletions(-)
+
 commit 62231a0ef85e7598d6c09121b6ff0944cb6dd18f
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Jun 22 06:09:43 2016 -0600

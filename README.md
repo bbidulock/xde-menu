@@ -1,7 +1,7 @@
 
 ## xde-menu
 
-Package xde-menu-0.2.1 was released under GPL license 2016-06-22.
+Package xde-menu-0.3 was released under GPL license 2016-07-09.
 
 This package provides a number of "C"-language tools for working with
 the X Desktop Envionment.  Most of these tools were previously written
@@ -12,7 +12,7 @@ available from perl(1).
 
 ### Release
 
-This is the `xde-menu-0.2.1` package, released 2016-06-22.  This release,
+This is the `xde-menu-0.3` package, released 2016-07-09.  This release,
 and the latest version, can be obtained from the GitHub repository at
 https://github.com/bbidulock/xde-menu, using a command such as:
 
