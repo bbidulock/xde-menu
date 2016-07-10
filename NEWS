@@ -5,10 +5,12 @@ Release xde-menu-0.3 released 2016-07-09
 
 git shortlog -e -n -w80,6,8 0.2...0.3
 
-Brian Bidulock <bidulock@openss7.org> (3):
+Brian Bidulock <bidulock@openss7.org> (5):
       read X resources from files
       simplify distribution
       try to get click on submenu working
+      do no generate errors on --help or --version
+      update release files
 
 
 Release xde-menu-0.2 released 2016-03-28

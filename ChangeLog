@@ -1,5 +1,27 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit a7392e2ad736abf18f3ffbc14cca5617c2a29464
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 18:24:37 2016 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    |  37 ++++++++++++
+ NEWS         | 178 ++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ README.md    |   4 +-
+ configure.ac |   6 +-
+ 5 files changed, 214 insertions(+), 13 deletions(-)
+
+commit bae312dbe86e717940cd5189eedec8389685c125
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 18:24:16 2016 -0600
+
+    do no generate errors on --help or --version
+
+ src/xde-menu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
 commit 1def4f635f17eec3e3dcfe9a4a86e318feda6abe
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Jul 9 18:11:03 2016 -0600
