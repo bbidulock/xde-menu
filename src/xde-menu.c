@@ -1458,6 +1458,23 @@ xde_menu_simple(MenuContext *ctx, GMenuTreeDirectory *menu)
 	return (text);
 }
 
+static void
+mainloop_quit(void)
+{
+	if (options.display)
+		gtk_main_quit();
+	else
+		g_main_loop_quit(loop);
+}
+
+void
+selection_done(GtkMenuShell *menushell, gpointer user_data)
+{
+	OPRINTF("Selection done: exiting\n");
+	if (!gtk_menu_get_tearoff_state(GTK_MENU(menushell)))
+		mainloop_quit();
+}
+
 static gboolean
 application_button_press(GtkWidget *item, GdkEvent *event, gpointer user_data)
 {
@@ -3726,15 +3743,6 @@ mainloop(void)
 		g_main_loop_run(loop);
 }
 
-static void
-mainloop_quit(void)
-{
-	if (options.display)
-		gtk_main_quit();
-	else
-		g_main_loop_quit(loop);
-}
-
 void
 on_quit_selected(GtkMenuItem *item, gpointer user_data)
 {
@@ -4097,14 +4105,6 @@ do_restart(int argc, char *argv[])
 		EPRINTF("%s: need running instance to restart\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
-}
-
-void
-selection_done(GtkMenuShell *menushell, gpointer user_data)
-{
-	OPRINTF("Selection done: exiting\n");
-	if (!gtk_menu_get_tearoff_state(GTK_MENU(menushell)))
-		mainloop_quit();
 }
 
 static void
