@@ -1462,11 +1462,12 @@ static gboolean
 application_button_press(GtkWidget *item, GdkEvent *event, gpointer user_data)
 {
 	GdkEventButton *ev = (typeof(ev)) event;
-	gchar *cmd = g_strdup(user_data);
-
+	gchar *cmd;
+	
 	OPRINTF("Menu item [%s] button press\n", gtk_menu_item_get_label(GTK_MENU_ITEM(item)));
 	if (ev->button != 1)
 		return GTK_EVENT_PROPAGATE;
+	cmd = g_strdup(user_data);
 	gtk_menu_shell_activate_item(GTK_MENU_SHELL(gtk_widget_get_parent(item)), item, TRUE);
 	xde_entry_activated(GTK_MENU_ITEM(item), cmd); /* XXX */
 	g_free(cmd);
@@ -1578,6 +1579,7 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 	ctx->stack = g_list_delete_link(ctx->stack, ctx->stack);
 
 	gtk_widget_show_all(GTK_WIDGET(menu));
+	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(application_menu_key_press), NULL);
 	return (menu);
 }
@@ -1612,6 +1614,8 @@ xde_gtk_common_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *i
 	if (!actions || !*actions)
 		return (menu);
 	menu = GTK_MENU(gtk_menu_new());
+	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(application_menu_key_press), NULL);
+	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	for (; actions && *actions; actions++) {
 		GtkMenuItem *item;
 
@@ -1859,6 +1863,9 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 		gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
 #else
+		gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
+		gtk_widget_show(GTK_WIDGET(menu));
+		gtk_widget_add_events(GTK_WIDGET(item), GDK_ALL_EVENTS_MASK);
 		g_signal_connect_data(G_OBJECT(item), "button_press_event",
 				G_CALLBACK(application_button_press), strdup(cmd), xde_entry_disconnect, 0);
 		g_signal_connect_data(G_OBJECT(item), "select",
@@ -1866,7 +1873,6 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 		g_signal_connect_data(G_OBJECT(item), "deselect",
 				G_CALLBACK(application_deselect), cmd, xde_entry_disconnect, 0);
 		g_object_set_data(G_OBJECT(item), "command", cmd);
-		gtk_menu_item_set_submenu(item, GTK_WIDGET(menu));
 #endif
 	} else
 		g_signal_connect_data(G_OBJECT(item), "activate",
@@ -4094,9 +4100,11 @@ do_restart(int argc, char *argv[])
 }
 
 void
-on_selection_done(GtkMenuShell *menushell, gpointer user_data)
+selection_done(GtkMenuShell *menushell, gpointer user_data)
 {
-	mainloop_quit();
+	OPRINTF("Selection done: exiting\n");
+	if (!gtk_menu_get_tearoff_state(GTK_MENU(menushell)))
+		mainloop_quit();
 }
 
 static void
@@ -4169,8 +4177,8 @@ do_popmenu(int argc, char *argv[])
 		DPRINTF("calling create!\n");
 		menu = ctx->gtk.create(ctx, options.style, NULL);
 		DPRINTF("done create!\n");
-		g_signal_connect(G_OBJECT(menu), "selection-done",
-				G_CALLBACK(on_selection_done), NULL);
+		g_signal_connect(G_OBJECT(menu), "selection_done",
+				G_CALLBACK(selection_done), NULL);
 		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xscr->wnck,
 				options.button, options.timestamp);
 		mainloop();

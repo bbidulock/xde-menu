@@ -1,0 +1,2457 @@
+# created with git log --stat=76 -M -C|fmt -sct -w80
+
+commit 62231a0ef85e7598d6c09121b6ff0944cb6dd18f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jun 22 06:09:43 2016 -0600
+
+    read X resources from files
+
+ src/xde-menu.c | 663 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-menu.h |  15 ++
+ 2 files changed, 620 insertions(+), 58 deletions(-)
+
+commit d1bd6fd9cc84dfd1447aff7ab2cabfe0f4491218
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Mar 28 00:32:41 2016 -0600
+
+    update release date
+
+ README.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 29a3e961f686d62f8ff052098fbe8243166ca839
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Mar 28 00:24:54 2016 -0600
+
+    update release files
+
+ README.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit c2a13b687cef4cd887640be75869ff997ac401f1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Mar 27 18:19:10 2016 -0600
+
+    add option to exit after generation
+
+ man/xde-menu.pod |  9 +++++++++
+ src/xde-menu.c   | 46 ++++++++++++++++++++++++++++++++++++++++------
+ src/xde-menu.h   |  1 +
+ 3 files changed, 50 insertions(+), 6 deletions(-)
+
+commit 5a17a40fe2d7724fa6afe2197c13ad3aaf453758
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Mar 27 17:45:58 2016 -0600
+
+    update todo list
+
+ TODO.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 3b7332df8e2641033d679e5e984dd46e854d2342
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Mar 27 17:42:41 2016 -0600
+
+    update todo list
+
+ TODO.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit d44036a017cbcd42ebf34f497591a5ca832e4d81
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Mar 27 17:41:50 2016 -0600
+
+    update todo list
+
+ TODO.in | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit dd978bd93b940cc7f3547360cc9d9a229275c9d8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Feb 13 18:11:04 2016 -0700
+
+    minor build system modifications
+
+ Makefile.am               |  9 +++++++--
+ README.md                 | 17 +++++++++--------
+ README.md => README.md.in | 29 +++++++++++++++--------------
+ autogen.sh                | 14 +++++++++-----
+ rebuild.sh                |  1 +
+ 5 files changed, 41 insertions(+), 29 deletions(-)
+
+commit 89e624cc75071379602717ec9a1dae53785d0dac
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Feb 10 06:18:20 2016 -0700
+
+    update copyright date
+
+ src/xde-menu.c         | 8 ++++----
+ src/xde-menu.h         | 2 +-
+ src/xde_2bwm.c         | 2 +-
+ src/xde_adwm.c         | 2 +-
+ src/xde_aewm++.c       | 2 +-
+ src/xde_aewm.c         | 2 +-
+ src/xde_afterstep.c    | 2 +-
+ src/xde_awesome.c      | 2 +-
+ src/xde_blackbox.c     | 2 +-
+ src/xde_bspwm.c        | 2 +-
+ src/xde_ctwm.c         | 2 +-
+ src/xde_cwm.c          | 2 +-
+ src/xde_dtwm.c         | 2 +-
+ src/xde_dwm.c          | 2 +-
+ src/xde_echinus.c      | 2 +-
+ src/xde_etwm.c         | 2 +-
+ src/xde_ewmh.c         | 2 +-
+ src/xde_fluxbox.c      | 2 +-
+ src/xde_flwm.c         | 2 +-
+ src/xde_fvwm.c         | 2 +-
+ src/xde_glasswm.c      | 2 +-
+ src/xde_goomwwm.c      | 2 +-
+ src/xde_herbstluftwm.c | 2 +-
+ src/xde_i3.c           | 2 +-
+ src/xde_icewm.c        | 2 +-
+ src/xde_jwm.c          | 2 +-
+ src/xde_larswm.c       | 2 +-
+ src/xde_matwm2.c       | 2 +-
+ src/xde_metacity.c     | 2 +-
+ src/xde_mvwm.c         | 2 +-
+ src/xde_mwm.c          | 2 +-
+ src/xde_openbox.c      | 2 +-
+ src/xde_openboxold.c   | 2 +-
+ src/xde_pekwm.c        | 2 +-
+ src/xde_perlpanel.c    | 2 +-
+ src/xde_spectrwm.c     | 2 +-
+ src/xde_twm.c          | 2 +-
+ src/xde_uwm.c          | 2 +-
+ src/xde_vtwm.c         | 2 +-
+ src/xde_waimea.c       | 2 +-
+ src/xde_wind.c         | 2 +-
+ src/xde_wm2.c          | 2 +-
+ src/xde_wmaker.c       | 2 +-
+ src/xde_wmakerold.c    | 2 +-
+ src/xde_wmii.c         | 2 +-
+ src/xde_wmx.c          | 2 +-
+ src/xde_xdwm.c         | 2 +-
+ src/xde_yeahwm.c       | 2 +-
+ 48 files changed, 51 insertions(+), 51 deletions(-)
+
+commit eb1d784e5ce17066b63adee4be1d9b0f3ab21e3a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Feb 10 06:02:14 2016 -0700
+
+    rename function
+
+ src/xde-menu.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 4fc6fd94a1970ddafde5c9596984ab4a52173306
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Feb 10 05:53:57 2016 -0700
+
+    print additional action tooltips
+
+ src/xde-menu.c | 57 ++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 43 insertions(+), 14 deletions(-)
+
+commit c6bb5a6d72235bbe83ff245b0440042bc964b398
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Feb 10 00:30:00 2016 -0700
+
+    dual action items for actions
+
+ src/xde-menu.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 82 insertions(+), 3 deletions(-)
+
+commit 9a8760be2336f95303bf9aa800b8c9af3857821d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 9 23:15:00 2016 -0700
+
+    bold, underline, center headers
+
+ src/xde-menu.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+commit b571ccc0390e303434bb0356b620418812b290a6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 25 00:56:15 2016 -0700
+
+    proper icon and label
+
+ src/xde-menu.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+commit 398595e7f722ca16949bb29dc175f5a630cb09e5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 25 00:50:43 2016 -0700
+
+    build common gtk workspaces menu
+
+ src/xde-menu.c         | 330 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-menu.h         |   1 +
+ src/xde_2bwm.c         |   1 +
+ src/xde_adwm.c         |   2 +-
+ src/xde_aewm++.c       |   1 +
+ src/xde_aewm.c         |   1 +
+ src/xde_afterstep.c    |   1 +
+ src/xde_awesome.c      |   1 +
+ src/xde_blackbox.c     |   1 +
+ src/xde_bspwm.c        |   1 +
+ src/xde_ctwm.c         |   1 +
+ src/xde_cwm.c          |   1 +
+ src/xde_dtwm.c         |   1 +
+ src/xde_dwm.c          |   1 +
+ src/xde_echinus.c      |   1 +
+ src/xde_etwm.c         |   1 +
+ src/xde_ewmh.c         |   1 +
+ src/xde_fluxbox.c      |   1 +
+ src/xde_flwm.c         |   1 +
+ src/xde_fvwm.c         |   1 +
+ src/xde_glasswm.c      |   1 +
+ src/xde_goomwwm.c      |   1 +
+ src/xde_herbstluftwm.c |   1 +
+ src/xde_i3.c           |   1 +
+ src/xde_icewm.c        |   1 +
+ src/xde_jwm.c          |   1 +
+ src/xde_larswm.c       |   1 +
+ src/xde_matwm2.c       |   1 +
+ src/xde_metacity.c     |   1 +
+ src/xde_mvwm.c         |   1 +
+ src/xde_mwm.c          |   1 +
+ src/xde_openbox.c      |   1 +
+ src/xde_openboxold.c   |   1 +
+ src/xde_pekwm.c        |   1 +
+ src/xde_perlpanel.c    |   1 +
+ src/xde_spectrwm.c     |   1 +
+ src/xde_twm.c          |   1 +
+ src/xde_uwm.c          |   1 +
+ src/xde_vtwm.c         |   1 +
+ src/xde_waimea.c       |   1 +
+ src/xde_wind.c         |   1 +
+ src/xde_wm2.c          |   1 +
+ src/xde_wmaker.c       |   1 +
+ src/xde_wmakerold.c    |   1 +
+ src/xde_wmii.c         |   1 +
+ src/xde_wmx.c          |   1 +
+ src/xde_xdwm.c         |   1 +
+ src/xde_yeahwm.c       |   1 +
+ 48 files changed, 377 insertions(+), 1 deletion(-)
+
+commit ba0a7e036ccd178f379ee3827a1569e9fb4c036a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 24 19:58:30 2016 -0700
+
+    add debugs for position
+
+ src/xde-menu.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+commit 9b05badfd3c0d84a4309049d21d3a911d58f17f6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 24 18:02:22 2016 -0700
+
+    do not update menu when unnecessary
+
+ src/xde-menu.c | 79 +++++++++++++++++++++++++++++++++++++-----------------
+ src/xde-menu.h |  1 +
+ 2 files changed, 55 insertions(+), 25 deletions(-)
+
+commit bc97558586344512c8956beb9b86fae1bcf16332
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 24 12:24:29 2016 -0700
+
+    correct restart
+
+ src/xde-menu.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
+
+commit 2af36b98e17aff427a9bd79a33e015b4a67d102b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 24 12:15:16 2016 -0700
+
+    handle quit better
+
+ src/xde-menu.c | 104 +++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 61 insertions(+), 43 deletions(-)
+
+commit 0f49d6b9c7bc58da11bf690df9cec22ece0cd0bb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 24 11:02:54 2016 -0700
+
+    autostart in monitor mode
+
+ data/xde-menu.desktop | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+commit 3e8f301a82032e6c78b630591bd333bd7b3f9a4b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 24 10:10:16 2016 -0700
+
+    pass options with client messages
+
+ src/xde-menu.c | 174 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-menu.h |  35 ++++++++---
+ 2 files changed, 185 insertions(+), 24 deletions(-)
+
+commit eb6c2dfc9f2e9e4f36ccad163186394ff325bf05
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 1 14:20:02 2016 -0700
+
+    cannot use xscr before setup_x11
+
+ src/xde-menu.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+commit 785d0502ea454895640a10bf67e788e965705f33
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 1 07:57:50 2016 -0700
+
+    update usage message
+
+ src/xde-menu.c | 65 ++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 49 insertions(+), 16 deletions(-)
+
+commit a8ce48a313dddaa72fecd7a443e4a30758479b0b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 29 12:00:00 2015 -0700
+
+    taking a different approach
+
+ src/xde-menu.c | 326 ++++++++++++++++++++++++++++++++++++++++++++---------
+ src/xde-menu.h |  14 ++-
+ 2 files changed, 286 insertions(+), 54 deletions(-)
+
+commit d06bda70b3bb257c300f240bff2d1dd0cef49805
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 25 13:48:11 2015 -0700
+
+    roughing in selection conversion
+
+ src/xde-menu.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+commit 905657f78bbc72c25a7fd492d8c66cac798dc01f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 25 00:21:48 2015 -0700
+
+    position functionality
+
+ src/xde-menu.c | 774 ++++++++++++++++++++++++++++++++++++++++++++++-------
+ src/xde-menu.h |  19 +-
+ 2 files changed, 694 insertions(+), 99 deletions(-)
+
+commit b3397d946cac9ae4d899eb28bf18c71cbd8fa429
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 09:47:37 2015 -0700
+
+    libunique will not transfer data, just strings
+
+ src/xde-menu.c | 98 +++++++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 71 insertions(+), 27 deletions(-)
+
+commit 369cd95f435d716963a003e338445e8514924ba3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 05:35:16 2015 -0700
+
+    safety first
+
+ src/xde-menu.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit b8e1d72ce6be05b2f3e02f0729d70fb31f1aa567
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 05:22:53 2015 -0700
+
+    do not always load xsessions
+
+ src/xde-menu.c       | 33 ++++++++++++++++++++-------------
+ src/xde-menu.h       |  3 ++-
+ src/xde_blackbox.c   |  2 +-
+ src/xde_ctwm.c       |  2 +-
+ src/xde_dtwm.c       |  2 +-
+ src/xde_etwm.c       |  2 +-
+ src/xde_fluxbox.c    |  2 +-
+ src/xde_fvwm.c       |  2 +-
+ src/xde_icewm.c      |  2 +-
+ src/xde_mwm.c        |  2 +-
+ src/xde_openbox.c    |  2 +-
+ src/xde_openboxold.c |  2 +-
+ src/xde_pekwm.c      |  2 +-
+ src/xde_perlpanel.c  |  2 +-
+ src/xde_twm.c        |  2 +-
+ src/xde_uwm.c        |  2 +-
+ src/xde_vtwm.c       |  2 +-
+ src/xde_waimea.c     |  2 +-
+ src/xde_wmaker.c     |  2 +-
+ src/xde_wmakerold.c  |  2 +-
+ 20 files changed, 40 insertions(+), 32 deletions(-)
+
+commit e3a6c6b2629e19d44b9737cef84dce065451bac1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 04:57:58 2015 -0700
+
+    corrections
+
+ src/xde-menu.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+commit f7b82887a7290566391f348cb4613c54e0f3045f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 04:50:16 2015 -0700
+
+    Revert "Revert "add again libunique requirement""
+
+    This reverts commit 478453c90d9ab93441fc8d2a376bc7a1111a0ddb.
+
+ configure.template |   2 +-
+ src/Makefile.am    |   4 +-
+ src/xde-menu.c     | 580 +++++++++++++++++++++++++++++++------------------
+ src/xde-menu.h     |   5 +
+ 4 files changed, 375 insertions(+), 216 deletions(-)
+
+commit 478453c90d9ab93441fc8d2a376bc7a1111a0ddb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 04:49:13 2015 -0700
+
+    Revert "add again libunique requirement"
+
+    This reverts commit 50a0f3f22f0e71a71004f0f426c8fe6796c99667.
+
+ configure.template |   2 +-
+ src/Makefile.am    |   4 +-
+ src/xde-menu.c     | 580 ++++++++++++++++++-------------------------------
+ src/xde-menu.h     |   5 -
+ 4 files changed, 216 insertions(+), 375 deletions(-)
+
+commit 50a0f3f22f0e71a71004f0f426c8fe6796c99667
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 24 04:48:04 2015 -0700
+
+    add again libunique requirement
+
+ configure.template |   2 +-
+ src/Makefile.am    |   4 +-
+ src/xde-menu.c     | 580 +++++++++++++++++++++++++++++++------------------
+ src/xde-menu.h     |   5 +
+ 4 files changed, 375 insertions(+), 216 deletions(-)
+
+commit 61c12eabd54c02af59eb5883bf334e8abf1f9325
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 23 06:06:04 2015 -0700
+
+    basic status icon support
+
+ src/xde-menu.c | 148 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 145 insertions(+), 3 deletions(-)
+
+commit 1d7a412b73230b607be4a3ff9ca50f38cf84e545
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 23 06:05:47 2015 -0700
+
+    ignore intermediate manual pages
+
+ .gitignore | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+commit 496feee4de680557d478729993ff9e517e5ac946
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 16 05:25:21 2015 -0700
+
+    add scripts and manpage stubs
+
+ .gitignore       |  9 ++++++++-
+ man/Makefile.am  | 16 ++++++++++++++--
+ xde-menu-monitor |  3 +++
+ xde-menu-popmenu |  3 +++
+ xde-menu-quit    |  3 +++
+ xde-menu-refresh |  3 +++
+ xde-menu-replace |  3 +++
+ xde-menu-restart |  3 +++
+ 8 files changed, 40 insertions(+), 3 deletions(-)
+
+commit 7602768156a525b2997998aa337a115ebeb79c36
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 16 05:06:18 2015 -0700
+
+    get distcheck working
+
+ Makefile.am    | 12 ++++++++++++
+ src/xde-menu.c | 26 +++++++++-----------------
+ 2 files changed, 21 insertions(+), 17 deletions(-)
+
+commit e1cfbb028a6452bd569cc4f1f56571262ef43091
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 15 07:04:53 2015 -0700
+
+    update history
+
+ man/xde-menu.pod | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
+
+commit 63e2c39eec81b11c028792177ea4161f05acfbf7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 12 22:12:15 2015 -0700
+
+    typo
+
+ src/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit d3cd7a80dc14de734fb42b7c39858815cde66551
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 12 22:11:07 2015 -0700
+
+    add more window managers
+
+ man/xde-menu.pod       |  97 +++++++++-
+ src/Makefile.am        |  84 +++++++++
+ src/xde_aewm++.c       | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_aewm.c         | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_bspwm.c        | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_glasswm.c      | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_goomwwm.c      | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_herbstluftwm.c | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_i3.c           | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_larswm.c       | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_mvwm.c         | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_wm2.c          | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_wmii.c         | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde_xdwm.c         | 449 +++++++++++++++++++++++++++++++++++++++++++++
+ 14 files changed, 5565 insertions(+), 4 deletions(-)
+
+commit 95cc20c35df38f409ac8a51ca5e0268bd77fb076
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 12 17:36:36 2015 -0700
+
+    updates
+
+ man/xde-menu.pod   | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-menu.c     | 43 +++++++++++++++++++++++++++++++++++++++++++
+ src/xde-menu.h     |  2 +-
+ src/xde_adwm.c     | 42 ++++--------------------------------------
+ src/xde_blackbox.c |  1 +
+ 5 files changed, 97 insertions(+), 39 deletions(-)
+
+commit fa77f83871cb7644914fc6cd08d6bdc82074c1e0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 9 18:36:10 2015 -0700
+
+    working up native menu actions
+
+ src/xde-menu.c       | 20 +++++++++++++++++
+ src/xde-menu.h       |  1 +
+ src/xde_2bwm.c       |  1 +
+ src/xde_adwm.c       |  1 +
+ src/xde_afterstep.c  |  1 +
+ src/xde_awesome.c    |  1 +
+ src/xde_blackbox.c   | 56 +++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde_ctwm.c       |  1 +
+ src/xde_cwm.c        |  1 +
+ src/xde_dtwm.c       |  1 +
+ src/xde_dwm.c        |  1 +
+ src/xde_echinus.c    |  1 +
+ src/xde_etwm.c       |  1 +
+ src/xde_ewmh.c       |  1 +
+ src/xde_fluxbox.c    | 56 +++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde_flwm.c       |  1 +
+ src/xde_fvwm.c       |  1 +
+ src/xde_icewm.c      |  1 +
+ src/xde_jwm.c        |  1 +
+ src/xde_matwm2.c     |  1 +
+ src/xde_metacity.c   |  1 +
+ src/xde_mwm.c        |  1 +
+ src/xde_openbox.c    |  1 +
+ src/xde_openboxold.c | 56 +++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde_pekwm.c      |  1 +
+ src/xde_perlpanel.c  | 56 +++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde_spectrwm.c   |  1 +
+ src/xde_twm.c        |  1 +
+ src/xde_uwm.c        |  1 +
+ src/xde_vtwm.c       |  1 +
+ src/xde_waimea.c     | 56 +++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde_wind.c       |  1 +
+ src/xde_wmaker.c     |  1 +
+ src/xde_wmakerold.c  |  1 +
+ src/xde_wmx.c        |  1 +
+ src/xde_yeahwm.c     |  1 +
+ 36 files changed, 315 insertions(+), 15 deletions(-)
+
+commit 3f0bc7ae1ea50a9ebc328005c2c90fe5f1e381e3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 9 18:35:41 2015 -0700
+
+    unnecessary to link libraries to modules
+
+ src/Makefile.am | 70 +++++++++++++++++++++++++++--------------------------
+ 1 file changed, 36 insertions(+), 34 deletions(-)
+
+commit 10539fb45c592ce527fd2257c701832d0da6b32b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 8 23:34:52 2015 -0700
+
+    handle actions and tooltips optionally
+
+ src/xde-menu.c | 140 ++++++++++++++++++++++++++++++-----------------------
+ src/xde-menu.h |   1 +
+ 2 files changed, 80 insertions(+), 61 deletions(-)
+
+commit 4a878f7852ab9f7323d048869861f02d698997a4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 8 21:37:22 2015 -0700
+
+    building up actions
+
+ src/xde-menu.c | 224 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-menu.h |   2 +
+ 2 files changed, 224 insertions(+), 2 deletions(-)
+
+commit 94a6d409c055801b6f2c29ced77253e00a67fb9d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 8 18:22:54 2015 -0700
+
+    more action methods
+
+ src/xde-menu.c       | 16 ++++++++++++----
+ src/xde-menu.h       |  9 ++++++---
+ src/xde_2bwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_adwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_afterstep.c  | 35 +++++++++++++++++++++++++++--------
+ src/xde_awesome.c    | 35 +++++++++++++++++++++++++++--------
+ src/xde_blackbox.c   | 35 +++++++++++++++++++++++++++--------
+ src/xde_ctwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_cwm.c        | 35 +++++++++++++++++++++++++++--------
+ src/xde_dtwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_dwm.c        | 35 +++++++++++++++++++++++++++--------
+ src/xde_echinus.c    | 35 +++++++++++++++++++++++++++--------
+ src/xde_etwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_ewmh.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_fluxbox.c    | 35 +++++++++++++++++++++++++++--------
+ src/xde_flwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_fvwm.c       | 35 +++++++++++++++++++++++++++--------
+ src/xde_icewm.c      | 33 ++++++++++++++++++++++++++-------
+ src/xde_jwm.c        | 33 ++++++++++++++++++++++++++-------
+ src/xde_matwm2.c     | 33 ++++++++++++++++++++++++++-------
+ src/xde_metacity.c   | 33 ++++++++++++++++++++++++++-------
+ src/xde_mwm.c        | 33 ++++++++++++++++++++++++++-------
+ src/xde_openbox.c    | 33 ++++++++++++++++++++++++++-------
+ src/xde_openboxold.c | 33 ++++++++++++++++++++++++++-------
+ src/xde_pekwm.c      | 33 ++++++++++++++++++++++++++-------
+ src/xde_perlpanel.c  | 33 ++++++++++++++++++++++++++-------
+ src/xde_spectrwm.c   | 33 ++++++++++++++++++++++++++-------
+ src/xde_twm.c        | 33 ++++++++++++++++++++++++++-------
+ src/xde_uwm.c        | 33 ++++++++++++++++++++++++++-------
+ src/xde_vtwm.c       | 33 ++++++++++++++++++++++++++-------
+ src/xde_waimea.c     | 33 ++++++++++++++++++++++++++-------
+ src/xde_wind.c       | 33 ++++++++++++++++++++++++++-------
+ src/xde_wmaker.c     | 33 ++++++++++++++++++++++++++-------
+ src/xde_wmakerold.c  | 33 ++++++++++++++++++++++++++-------
+ src/xde_wmx.c        | 33 ++++++++++++++++++++++++++-------
+ src/xde_yeahwm.c     | 33 ++++++++++++++++++++++++++-------
+ 36 files changed, 917 insertions(+), 260 deletions(-)
+
+commit b50c6df7fa8ae6028c9fc0ac15a21515d4a28b9d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 8 17:26:44 2015 -0700
+
+    add actions submenus
+
+ src/xde-menu.c       |  8 ++++++++
+ src/xde-menu.h       |  3 +++
+ src/xde_2bwm.c       | 19 +++++++++++++++++++
+ src/xde_adwm.c       | 19 +++++++++++++++++++
+ src/xde_afterstep.c  | 19 +++++++++++++++++++
+ src/xde_awesome.c    | 19 +++++++++++++++++++
+ src/xde_blackbox.c   | 19 +++++++++++++++++++
+ src/xde_ctwm.c       | 19 +++++++++++++++++++
+ src/xde_cwm.c        | 19 +++++++++++++++++++
+ src/xde_dtwm.c       | 19 +++++++++++++++++++
+ src/xde_dwm.c        | 19 +++++++++++++++++++
+ src/xde_echinus.c    | 19 +++++++++++++++++++
+ src/xde_etwm.c       | 19 +++++++++++++++++++
+ src/xde_ewmh.c       | 19 +++++++++++++++++++
+ src/xde_fluxbox.c    | 19 +++++++++++++++++++
+ src/xde_flwm.c       | 19 +++++++++++++++++++
+ src/xde_fvwm.c       | 19 +++++++++++++++++++
+ src/xde_icewm.c      | 19 +++++++++++++++++++
+ src/xde_jwm.c        | 19 +++++++++++++++++++
+ src/xde_matwm2.c     | 19 +++++++++++++++++++
+ src/xde_metacity.c   | 19 +++++++++++++++++++
+ src/xde_mwm.c        | 19 +++++++++++++++++++
+ src/xde_openbox.c    | 19 +++++++++++++++++++
+ src/xde_openboxold.c | 19 +++++++++++++++++++
+ src/xde_pekwm.c      | 19 +++++++++++++++++++
+ src/xde_perlpanel.c  | 19 +++++++++++++++++++
+ src/xde_spectrwm.c   | 19 +++++++++++++++++++
+ src/xde_twm.c        | 19 +++++++++++++++++++
+ src/xde_uwm.c        | 19 +++++++++++++++++++
+ src/xde_vtwm.c       | 19 +++++++++++++++++++
+ src/xde_waimea.c     | 19 +++++++++++++++++++
+ src/xde_wind.c       | 19 +++++++++++++++++++
+ src/xde_wmaker.c     | 19 +++++++++++++++++++
+ src/xde_wmakerold.c  | 19 +++++++++++++++++++
+ src/xde_wmx.c        | 19 +++++++++++++++++++
+ src/xde_yeahwm.c     | 19 +++++++++++++++++++
+ 36 files changed, 657 insertions(+)
+
+commit 1a901397bd543aac1a3c1ab7744058f869908efe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 8 14:19:47 2015 -0700
+
+    add some options
+
+ src/xde-menu.c       | 220 ++++++++++++++++++++++++++++++++---------------
+ src/xde-menu.h       |   2 +
+ src/xde_adwm.c       |  41 ++++++++-
+ src/xde_blackbox.c   |  10 ++-
+ src/xde_fluxbox.c    |  10 ++-
+ src/xde_openboxold.c |  10 ++-
+ src/xde_perlpanel.c  |  10 ++-
+ src/xde_waimea.c     |  10 ++-
+ 8 files changed, 221 insertions(+), 92 deletions(-)
+
+commit 80d66aa09bf99d0710cedd1d136ef4d6aeeceaab
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 8 01:41:47 2015 -0700
+
+    show tearoff
+
+ src/xde-menu.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 5e99c6d942f529ca8875b57719b6d8c4b1e2b293
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 7 23:18:27 2015 -0700
+
+    xsession factoring
+
+ src/xde-menu.c       | 35 ++++++++++++++++++-----------------
+ src/xde-menu.h       |  1 +
+ src/xde_blackbox.c   | 10 ++--------
+ src/xde_ctwm.c       | 11 ++---------
+ src/xde_dtwm.c       | 11 ++---------
+ src/xde_etwm.c       | 11 ++---------
+ src/xde_fluxbox.c    | 10 ++--------
+ src/xde_fvwm.c       | 10 ++--------
+ src/xde_icewm.c      | 10 ++--------
+ src/xde_mwm.c        | 11 ++---------
+ src/xde_openbox.c    | 10 ++--------
+ src/xde_openboxold.c | 10 ++--------
+ src/xde_pekwm.c      | 10 ++--------
+ src/xde_perlpanel.c  | 10 ++--------
+ src/xde_twm.c        | 11 ++---------
+ src/xde_uwm.c        | 10 ++--------
+ src/xde_vtwm.c       | 11 ++---------
+ src/xde_waimea.c     | 10 ++--------
+ src/xde_wmaker.c     | 10 ++--------
+ src/xde_wmakerold.c  | 10 ++--------
+ 20 files changed, 55 insertions(+), 167 deletions(-)
+
+commit 22bfbdad8ff5f32c0a891dd4738d9b9b9180f581
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 7 21:36:14 2015 -0700
+
+    handle xsessions better
+
+ src/xde-menu.c       |  66 ++++++++++--
+ src/xde-menu.h       |   1 +
+ src/xde_blackbox.c   | 263 +++++++++++++++++++++++++---------------------
+ src/xde_ctwm.c       |  27 ++---
+ src/xde_dtwm.c       |  61 ++++++-----
+ src/xde_etwm.c       |  49 ++++-----
+ src/xde_fluxbox.c    | 267 +++++++++++++++++++++++++----------------------
+ src/xde_fvwm.c       |  41 ++++----
+ src/xde_icewm.c      |  22 +++-
+ src/xde_mwm.c        |  34 +++---
+ src/xde_openbox.c    |  55 ++++++----
+ src/xde_openboxold.c | 263 +++++++++++++++++++++++++---------------------
+ src/xde_pekwm.c      |  33 ++++--
+ src/xde_perlpanel.c  | 260 +++++++++++++++++++++++++--------------------
+ src/xde_twm.c        |  27 ++---
+ src/xde_uwm.c        |  31 ++++--
+ src/xde_vtwm.c       |  27 ++---
+ src/xde_waimea.c     | 263 +++++++++++++++++++++++++---------------------
+ src/xde_wmaker.c     |  22 +++-
+ src/xde_wmakerold.c  |  25 ++++-
+ 20 files changed, 1053 insertions(+), 784 deletions(-)
+
+commit 49dbed8ce5dcd3d8aae138b0bffc1b3f38fcdb25
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 7 19:17:54 2015 -0700
+
+    careful of exluded (unnecessary I know)
+
+ src/xde-menu.c       | 68 ++++++++++++++++++++++++------------------------
+ src/xde_blackbox.c   |  5 +++-
+ src/xde_ctwm.c       |  5 +++-
+ src/xde_dtwm.c       |  5 +++-
+ src/xde_etwm.c       |  5 +++-
+ src/xde_fluxbox.c    |  5 +++-
+ src/xde_fvwm.c       |  5 +++-
+ src/xde_icewm.c      |  5 +++-
+ src/xde_mwm.c        |  5 +++-
+ src/xde_openbox.c    |  5 +++-
+ src/xde_openboxold.c |  5 +++-
+ src/xde_pekwm.c      |  5 +++-
+ src/xde_perlpanel.c  |  5 +++-
+ src/xde_twm.c        |  5 +++-
+ src/xde_uwm.c        |  5 +++-
+ src/xde_vtwm.c       |  5 +++-
+ src/xde_waimea.c     |  5 +++-
+ src/xde_wmaker.c     |  5 +++-
+ src/xde_wmakerold.c  |  5 +++-
+ 19 files changed, 106 insertions(+), 52 deletions(-)
+
+commit 2e0ea356111db5c32abeb9c5600073cbd12ca17f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 7 17:12:32 2015 -0700
+
+    handle icons a bit better
+
+ .indent.pro          |   3 ++
+ src/xde-menu.c       | 130 +++++++++++++++++++++++++++++++++--------------
+ src/xde-menu.h       |   7 +--
+ src/xde_blackbox.c   |  17 +++++--
+ src/xde_ctwm.c       |   5 +-
+ src/xde_dtwm.c       |   5 +-
+ src/xde_etwm.c       |   5 +-
+ src/xde_fluxbox.c    |  17 +++++--
+ src/xde_fvwm.c       |  17 +++++--
+ src/xde_icewm.c      |  13 +++--
+ src/xde_mwm.c        |   5 +-
+ src/xde_openbox.c    |  17 +++++--
+ src/xde_openboxold.c |  17 +++++--
+ src/xde_pekwm.c      |  17 +++++--
+ src/xde_perlpanel.c  |  17 +++++--
+ src/xde_twm.c        |   5 +-
+ src/xde_uwm.c        |  17 +++++--
+ src/xde_vtwm.c       |   5 +-
+ src/xde_waimea.c     |  17 +++++--
+ src/xde_wmaker.c     |   5 +-
+ src/xde_wmakerold.c  |   5 +-
+ 21 files changed, 258 insertions(+), 88 deletions(-)
+
+commit 43ab95a7e0ef5bd1dd2f2cbaac48ae59d4f6abc1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 7 12:03:46 2015 -0700
+
+    add tooltips to entries
+
+ src/xde-menu.c | 36 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 32 insertions(+), 4 deletions(-)
+
+commit c1d3302cb74bd548f5f64315e2211e85b2ba4e40
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 6 17:49:19 2015 -0700
+
+    first working gtk popup
+
+ src/xde-menu.c       | 175 +++++++++++++++++++++++++++++++++++++++++++----
+ src/xde-menu.h       |   1 +
+ src/xde_2bwm.c       |   1 +
+ src/xde_adwm.c       |   7 +-
+ src/xde_afterstep.c  |   1 +
+ src/xde_awesome.c    |   1 +
+ src/xde_blackbox.c   |   1 +
+ src/xde_ctwm.c       |   1 +
+ src/xde_cwm.c        |   1 +
+ src/xde_dtwm.c       |   1 +
+ src/xde_dwm.c        |   1 +
+ src/xde_echinus.c    |   1 +
+ src/xde_etwm.c       |   1 +
+ src/xde_ewmh.c       |   1 +
+ src/xde_fluxbox.c    |   1 +
+ src/xde_flwm.c       |   1 +
+ src/xde_fvwm.c       |   1 +
+ src/xde_icewm.c      |   1 +
+ src/xde_jwm.c        |   1 +
+ src/xde_matwm2.c     |   1 +
+ src/xde_metacity.c   |   1 +
+ src/xde_mwm.c        |   1 +
+ src/xde_openbox.c    |   1 +
+ src/xde_openboxold.c |   1 +
+ src/xde_pekwm.c      |   1 +
+ src/xde_perlpanel.c  |   1 +
+ src/xde_spectrwm.c   |   1 +
+ src/xde_twm.c        |   1 +
+ src/xde_uwm.c        |   1 +
+ src/xde_vtwm.c       |   1 +
+ src/xde_waimea.c     |   1 +
+ src/xde_wind.c       |   1 +
+ src/xde_wmaker.c     |   1 +
+ src/xde_wmakerold.c  |   1 +
+ src/xde_wmx.c        |   1 +
+ src/xde_yeahwm.c     |   1 +
+ 36 files changed, 199 insertions(+), 17 deletions(-)
+
+commit d7b5655517ded8ab3c97b5e84b8883e65aab3168
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 6 11:27:39 2015 -0700
+
+    more gtk menu workup
+
+ src/xde-menu.c       | 32 +++++++++++++++++++++++++++++++
+ src/xde-menu.h       |  1 +
+ src/xde_2bwm.c       | 31 ++++++++++++++++++++++++------
+ src/xde_adwm.c       | 31 ++++++++++++++++++++++++------
+ src/xde_afterstep.c  | 31 ++++++++++++++++++++++++------
+ src/xde_awesome.c    | 31 ++++++++++++++++++++++++------
+ src/xde_blackbox.c   | 31 ++++++++++++++++++++++++------
+ src/xde_ctwm.c       | 48 ++++++++++++++++++++++++++++++----------------
+ src/xde_cwm.c        | 31 ++++++++++++++++++++++++------
+ src/xde_dtwm.c       | 26 ++++++++++++++++++++-----
+ src/xde_dwm.c        | 31 ++++++++++++++++++++++++------
+ src/xde_echinus.c    | 31 ++++++++++++++++++++++++------
+ src/xde_etwm.c       | 26 ++++++++++++++++++++-----
+ src/xde_ewmh.c       | 31 ++++++++++++++++++++++++------
+ src/xde_fluxbox.c    | 31 ++++++++++++++++++++++++------
+ src/xde_flwm.c       | 31 ++++++++++++++++++++++++------
+ src/xde_fvwm.c       | 50 ++++++++++++++++++++++++++++++++----------------
+ src/xde_icewm.c      | 31 ++++++++++++++++++++++++------
+ src/xde_jwm.c        | 31 ++++++++++++++++++++++++------
+ src/xde_matwm2.c     | 31 ++++++++++++++++++++++++------
+ src/xde_metacity.c   | 31 ++++++++++++++++++++++++------
+ src/xde_mwm.c        | 48 ++++++++++++++++++++++++++++++----------------
+ src/xde_openbox.c    | 40 ++++++++++++++++++++++++++------------
+ src/xde_openboxold.c | 31 ++++++++++++++++++++++++------
+ src/xde_pekwm.c      | 31 ++++++++++++++++++++++++------
+ src/xde_perlpanel.c  | 31 ++++++++++++++++++++++++------
+ src/xde_spectrwm.c   | 31 ++++++++++++++++++++++++------
+ src/xde_twm.c        | 48 ++++++++++++++++++++++++++++++----------------
+ src/xde_uwm.c        | 31 ++++++++++++++++++++++++------
+ src/xde_vtwm.c       | 48 ++++++++++++++++++++++++++++++----------------
+ src/xde_waimea.c     | 31 ++++++++++++++++++++++++------
+ src/xde_wind.c       | 31 ++++++++++++++++++++++++------
+ src/xde_wmaker.c     | 31 ++++++++++++++++++++++++------
+ src/xde_wmakerold.c  | 31 ++++++++++++++++++++++++------
+ src/xde_wmx.c        | 31 ++++++++++++++++++++++++------
+ src/xde_yeahwm.c     | 31 ++++++++++++++++++++++++------
+ 36 files changed, 914 insertions(+), 259 deletions(-)
+
+commit 7c3b3f0301cf41ce5c0558a75ce9ce9bfa319ea8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 5 23:01:13 2015 -0700
+
+    work in dtwm
+
+ man/xde-menu.pod |  38 ++++++-
+ src/xde_ctwm.c   |  23 ++--
+ src/xde_dtwm.c   | 289 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde_etwm.c   |  23 ++--
+ src/xde_mwm.c    |  16 +--
+ src/xde_twm.c    |  16 +--
+ src/xde_vtwm.c   |  23 ++--
+ 7 files changed, 391 insertions(+), 37 deletions(-)
+
+commit a659a2163f0b110123f45117f230f405234d9e06
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 5 12:34:23 2015 -0700
+
+    add module for generic EWMH WM support
+
+ src/Makefile.am |   7 +
+ src/xde_ewmh.c  | 390 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 397 insertions(+)
+
+commit cf6c72e259f61ea8762c40cafaec4bb55aedfabf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 4 18:17:40 2015 -0700
+
+    more style and theme support
+
+ src/xde_2bwm.c      |   7 ++
+ src/xde_adwm.c      |   4 +-
+ src/xde_afterstep.c | 186 ++++++-----------------------------------------
+ src/xde_awesome.c   | 186 ++++++-----------------------------------------
+ src/xde_cwm.c       |   7 ++
+ src/xde_dtwm.c      | 187 +++++++----------------------------------------
+ src/xde_dwm.c       |   7 ++
+ src/xde_echinus.c   |  12 +++-
+ src/xde_flwm.c      |   7 ++
+ src/xde_fvwm.c      |  29 ++++++--
+ src/xde_icewm.c     |  33 ++++++---
+ src/xde_jwm.c       |  29 ++++++--
+ src/xde_matwm2.c    |   7 ++
+ src/xde_metacity.c  | 188 +++++++-----------------------------------------
+ src/xde_openbox.c   |  29 ++++++--
+ src/xde_pekwm.c     |  39 +++++++---
+ src/xde_spectrwm.c  |   8 +++
+ src/xde_twm.c       |   7 ++
+ src/xde_uwm.c       |  31 ++++++--
+ src/xde_wind.c      |   7 ++
+ src/xde_wmaker.c    |  31 ++++++--
+ src/xde_wmakerold.c |  29 ++++++--
+ src/xde_wmx.c       |   7 ++
+ src/xde_yeahwm.c    |   7 ++
+ 24 files changed, 371 insertions(+), 713 deletions(-)
+
+commit da7ddc7623781d3b31ee129ccaa5dae087f48bb4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 4 15:03:53 2015 -0700
+
+    more style menu factoring
+
+ src/xde-menu.c       |  28 +++++---
+ src/xde-menu.h       |  19 +++--
+ src/xde_adwm.c       |  19 +++--
+ src/xde_blackbox.c   |  19 +++--
+ src/xde_ctwm.c       |  19 +++--
+ src/xde_echinus.c    | 176 ++++-------------------------------------------
+ src/xde_etwm.c       |  19 +++--
+ src/xde_fluxbox.c    |  19 +++--
+ src/xde_mwm.c        |  19 +++--
+ src/xde_openboxold.c |  19 +++--
+ src/xde_perlpanel.c  |  19 +++--
+ src/xde_twm.c        |  19 +++--
+ src/xde_vtwm.c       |  19 +++--
+ src/xde_waimea.c     |  19 +++--
+ 14 files changed, 147 insertions(+), 285 deletions(-)
+
+commit 6ac1cd4589e576a75c1fd271b196e35eea540138
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 4 13:25:35 2015 -0700
+
+    turn wrapping icons into a method
+
+ src/xde-menu.h       |  1 +
+ src/xde_blackbox.c   | 51 ++++++++++++++++++++++++------------------------
+ src/xde_fluxbox.c    | 51 ++++++++++++++++++++++++------------------------
+ src/xde_fvwm.c       | 23 +++++++++++-----------
+ src/xde_icewm.c      | 19 +++++++++---------
+ src/xde_openbox.c    | 37 ++++++++++++++++++-----------------
+ src/xde_openboxold.c | 51 ++++++++++++++++++++++++------------------------
+ src/xde_pekwm.c      | 39 ++++++++++++++++++------------------
+ src/xde_perlpanel.c  | 49 +++++++++++++++++++++++-----------------------
+ src/xde_uwm.c        | 23 +++++++++++-----------
+ src/xde_waimea.c     | 49 +++++++++++++++++++++++-----------------------
+ 11 files changed, 202 insertions(+), 191 deletions(-)
+
+commit 1d17e4126850bfd29e6f6f024d60a2f899fac8ab
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 4 11:38:18 2015 -0700
+
+    more gtk+ factoring
+
+ src/xde-menu.c       | 168 +++++++++++++++++++++++++++++++++++++++++++
+ src/xde-menu.h       |   3 +
+ src/xde_adwm.c       | 177 +++++----------------------------------------
+ src/xde_blackbox.c   | 177 ++-------------------------------------------
+ src/xde_ctwm.c       | 181 ++---------------------------------------------
+ src/xde_etwm.c       | 181 ++---------------------------------------------
+ src/xde_fluxbox.c    | 179 ++--------------------------------------------
+ src/xde_mwm.c        | 181 ++---------------------------------------------
+ src/xde_openboxold.c | 177 ++-------------------------------------------
+ src/xde_perlpanel.c  | 177 ++-------------------------------------------
+ src/xde_twm.c        | 181 ++---------------------------------------------
+ src/xde_vtwm.c       | 181 ++---------------------------------------------
+ src/xde_waimea.c     | 177 ++-------------------------------------------
+ 13 files changed, 248 insertions(+), 1892 deletions(-)
+
+commit 27bea50f759413348d5a2e3d178953ee0d2f826a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 4 10:21:55 2015 -0700
+
+    factor gtk theme code
+
+ src/xde-menu.c     | 45 ++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-menu.h     |  1 +
+ src/xde_2bwm.c     | 38 ++------------------------------------
+ src/xde_cwm.c      | 38 ++------------------------------------
+ src/xde_dwm.c      | 38 ++------------------------------------
+ src/xde_flwm.c     | 38 ++------------------------------------
+ src/xde_matwm2.c   | 38 ++------------------------------------
+ src/xde_spectrwm.c | 38 ++------------------------------------
+ src/xde_wind.c     | 38 ++------------------------------------
+ src/xde_wmx.c      | 38 ++------------------------------------
+ src/xde_yeahwm.c   | 38 ++------------------------------------
+ 11 files changed, 63 insertions(+), 325 deletions(-)
+
+commit 3273cc29e7ff1f7232f1815ffd74f7f79a73e527
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 4 09:17:04 2015 -0700
+
+    handle gtk themes and styles better
+
+ src/xde-menu.c       | 190 ++++++++++++++++++++++-
+ src/xde-menu.h       |   8 +-
+ src/xde_2bwm.c       | 194 +++++------------------
+ src/xde_adwm.c       | 167 +++++++++++++++++++-
+ src/xde_afterstep.c  | 159 ++++++++++++++++++-
+ src/xde_awesome.c    | 159 ++++++++++++++++++-
+ src/xde_blackbox.c   | 392 +++++++++++++++++++++--------------------------
+ src/xde_ctwm.c       | 208 +++++++++++++++++++++++--
+ src/xde_cwm.c        |  57 ++++++-
+ src/xde_dtwm.c       | 159 ++++++++++++++++++-
+ src/xde_dwm.c        |  57 ++++++-
+ src/xde_echinus.c    | 159 ++++++++++++++++++-
+ src/xde_etwm.c       | 208 +++++++++++++++++++++++--
+ src/xde_fluxbox.c    | 376 ++++++++++++++++++++-------------------------
+ src/xde_flwm.c       |  57 ++++++-
+ src/xde_matwm2.c     |  57 ++++++-
+ src/xde_metacity.c   | 159 ++++++++++++++++++-
+ src/xde_mwm.c        | 208 +++++++++++++++++++++++--
+ src/xde_openboxold.c | 374 ++++++++++++++++++++------------------------
+ src/xde_perlpanel.c  | 364 +++++++++++++++++++------------------------
+ src/xde_spectrwm.c   |  57 ++++++-
+ src/xde_twm.c        | 208 +++++++++++++++++++++++--
+ src/xde_vtwm.c       | 208 +++++++++++++++++++++++--
+ src/xde_waimea.c     | 368 +++++++++++++++++++-------------------------
+ src/xde_wind.c       |  57 ++++++-
+ src/xde_wmx.c        |  57 ++++++-
+ src/xde_yeahwm.c     |  57 ++++++-
+ 27 files changed, 3405 insertions(+), 1319 deletions(-)
+
+commit bc73fa3b877f974ba360fc20730eda80b35bb15b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 3 13:44:38 2015 -0700
+
+    remove unnecessary dependencies fix issue #1
+
+ configure.template | 56 +++++++++++++++++++++++++-------------------------
+ src/Makefile.am    |  4 ++--
+ src/xde-menu.c     |  2 +-
+ 3 files changed, 31 insertions(+), 31 deletions(-)
+
+commit 39f505a1d99fe07a8f40d6318964e28a73201d77
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 3 13:26:15 2015 -0700
+
+    more factoring and gtk work
+
+ src/xde-menu.c       |  62 ++++++++++++++
+ src/xde-menu.h       |   5 ++
+ src/xde_2bwm.c       | 204 +++++++++++++++++++++++++++++++++++-----------
+ src/xde_adwm.c       |  49 +----------
+ src/xde_afterstep.c  |  49 +----------
+ src/xde_awesome.c    |  49 +----------
+ src/xde_blackbox.c   | 206 +++++++++++++++++++++++++++++------------------
+ src/xde_ctwm.c       |  47 +----------
+ src/xde_cwm.c        |  49 +----------
+ src/xde_dtwm.c       |  49 +----------
+ src/xde_dwm.c        |  49 +----------
+ src/xde_echinus.c    |  49 +----------
+ src/xde_etwm.c       |  47 +----------
+ src/xde_fluxbox.c    | 204 ++++++++++++++++++++++++++++------------------
+ src/xde_flwm.c       |  49 +----------
+ src/xde_fvwm.c       |  47 +----------
+ src/xde_icewm.c      |  47 +----------
+ src/xde_jwm.c        |  49 +----------
+ src/xde_matwm2.c     |  49 +----------
+ src/xde_metacity.c   |  49 +----------
+ src/xde_mwm.c        |  47 +----------
+ src/xde_openbox.c    |  47 +----------
+ src/xde_openboxold.c | 204 ++++++++++++++++++++++++++++------------------
+ src/xde_pekwm.c      |  47 +----------
+ src/xde_perlpanel.c  | 204 ++++++++++++++++++++++++++++------------------
+ src/xde_spectrwm.c   |  49 +----------
+ src/xde_twm.c        |  47 +----------
+ src/xde_uwm.c        |  47 +----------
+ src/xde_vtwm.c       |  47 +----------
+ src/xde_waimea.c     | 206 +++++++++++++++++++++++++++++------------------
+ src/xde_wind.c       |  49 +----------
+ src/xde_wmaker.c     |  47 +----------
+ src/xde_wmakerold.c  |  47 +----------
+ src/xde_wmx.c        |  49 +----------
+ src/xde_yeahwm.c     |  49 +----------
+ 35 files changed, 952 insertions(+), 1642 deletions(-)
+
+commit e6538160515c4672b77685b556962e4765ac37a6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 18:29:50 2015 -0700
+
+    factor appmenu
+
+ src/xde-menu.c       | 21 +++++++++++++++++++++
+ src/xde-menu.h       |  1 +
+ src/xde_2bwm.c       | 18 +++---------------
+ src/xde_adwm.c       | 18 +++---------------
+ src/xde_afterstep.c  | 18 +++---------------
+ src/xde_awesome.c    | 18 +++---------------
+ src/xde_blackbox.c   | 18 +++---------------
+ src/xde_ctwm.c       | 18 +++---------------
+ src/xde_cwm.c        | 18 +++---------------
+ src/xde_dtwm.c       | 18 +++---------------
+ src/xde_dwm.c        | 18 +++---------------
+ src/xde_echinus.c    | 18 +++---------------
+ src/xde_etwm.c       | 18 +++---------------
+ src/xde_fluxbox.c    | 18 +++---------------
+ src/xde_flwm.c       | 18 +++---------------
+ src/xde_fvwm.c       | 18 +++---------------
+ src/xde_icewm.c      | 18 +++---------------
+ src/xde_jwm.c        | 18 +++---------------
+ src/xde_matwm2.c     | 18 +++---------------
+ src/xde_metacity.c   | 18 +++---------------
+ src/xde_mwm.c        | 18 +++---------------
+ src/xde_openbox.c    | 18 +++---------------
+ src/xde_openboxold.c | 18 +++---------------
+ src/xde_pekwm.c      | 18 +++---------------
+ src/xde_perlpanel.c  | 18 +++---------------
+ src/xde_spectrwm.c   | 18 +++---------------
+ src/xde_twm.c        | 18 +++---------------
+ src/xde_uwm.c        | 18 +++---------------
+ src/xde_vtwm.c       | 18 +++---------------
+ src/xde_waimea.c     | 18 +++---------------
+ src/xde_wind.c       | 18 +++---------------
+ src/xde_wmaker.c     | 18 +++---------------
+ src/xde_wmakerold.c  | 18 +++---------------
+ src/xde_wmx.c        | 18 +++---------------
+ src/xde_yeahwm.c     | 18 +++---------------
+ 35 files changed, 121 insertions(+), 495 deletions(-)
+
+commit 105c6523f24fc867df9b39565bbe810ce87aab0a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 18:08:48 2015 -0700
+
+    first stab at gtk menu items
+
+ src/xde-menu.c | 89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
+
+commit 5b36f099aef5732056b67ef7f71026dcf675cb98
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 17:10:27 2015 -0700
+
+    factor common gtk functions
+
+ src/xde-menu.c       | 97 ++++++++++++++++++++++++++++++++++++++++++------
+ src/xde-menu.h       |  9 ++++-
+ src/xde_2bwm.c       | 15 ++++++--
+ src/xde_adwm.c       | 15 ++++++--
+ src/xde_afterstep.c  | 15 ++++++--
+ src/xde_awesome.c    | 15 ++++++--
+ src/xde_blackbox.c   | 15 ++++++--
+ src/xde_ctwm.c       | 15 ++++++--
+ src/xde_cwm.c        | 15 ++++++--
+ src/xde_dtwm.c       | 15 ++++++--
+ src/xde_dwm.c        | 15 ++++++--
+ src/xde_echinus.c    | 15 ++++++--
+ src/xde_etwm.c       | 15 ++++++--
+ src/xde_fluxbox.c    | 15 ++++++--
+ src/xde_flwm.c       | 15 ++++++--
+ src/xde_fvwm.c       | 15 ++++++--
+ src/xde_icewm.c      | 19 ++++++++--
+ src/xde_jwm.c        | 15 ++++++--
+ src/xde_matwm2.c     | 15 ++++++--
+ src/xde_metacity.c   | 15 ++++++--
+ src/xde_mwm.c        | 15 ++++++--
+ src/xde_openbox.c    | 15 ++++++--
+ src/xde_openboxold.c | 15 ++++++--
+ src/xde_pekwm.c      | 15 ++++++--
+ src/xde_perlpanel.c  | 15 ++++++--
+ src/xde_spectrwm.c   | 15 ++++++--
+ src/xde_twm.c        | 15 ++++++--
+ src/xde_uwm.c        | 15 ++++++--
+ src/xde_vtwm.c       | 15 ++++++--
+ src/xde_waimea.c     | 15 ++++++--
+ src/xde_wind.c       | 15 ++++++--
+ src/xde_wmaker.c     | 15 ++++++--
+ src/xde_wmakerold.c  | 15 ++++++--
+ src/xde_wmx.c        | 15 ++++++--
+ src/xde_yeahwm.c     | 15 ++++++--
+ 35 files changed, 460 insertions(+), 145 deletions(-)
+
+commit 661ca9b86d0e91de200364a1ba5447d4ee4cca65
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 15:32:05 2015 -0700
+
+    add pinnable gtk menus
+
+ src/xde_2bwm.c       | 1 +
+ src/xde_adwm.c       | 1 +
+ src/xde_afterstep.c  | 1 +
+ src/xde_awesome.c    | 1 +
+ src/xde_blackbox.c   | 1 +
+ src/xde_ctwm.c       | 1 +
+ src/xde_cwm.c        | 1 +
+ src/xde_dtwm.c       | 1 +
+ src/xde_dwm.c        | 1 +
+ src/xde_echinus.c    | 1 +
+ src/xde_etwm.c       | 1 +
+ src/xde_fluxbox.c    | 1 +
+ src/xde_flwm.c       | 1 +
+ src/xde_fvwm.c       | 1 +
+ src/xde_icewm.c      | 1 +
+ src/xde_jwm.c        | 1 +
+ src/xde_matwm2.c     | 1 +
+ src/xde_metacity.c   | 1 +
+ src/xde_mwm.c        | 1 +
+ src/xde_openbox.c    | 1 +
+ src/xde_openboxold.c | 1 +
+ src/xde_pekwm.c      | 1 +
+ src/xde_perlpanel.c  | 1 +
+ src/xde_spectrwm.c   | 1 +
+ src/xde_twm.c        | 1 +
+ src/xde_uwm.c        | 1 +
+ src/xde_vtwm.c       | 1 +
+ src/xde_waimea.c     | 1 +
+ src/xde_wind.c       | 1 +
+ src/xde_wmaker.c     | 1 +
+ src/xde_wmakerold.c  | 1 +
+ src/xde_wmx.c        | 1 +
+ src/xde_yeahwm.c     | 1 +
+ 33 files changed, 33 insertions(+)
+
+commit 91af0d9e466df9e942fb2723a993d08f524ba0be
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 15:26:56 2015 -0700
+
+    add gtk separators
+
+ src/xde_2bwm.c       | 1 +
+ src/xde_adwm.c       | 1 +
+ src/xde_afterstep.c  | 1 +
+ src/xde_awesome.c    | 1 +
+ src/xde_blackbox.c   | 1 +
+ src/xde_ctwm.c       | 1 +
+ src/xde_cwm.c        | 1 +
+ src/xde_dtwm.c       | 1 +
+ src/xde_dwm.c        | 1 +
+ src/xde_echinus.c    | 1 +
+ src/xde_etwm.c       | 1 +
+ src/xde_fluxbox.c    | 1 +
+ src/xde_flwm.c       | 1 +
+ src/xde_fvwm.c       | 1 +
+ src/xde_icewm.c      | 1 +
+ src/xde_jwm.c        | 1 +
+ src/xde_matwm2.c     | 1 +
+ src/xde_metacity.c   | 1 +
+ src/xde_mwm.c        | 1 +
+ src/xde_openbox.c    | 1 +
+ src/xde_openboxold.c | 1 +
+ src/xde_pekwm.c      | 1 +
+ src/xde_perlpanel.c  | 1 +
+ src/xde_spectrwm.c   | 1 +
+ src/xde_twm.c        | 1 +
+ src/xde_uwm.c        | 1 +
+ src/xde_vtwm.c       | 1 +
+ src/xde_waimea.c     | 1 +
+ src/xde_wind.c       | 1 +
+ src/xde_wmaker.c     | 1 +
+ src/xde_wmakerold.c  | 1 +
+ src/xde_wmx.c        | 1 +
+ src/xde_yeahwm.c     | 1 +
+ 33 files changed, 33 insertions(+)
+
+commit 483da321d2d1b76eb1df7e327acb113c9e7fa6ea
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 15:15:03 2015 -0700
+
+    split wmspec out of xboxes
+
+ src/xde_blackbox.c   | 183 ++++++++++++++++++++++----------------------
+ src/xde_fluxbox.c    | 183 ++++++++++++++++++++++----------------------
+ src/xde_openboxold.c | 183 ++++++++++++++++++++++----------------------
+ src/xde_perlpanel.c  | 195 +++++++++++++++++++++++------------------------
+ src/xde_waimea.c     | 189 ++++++++++++++++++++++-----------------------
+ 5 files changed, 463 insertions(+), 470 deletions(-)
+
+commit a1190384ffc92686d6626ef8ac14eef06c7e8a9f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 14:53:34 2015 -0700
+
+    rework module functions
+
+ src/xde-menu.h       |   4 +
+ src/xde_2bwm.c       |  99 +++++++++--
+ src/xde_adwm.c       | 122 ++++++++++---
+ src/xde_afterstep.c  | 122 ++++++++++---
+ src/xde_awesome.c    | 120 ++++++++++---
+ src/xde_blackbox.c   | 106 +++++++++--
+ src/xde_ctwm.c       | 230 ++++++++++++++----------
+ src/xde_cwm.c        | 120 ++++++++++---
+ src/xde_dtwm.c       | 133 +++++++++++---
+ src/xde_dwm.c        | 120 ++++++++++---
+ src/xde_echinus.c    | 120 ++++++++++---
+ src/xde_etwm.c       | 230 ++++++++++++++----------
+ src/xde_fluxbox.c    |  76 ++++++--
+ src/xde_flwm.c       | 120 ++++++++++---
+ src/xde_fvwm.c       | 210 ++++++++++++++--------
+ src/xde_icewm.c      | 104 ++++++++---
+ src/xde_jwm.c        | 120 ++++++++++---
+ src/xde_matwm2.c     | 120 ++++++++++---
+ src/xde_metacity.c   | 120 ++++++++++---
+ src/xde_mwm.c        | 255 ++++++++++++++++-----------
+ src/xde_openbox.c    | 450 ++++++++++++++++++++++++++++++++++++-----------
+ src/xde_openboxold.c | 106 +++++++++--
+ src/xde_pekwm.c      |  84 +++++++--
+ src/xde_perlpanel.c  | 314 ++++++++++++++++++++++-----------
+ src/xde_spectrwm.c   | 120 ++++++++++---
+ src/xde_twm.c        | 230 ++++++++++++++----------
+ src/xde_uwm.c        |  92 ++++++++--
+ src/xde_vtwm.c       | 230 ++++++++++++++----------
+ src/xde_waimea.c     | 106 +++++++++--
+ src/xde_wind.c       |  99 +++++++++--
+ src/xde_wmaker.c     |  94 ++++++++--
+ src/xde_wmakerold.c  |  96 ++++++++--
+ src/xde_wmx.c        |  99 +++++++++--
+ src/xde_yeahwm.c     |  99 +++++++++--
+ 34 files changed, 3687 insertions(+), 1183 deletions(-)
+
+commit 48567271cd34d77a21b6fdb417373e70be83be1c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 10:55:00 2015 -0700
+
+    fill out more gtk support
+
+ src/xde-menu.h       |  12 +-
+ src/xde_2bwm.c       | 202 +++++++++++++++++++++++++++++-
+ src/xde_adwm.c       | 191 +++++++++++++++++++++++++++-
+ src/xde_afterstep.c  | 191 +++++++++++++++++++++++++++-
+ src/xde_awesome.c    | 193 ++++++++++++++++++++++++++++-
+ src/xde_blackbox.c   | 253 ++++++++++++++++++++++---------------
+ src/xde_ctwm.c       | 315 ++++++++++++++++++++++++++++++++++++----------
+ src/xde_cwm.c        | 193 ++++++++++++++++++++++++++++-
+ src/xde_dtwm.c       | 193 ++++++++++++++++++++++++++++-
+ src/xde_dwm.c        | 193 ++++++++++++++++++++++++++++-
+ src/xde_echinus.c    | 193 ++++++++++++++++++++++++++++-
+ src/xde_etwm.c       | 316 ++++++++++++++++++++++++++++++++++++----------
+ src/xde_fluxbox.c    | 293 +++++++++++++++++++++++++++----------------
+ src/xde_flwm.c       | 193 ++++++++++++++++++++++++++++-
+ src/xde_fvwm.c       | 299 +++++++++++++++++++++++++++++++++++---------
+ src/xde_icewm.c      | 265 +++++++++++++++++++++++++++++++++------
+ src/xde_jwm.c        | 193 ++++++++++++++++++++++++++++-
+ src/xde_matwm2.c     | 193 ++++++++++++++++++++++++++++-
+ src/xde_metacity.c   | 193 ++++++++++++++++++++++++++++-
+ src/xde_mwm.c        | 315 ++++++++++++++++++++++++++++++++++++----------
+ src/xde_openboxold.c | 253 ++++++++++++++++++++++---------------
+ src/xde_pekwm.c      | 287 ++++++++++++++++++++++++++++++++++--------
+ src/xde_perlpanel.c  |  41 ++++--
+ src/xde_spectrwm.c   | 193 ++++++++++++++++++++++++++++-
+ src/xde_twm.c        | 317 +++++++++++++++++++++++++++++++++++++----------
+ src/xde_uwm.c        | 277 +++++++++++++++++++++++++++++++++--------
+ src/xde_vtwm.c       | 317 +++++++++++++++++++++++++++++++++++++----------
+ src/xde_waimea.c     | 253 ++++++++++++++++++++++---------------
+ src/xde_wind.c       | 202 +++++++++++++++++++++++++++++-
+ src/xde_wmaker.c     | 273 +++++++++++++++++++++++++++++++++-------
+ src/xde_wmakerold.c  | 243 +++++++++++++++++++++++++++++++-----
+ src/xde_wmx.c        | 202 +++++++++++++++++++++++++++++-
+ src/xde_yeahwm.c     | 202 +++++++++++++++++++++++++++++-
+ 33 files changed, 6335 insertions(+), 1114 deletions(-)
+
+commit 93429fdc76a122d1504b7cbf795ef77adcb0e633
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 1 00:43:36 2015 -0600
+
+    make perlpanel work too
+
+ src/xde_fluxbox.c    |  2 +-
+ src/xde_openboxold.c |  2 +-
+ src/xde_perlpanel.c  | 58 +++++++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 49 insertions(+), 13 deletions(-)
+
+commit 4ab2522480b5e02654f9ce7ea25f66b857e32bc1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 31 21:38:07 2015 -0600
+
+    add format and root menu changes
+
+ src/xde-menu.h       |   1 +
+ src/xde_2bwm.c       |   1 +
+ src/xde_adwm.c       |   1 +
+ src/xde_afterstep.c  |   1 +
+ src/xde_awesome.c    |   1 +
+ src/xde_blackbox.c   | 154 ++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde_ctwm.c       |   1 +
+ src/xde_cwm.c        |   1 +
+ src/xde_dtwm.c       |   1 +
+ src/xde_dwm.c        |   1 +
+ src/xde_echinus.c    |   1 +
+ src/xde_etwm.c       |   1 +
+ src/xde_fluxbox.c    |  61 +++++++++++++++----
+ src/xde_flwm.c       |   1 +
+ src/xde_fvwm.c       |   1 +
+ src/xde_icewm.c      |   1 +
+ src/xde_jwm.c        |   1 +
+ src/xde_matwm2.c     |   1 +
+ src/xde_metacity.c   |   1 +
+ src/xde_mwm.c        |   1 +
+ src/xde_openbox.c    |   1 +
+ src/xde_openboxold.c |  86 +++++++++++++++++++++++---
+ src/xde_pekwm.c      |   1 +
+ src/xde_perlpanel.c  |   1 +
+ src/xde_spectrwm.c   |   1 +
+ src/xde_twm.c        |   1 +
+ src/xde_uwm.c        |   1 +
+ src/xde_vtwm.c       |   1 +
+ src/xde_waimea.c     | 135 +++++++++++++++++++++++++++++++++++------
+ src/xde_wind.c       |   1 +
+ src/xde_wmaker.c     |   1 +
+ src/xde_wmakerold.c  |   3 +-
+ src/xde_wmx.c        |   1 +
+ src/xde_yeahwm.c     |   1 +
+ 34 files changed, 418 insertions(+), 50 deletions(-)
+
+commit 8ab90dd66e7028a8235abe80e414894e8699c021
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 31 17:43:40 2015 -0600
+
+    more gtk updates
+
+ src/xde_blackbox.c   |  34 +++++-----
+ src/xde_fluxbox.c    |   6 +-
+ src/xde_openboxold.c |   8 ++-
+ src/xde_perlpanel.c  | 124 ++++++++++++++++++++++++++++++++++-
+ src/xde_waimea.c     | 163 ++++++++++++++++++++++++++++++++++++++++-------
+ 5 files changed, 290 insertions(+), 45 deletions(-)
+
+commit 801b996ae954f70d742c483d3fe5950532f0e40b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 31 14:07:32 2015 -0600
+
+    strap in more *box gtk menu routines
+
+ src/xde_blackbox.c   |  22 ++++-----
+ src/xde_openboxold.c | 116 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 125 insertions(+), 13 deletions(-)
+
+commit cbd79b5e25e5a4125900ceb33e2e0ff5f9748508
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 31 13:59:57 2015 -0600
+
+    strapping in more gtk menu
+
+ src/xde_blackbox.c |  48 ++++++++++---------
+ src/xde_fluxbox.c  | 128 ++++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 146 insertions(+), 30 deletions(-)
+
+commit 9dda034ff28ccb36ddab75199baa648d894cf8ad
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 31 00:21:03 2015 -0600
+
+    start working in GTK menu
+
+ src/xde-menu.c     | 103 +++++++++++++++++++++++++++++++
+ src/xde-menu.h     |  20 ++++--
+ src/xde_blackbox.c | 161 +++++++++++++++++++++++++++++++++++++++++++------
+ 3 files changed, 258 insertions(+), 26 deletions(-)
+
+commit 41c8c57fd87b8b2e433933f1a7e6727dd9801fb7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 30 16:22:08 2015 -0600
+
+    reorganize context operations
+
+ src/xde-menu.c       | 46 +++++++++++++-------------
+ src/xde-menu.h       | 50 +++++++++++++++++++---------
+ src/xde_2bwm.c       | 41 ++++++++++-------------
+ src/xde_adwm.c       | 51 ++++++++++-------------------
+ src/xde_afterstep.c  | 41 ++++++++++-------------
+ src/xde_awesome.c    | 41 ++++++++++-------------
+ src/xde_blackbox.c   | 59 +++++++++++++++------------------
+ src/xde_ctwm.c       | 75 ++++++++++++++++++++----------------------
+ src/xde_cwm.c        | 41 ++++++++++-------------
+ src/xde_dtwm.c       | 41 ++++++++++-------------
+ src/xde_dwm.c        | 41 ++++++++++-------------
+ src/xde_echinus.c    | 41 ++++++++++-------------
+ src/xde_etwm.c       | 75 ++++++++++++++++++++----------------------
+ src/xde_fluxbox.c    | 59 +++++++++++++++------------------
+ src/xde_flwm.c       | 41 ++++++++++-------------
+ src/xde_fvwm.c       | 85 +++++++++++++++++++++++-------------------------
+ src/xde_icewm.c      | 45 ++++++++++++-------------
+ src/xde_jwm.c        | 41 ++++++++++-------------
+ src/xde_matwm2.c     | 41 ++++++++++-------------
+ src/xde_metacity.c   | 41 ++++++++++-------------
+ src/xde_mwm.c        | 75 ++++++++++++++++++++----------------------
+ src/xde_openbox.c    | 67 ++++++++++++++++++--------------------
+ src/xde_openboxold.c | 59 +++++++++++++++------------------
+ src/xde_pekwm.c      | 63 +++++++++++++++++------------------
+ src/xde_perlpanel.c  | 59 +++++++++++++++------------------
+ src/xde_spectrwm.c   | 41 ++++++++++-------------
+ src/xde_twm.c        | 75 ++++++++++++++++++++----------------------
+ src/xde_uwm.c        | 47 ++++++++++++--------------
+ src/xde_vtwm.c       | 75 ++++++++++++++++++++----------------------
+ src/xde_waimea.c     | 59 +++++++++++++++------------------
+ src/xde_wind.c       | 41 ++++++++++-------------
+ src/xde_wmaker.c     | 45 ++++++++++++-------------
+ src/xde_wmakerold.c  | 47 ++++++++++++--------------
+ src/xde_wmx.c        | 41 ++++++++++-------------
+ src/xde_yeahwm.c     | 41 ++++++++++-------------
+ 35 files changed, 837 insertions(+), 994 deletions(-)
+
+commit cd0379d0cc6e2b09327bec1987fdf0593a3c3cbc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 30 13:24:57 2015 -0600
+
+    add hook for window manager gtk submenu
+
+ src/xde-menu.h       |  1 +
+ src/xde_2bwm.c       |  7 +++++++
+ src/xde_adwm.c       | 17 +++++++++++++++++
+ src/xde_afterstep.c  |  7 +++++++
+ src/xde_awesome.c    |  7 +++++++
+ src/xde_blackbox.c   |  7 +++++++
+ src/xde_ctwm.c       |  7 +++++++
+ src/xde_cwm.c        |  7 +++++++
+ src/xde_dtwm.c       |  7 +++++++
+ src/xde_dwm.c        |  7 +++++++
+ src/xde_echinus.c    |  7 +++++++
+ src/xde_etwm.c       |  7 +++++++
+ src/xde_fluxbox.c    |  7 +++++++
+ src/xde_flwm.c       |  7 +++++++
+ src/xde_fvwm.c       |  7 +++++++
+ src/xde_icewm.c      |  7 +++++++
+ src/xde_jwm.c        |  7 +++++++
+ src/xde_matwm2.c     |  7 +++++++
+ src/xde_metacity.c   |  7 +++++++
+ src/xde_mwm.c        |  7 +++++++
+ src/xde_openbox.c    |  7 +++++++
+ src/xde_openboxold.c |  7 +++++++
+ src/xde_pekwm.c      |  7 +++++++
+ src/xde_perlpanel.c  |  7 +++++++
+ src/xde_spectrwm.c   |  7 +++++++
+ src/xde_twm.c        |  7 +++++++
+ src/xde_uwm.c        |  7 +++++++
+ src/xde_vtwm.c       |  7 +++++++
+ src/xde_waimea.c     |  7 +++++++
+ src/xde_wind.c       |  7 +++++++
+ src/xde_wmaker.c     |  7 +++++++
+ src/xde_wmakerold.c  |  7 +++++++
+ src/xde_wmx.c        |  7 +++++++
+ src/xde_yeahwm.c     |  7 +++++++
+ 34 files changed, 242 insertions(+)
+
+commit 046c8b680c670ada578fcbb4e68b08d13934eb70
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 30 13:24:14 2015 -0600
+
+    no force on autoconf
+
+ autogen.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 48458190a5f2f73bb8cfc18fd11192c4b66caeeb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 30 07:44:05 2015 -0600
+
+    some updates to waimea menus
+
+ src/xde_waimea.c | 25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
+
+commit 628333994a643d08f8247f8f176df4e10de237e6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 23:52:16 2015 -0600
+
+    get monitor mode working
+
+ src/xde-menu.c | 101 ++++++++++++++++++++++++++++++++++++++---------------
+ src/xde-menu.h |   2 --
+ 2 files changed, 73 insertions(+), 30 deletions(-)
+
+commit a15d9b41cf7385c17e8df99c2583b7f8531b46fc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 07:23:00 2015 -0600
+
+    better icon handling
+
+ src/xde-menu.c       | 77 ++++++++++--------------------------------------
+ src/xde_blackbox.c   |  6 +++-
+ src/xde_ctwm.c       |  7 +++--
+ src/xde_etwm.c       |  6 +++-
+ src/xde_fluxbox.c    | 21 +++++--------
+ src/xde_fvwm.c       | 29 +++++++-----------
+ src/xde_icewm.c      | 21 ++++---------
+ src/xde_mwm.c        |  4 +++
+ src/xde_openbox.c    | 28 +++++++-----------
+ src/xde_openboxold.c | 21 +++++--------
+ src/xde_pekwm.c      | 30 ++++++++++---------
+ src/xde_perlpanel.c  | 21 +++++--------
+ src/xde_twm.c        |  4 +++
+ src/xde_uwm.c        | 20 +++++--------
+ src/xde_vtwm.c       |  4 +++
+ src/xde_waimea.c     |  3 ++
+ src/xde_wmaker.c     |  4 +++
+ src/xde_wmakerold.c  |  4 +++
+ 18 files changed, 129 insertions(+), 181 deletions(-)
+
+commit 1b2d7881268104c0a6d4f6f589be6d2baba9eec6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:30:34 2015 -0600
+
+    proper command substitution for pekwm
+
+ src/xde_pekwm.c | 32 +++++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 17 deletions(-)
+
+commit 4a379dde703cba26fce266813d0c8757af6f38ce
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:30:12 2015 -0600
+
+    proper command substitution for perlpanel
+
+ src/xde_perlpanel.c | 32 +++++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 17 deletions(-)
+
+commit 97b4e94cfdff0326842a6e2e2d7646deea9c4da7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:29:55 2015 -0600
+
+    proper command substitution for twm
+
+ src/xde_twm.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
+
+commit 0137e46880f1f1fdf3be2d3558fa2a567bb6ea6c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:29:50 2015 -0600
+
+    proper command substitution for uwm
+
+ src/xde_uwm.c | 33 +++++++++++++++------------------
+ 1 file changed, 15 insertions(+), 18 deletions(-)
+
+commit 5fba6530919d6eaa890f2f5422aaa23fe89299a6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:29:41 2015 -0600
+
+    proper command substitution for vtwm
+
+ src/xde_vtwm.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
+
+commit be056da85635814b5c9408275aed2b232f3358be
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:29:27 2015 -0600
+
+    proper command substitution for waimea
+
+ src/xde_waimea.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+commit c42181637abe4ab9ad368de49c6c8e2e9277b72b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:29:11 2015 -0600
+
+    proper command substitution for wmaker
+
+ src/xde_wmaker.c    | 23 +++++++++++------------
+ src/xde_wmakerold.c | 21 ++++++++++-----------
+ 2 files changed, 21 insertions(+), 23 deletions(-)
+
+commit a1dbaa4f3f16edaeced79190b15882e3b8e661e9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:28:49 2015 -0600
+
+    proper command substitution for openbox
+
+ src/xde_openbox.c    | 43 ++++++++++++++++++++++---------------------
+ src/xde_openboxold.c | 32 +++++++++++++++-----------------
+ 2 files changed, 37 insertions(+), 38 deletions(-)
+
+commit adfceff77ec76b568c2cb4640a922d4f21f03916
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:28:28 2015 -0600
+
+    proper command substitution for mwm
+
+ src/xde_mwm.c | 24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
+
+commit b584459c771d15ac602b8deb8fa073f1a1c17f1e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:28:14 2015 -0600
+
+    proper command substitution for icewm
+
+ src/xde_icewm.c | 31 ++++++++++++++-----------------
+ 1 file changed, 14 insertions(+), 17 deletions(-)
+
+commit a6be15c1143dae1f8d85b9eac03ce305d4696512
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:27:57 2015 -0600
+
+    proper command substitution for fvwm
+
+ src/xde_fvwm.c | 27 ++++++++++++---------------
+ 1 file changed, 12 insertions(+), 15 deletions(-)
+
+commit e1d038dae63eac7891709dcc281645680f877b9f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:27:44 2015 -0600
+
+    proper command substitution for fluxbox
+
+ src/xde_fluxbox.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+commit ff56f895393a8a7b8af01d0aa1cdcb2b5ea24d7c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:27:33 2015 -0600
+
+    proper command substitution for etwm
+
+ src/xde_etwm.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+commit 727ff7d91ef995f6bc48ab3a92755f720e23d12e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:27:25 2015 -0600
+
+    proper command substitution for ctwm
+
+ src/xde_ctwm.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+commit 1319bd466606017ec72fb51b1826566aff12c1db
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:27:12 2015 -0600
+
+    proper command substitution for blackbox
+
+ src/xde_blackbox.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
+
+commit 526edc760e5b131de8890fc94dc966b80a6f3ce0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 21 05:26:44 2015 -0600
+
+    do proper command substitution
+
+ src/xde-menu.c | 75 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-menu.h |  2 ++
+ 2 files changed, 76 insertions(+), 1 deletion(-)
+
+commit aec65ece2a5dfc0cff24502de8b4d4c66e914628
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 17:48:06 2015 -0600
+
+    corrections to twm menu
+
+ src/xde_twm.c | 30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+commit d5d6d01bde1492ef06e9076fd1205c216e114a6d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 17:47:58 2015 -0600
+
+    corrections to vtwm menu
+
+ src/xde_vtwm.c | 30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+commit 0e9b836bd3c51d36f7d966f7a8a1cc4380d7cea0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 17:47:50 2015 -0600
+
+    corrections to etwm menu
+
+ src/xde_etwm.c | 30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+commit 89537e718e0d0505200cdb1d0923b89065bee4c2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 17:47:42 2015 -0600
+
+    corrections to ctwm menu
+
+ src/xde_ctwm.c | 30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+commit 8e6567eb4eaf98034fe63640e149f16e9a5cb810
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 17:47:17 2015 -0600
+
+    start to handle messages
+
+ src/xde-menu.c | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+commit b0cb6449b94467b7a3cea8dc6728d2f850246fd2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 17:46:40 2015 -0600
+
+    updated manpage
+
+ man/xde-menu.pod | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 9a9c2d4972be1e713dbd1a9837640e113361f354
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 20 07:39:34 2015 -0600
+
+    more menu updates and docs
+
+ man/xde-menu.pod   |  85 +++++----
+ src/xde-menu.c     | 501 +++++++++++++++++++++++++++++++++++--------------
+ src/xde-menu.h     |  14 +-
+ src/xde_blackbox.c |   2 +-
+ 4 files changed, 422 insertions(+), 180 deletions(-)
+
+commit c5fef6c80793c0c969fac77a50838d2e612f944b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 19 14:33:17 2015 -0600
+
+    menu updates
+
+ src/xde-menu.c | 374 ++++++++++++++++++++++++++++++++++++-----------------
+ src/xde-menu.h |  10 +-
+ 2 files changed, 265 insertions(+), 119 deletions(-)
+
+commit 8298d3f73fa415d5f17d35a1182380b5a45c9a5f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 19 07:37:38 2015 -0600
+
+    updates to xde-menu
+
+ man/xde-menu.pod |  16 +++---
+ src/xde-menu.c   | 147 +++++++++++++++++++++++++++++++++++++--------------
+ src/xde-menu.h   |  24 ++++++---
+ 3 files changed, 132 insertions(+), 55 deletions(-)
+
+commit 29b109fd9db3ac5bc24a589f653be09aa666d706
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 18 23:50:41 2015 -0600
+
+    more man updates
+
+ man/xde-menu.pod | 649 +++++++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 495 insertions(+), 154 deletions(-)
+
+commit 02dee2be4f7378b34a6a3a575dde3422af2f2a0e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 17 22:08:24 2015 -0600
+
+    add MWM and DTWM man pages for dev doc
+
+ .gitignore      |    3 +
+ man/Makefile.am |    7 +-
+ man/dtwmrc.man  |  764 +++++++++++++++++++++++++++++
+ man/mwm.man     | 1361 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ man/mwmrc.man   |  637 ++++++++++++++++++++++++
+ 5 files changed, 2771 insertions(+), 1 deletion(-)
+
+commit e977c414f77900ffbb7842441182c66b245ebe0a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 17 21:49:16 2015 -0600
+
+    add MENUS.html documentation to distribution
+
+ .gitignore     |   1 +
+ MENUS.asciidoc | 473 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Makefile.am    |   5 +-
+ 3 files changed, 478 insertions(+), 1 deletion(-)
+
+commit e66304a53ebd6b8effa1d310fedad3d8b947ee22
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 17 19:03:54 2015 -0600
+
+    spelling
+
+ man/xde-menu.pod | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
+
+commit 5b5cbf3107f3146bdee0ceb9f33c4761073e4d16
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 10 04:43:52 2015 -0600
+
+    add number processing to software
+
+ src/xde-menu.c | 72 +++++++++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde-menu.h |  3 +++
+ 2 files changed, 71 insertions(+), 4 deletions(-)
+
+commit fa5a504670e440bcd8a0ed0abbbb4a3ca3316365
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 9 22:41:04 2015 -0600
+
+    start building up options better
+
+ src/xde-menu.c | 116 +++++++++++++++++++++++++++++++++++++++++++++--------
+ src/xde-menu.h |   1 +
+ 2 files changed, 100 insertions(+), 17 deletions(-)
+
+commit 59361acd8ae94c3b9c4569ddc5bf9f2f3b266d4b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Aug 4 11:07:06 2015 -0600
+
+    add menu generation for MWM
+
+ src/xde-menu.h       |   1 +
+ src/xde_2bwm.c       |   1 +
+ src/xde_adwm.c       |   1 +
+ src/xde_afterstep.c  |   1 +
+ src/xde_awesome.c    |   1 +
+ src/xde_blackbox.c   |   1 +
+ src/xde_ctwm.c       |  73 +++++++----
+ src/xde_cwm.c        |   1 +
+ src/xde_dtwm.c       |   1 +
+ src/xde_dwm.c        |   1 +
+ src/xde_echinus.c    |   1 +
+ src/xde_etwm.c       |  72 +++++++----
+ src/xde_fluxbox.c    |   1 +
+ src/xde_flwm.c       |   1 +
+ src/xde_fvwm.c       |   1 +
+ src/xde_icewm.c      |   1 +
+ src/xde_jwm.c        |   1 +
+ src/xde_matwm2.c     |   1 +
+ src/xde_metacity.c   |   1 +
+ src/xde_mwm.c        | 329 +++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde_openbox.c    |   3 +-
+ src/xde_openboxold.c |   3 +-
+ src/xde_pekwm.c      |   1 +
+ src/xde_perlpanel.c  |   1 +
+ src/xde_spectrwm.c   |   1 +
+ src/xde_twm.c        |  72 +++++++----
+ src/xde_uwm.c        |   1 +
+ src/xde_vtwm.c       |  72 +++++++----
+ src/xde_waimea.c     |   1 +
+ src/xde_wind.c       |   1 +
+ src/xde_wmaker.c     |   1 +
+ src/xde_wmakerold.c  |   1 +
+ src/xde_wmx.c        |   1 +
+ src/xde_yeahwm.c     |   1 +
+ 34 files changed, 552 insertions(+), 99 deletions(-)
+
+commit 295cef0152d8d678bb6225b24b8976cda0114507
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Aug 3 21:44:20 2015 -0600
+
+    more documentation updates
+
+ man/xde-menu.pod | 214 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 213 insertions(+), 1 deletion(-)
+
+commit bb4f4a6125636dad3fed3aa0b2509f7e5bead44c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Aug 3 11:04:58 2015 -0600
+
+    add menu generator for perlpanel (fluxbox-like)
+
+ src/Makefile.am                        |  7 +++++
+ src/xde_fluxbox.c                      | 19 +++++++-------
+ src/xde_openboxold.c                   | 25 ++++++++----------
+ src/{xde_fluxbox.c => xde_perlpanel.c} | 42 +++++++++++++-----------------
+ 4 files changed, 45 insertions(+), 48 deletions(-)
+
+commit 302b51dc27bd376513561a7577e3219ca93e0c3c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 21:29:50 2015 -0600
+
+    added windowmaker menu generator
+
+ src/xde_wmaker.c | 373 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 368 insertions(+), 5 deletions(-)
+
+commit 3e172f2ec2605b84dd3e99a09242f99643daa22a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 19:56:51 2015 -0600
+
+    rename openbox->openboxold openbox3->openbox
+
+ src/Makefile.am                         |  12 +-
+ src/xde-menu.c                          |   5 +-
+ src/xde_openbox.c                       | 682 ++++++++++++----------------
+ src/xde_openbox3.c                      | 550 ----------------------
+ src/{xde_openbox.c => xde_openboxold.c} |   0
+ 5 files changed, 285 insertions(+), 964 deletions(-)
+
+commit 0491c60ea969ef0f06b4453a97d24580634f44dd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 19:50:27 2015 -0600
+
+    menu generator for old WindowMaker menus
+
+ src/xde_wmakerold.c | 191 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 185 insertions(+), 6 deletions(-)
+
+commit 3df98080489ad1058adfcc33f287310f0b97c0b6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 18:37:15 2015 -0600
+
+    add old WindowMaker format library
+
+ src/Makefile.am     |   7 +++
+ src/xde_wmakerold.c | 153 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 160 insertions(+)
+
+commit 498fc9daf876d73b7452754add4f7f855295f3da
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 11:12:01 2015 -0600
+
+    rationalize blackbox-like menus
+
+ src/xde_blackbox.c |  2 +-
+ src/xde_fluxbox.c  |  3 +-
+ src/xde_openbox.c  | 83 ++++++++++++++++++++++++--------------------------
+ src/xde_waimea.c   |  2 +-
+ 4 files changed, 44 insertions(+), 46 deletions(-)
+
+commit e6cabe2b69bcf9db704b35bed210d6f5a9648960
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 11:01:20 2015 -0600
+
+    added menu generator for waimea window manager
+
+ src/xde_blackbox.c | 149 ++++++++++-----
+ src/xde_fluxbox.c  |  81 ++++----
+ src/xde_waimea.c   | 492 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 621 insertions(+), 101 deletions(-)
+
+commit de1cc9831f48b76ba4f73a64e75cf9de728da65c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 08:51:48 2015 -0600
+
+    added menu generation for UWM
+
+ src/xde_uwm.c | 249 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 240 insertions(+), 9 deletions(-)
+
+commit 54aa23dfc6845f1eb58e50a23ddec2615eeaa576
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 02:48:18 2015 -0600
+
+    added PEKWM root menu generator
+
+ src/xde_pekwm.c | 336 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 327 insertions(+), 9 deletions(-)
+
+commit 2fa5e76a427e381b3afcc4fadbb8ce94ea4e92ed
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Aug 2 01:21:43 2015 -0600
+
+    added FVWM menu generator
+
+ src/xde_ctwm.c |   3 +-
+ src/xde_etwm.c |   2 +-
+ src/xde_fvwm.c | 322 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde_twm.c  |   2 +-
+ src/xde_vtwm.c |   2 +-
+ 5 files changed, 319 insertions(+), 12 deletions(-)
+
+commit 51e7b63d70e7bcc19e68cd53f6a4ef397225ec97
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 1 21:24:01 2015 -0600
+
+    add ETWM as well
+
+ src/xde_ctwm.c |   6 +-
+ src/xde_etwm.c | 301 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde_vtwm.c |   6 +-
+ 3 files changed, 299 insertions(+), 14 deletions(-)
+
+commit 92126e8b94385685c0c6b1ce0d830830cdc32d52
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 1 21:13:43 2015 -0600
+
+    added TWM, CTWM and VTWM menu generation
+
+ src/xde-menu.c     |   2 +
+ src/xde-menu.h     |   1 +
+ src/xde_ctwm.c     | 301 +++++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde_openbox3.c |   2 +-
+ src/xde_twm.c      | 301 +++++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde_vtwm.c     | 301 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 6 files changed, 883 insertions(+), 25 deletions(-)
+
+commit 3aa01821437526ef09784239e5d454592453c68a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 31 08:11:26 2015 -0600
+
+    updated manual page
+
+ man/xde-menu.pod | 87 ++++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 78 insertions(+), 9 deletions(-)
+
+commit 463f6cf3d1ad5ed897855f959fa5809b2cbbb6b0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 30 01:09:01 2015 -0600
+
+    add openbox-3 XML menu generation
+
+ src/xde-menu.c     | 106 ++++++++++++-
+ src/xde-menu.h     |   2 +
+ src/xde_openbox3.c | 415 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 513 insertions(+), 10 deletions(-)
+
+commit 6e21e626a76845be1325b3ace67c95a46ff003c4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jul 28 23:05:19 2015 -0600
+
+    add openbox3 format
+
+ src/Makefile.am                       |  7 +++
+ src/xde-menu.c                        |  1 +
+ src/xde_2bwm.c                        | 30 +++++++++--
+ src/xde_adwm.c                        | 30 +++++++++--
+ src/xde_afterstep.c                   | 30 +++++++++--
+ src/xde_awesome.c                     | 30 +++++++++--
+ src/xde_blackbox.c                    | 37 +++++++-------
+ src/xde_ctwm.c                        | 30 +++++++++--
+ src/xde_cwm.c                         | 30 +++++++++--
+ src/xde_dtwm.c                        | 30 +++++++++--
+ src/xde_dwm.c                         | 30 +++++++++--
+ src/xde_echinus.c                     | 30 +++++++++--
+ src/xde_etwm.c                        | 30 +++++++++--
+ src/xde_fluxbox.c                     | 75 ++++++++++++++--------------
+ src/xde_flwm.c                        | 30 +++++++++--
+ src/xde_fvwm.c                        | 30 +++++++++--
+ src/xde_icewm.c                       | 82 +++++++++++++++----------------
+ src/xde_jwm.c                         | 30 +++++++++--
+ src/xde_matwm2.c                      | 30 +++++++++--
+ src/xde_metacity.c                    | 30 +++++++++--
+ src/xde_mwm.c                         | 30 +++++++++--
+ src/xde_openbox.c                     | 75 ++++++++++++++--------------
+ src/{xde_awesome.c => xde_openbox3.c} | 32 +++++++++---
+ src/xde_pekwm.c                       | 30 +++++++++--
+ src/xde_spectrwm.c                    | 30 +++++++++--
+ src/xde_twm.c                         | 30 +++++++++--
+ src/xde_uwm.c                         | 30 +++++++++--
+ src/xde_vtwm.c                        | 30 +++++++++--
+ src/xde_waimea.c                      | 30 +++++++++--
+ src/xde_wind.c                        | 30 +++++++++--
+ src/xde_wmaker.c                      | 30 +++++++++--
+ src/xde_wmx.c                         | 30 +++++++++--
+ src/xde_yeahwm.c                      | 30 +++++++++--
+ 33 files changed, 817 insertions(+), 272 deletions(-)
+
+commit b4f5bb3d63a0141497d3c896ac3cf69910ca45e4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jul 28 02:28:08 2015 -0600
+
+    flushed out openbox (old) menu generator
+
+ src/xde_fluxbox.c |  36 +++-
+ src/xde_openbox.c | 573 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 591 insertions(+), 18 deletions(-)
+
+commit 1d80c18bc32d8fa2fa92589c56386dda57651bdd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jul 28 00:55:07 2015 -0600
+
+    completed icewm menu generation support
+
+ src/xde_fluxbox.c |  74 +++++++++----------
+ src/xde_icewm.c   | 196 +++++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 223 insertions(+), 47 deletions(-)
+
+commit 086b2063636bd1f784675fd81875965ffb496416
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 27 23:49:09 2015 -0600
+
+    move icon routines to common, general fixups for fluxbox
+
+ src/xde-menu.c    | 198 +++++++++++++++++++++++++++++++
+ src/xde-menu.h    |  14 +++
+ src/xde_fluxbox.c | 321 +++++++++-----------------------------------------
+ 3 files changed, 266 insertions(+), 267 deletions(-)
+
+commit d929a69f8b55c32aa052e491780779c6a53eadaf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 27 22:56:34 2015 -0600
+
+    get fluxbox icons working properly
+
+ src/xde_fluxbox.c | 230 ++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 167 insertions(+), 63 deletions(-)
+
+commit d002fc2577d491965b711c3d571b3f1ad88fdc84
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 27 15:53:51 2015 -0600
+
+    be quiet when compiling
+
+ rebuild.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 561837f175dac7e94d10469e133223e94160a553
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 27 05:53:36 2015 -0600
+
+    updates for fluxbox menu
+
+ src/xde-menu.c     | 180 ++++++++++++-
+ src/xde-menu.h     |   9 +
+ src/xde_blackbox.c | 241 +++++------------
+ src/xde_fluxbox.c  | 690 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 925 insertions(+), 195 deletions(-)
+
+commit e6853999f785769b645054a61ac011e3f794f3fc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 26 17:56:35 2015 -0600
+
+    sort as xdg-menugen
+
+ src/xde-menu.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+commit 71381ab63728a9b7d59f51f4ab357bc615bbfe74
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 26 17:27:26 2015 -0600
+
+    basically generating blackbox menu
+
+ src/xde-menu.c     | 390 +++++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde-menu.h     |  44 +++++-
+ src/xde_blackbox.c | 291 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 702 insertions(+), 23 deletions(-)
+
+commit e3157060b5830995292ea4450e1fdcacdf5de406
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 24 05:42:22 2015 -0600
+
+    basic blackbox menu
+
+ src/Makefile.am    |  14 +---
+ src/xde-menu.c     |  44 +++++++++--
+ src/xde_blackbox.c | 200 ++++++++++++++++++++++++++++++++++++-------------
+ 3 files changed, 190 insertions(+), 68 deletions(-)
+
+commit ec6112f29f6da559965649e4c349ae9f56ae3027
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 19 22:21:22 2015 -0600
+
+    filling out blackbox output
+
+ src/xde-menu.c      |   8 +--
+ src/xde-menu.h      |   7 +-
+ src/xde_2bwm.c      |   2 +-
+ src/xde_adwm.c      |   2 +-
+ src/xde_afterstep.c |   2 +-
+ src/xde_awesome.c   |   2 +-
+ src/xde_blackbox.c  | 172 ++++++++++++++++++++++++++++++++++++++++++++++--
+ src/xde_ctwm.c      |   2 +-
+ src/xde_cwm.c       |   2 +-
+ src/xde_dtwm.c      |   2 +-
+ src/xde_dwm.c       |   2 +-
+ src/xde_echinus.c   |   2 +-
+ src/xde_etwm.c      |   2 +-
+ src/xde_fluxbox.c   |   2 +-
+ src/xde_flwm.c      |   2 +-
+ src/xde_fvwm.c      |   2 +-
+ src/xde_icewm.c     |   2 +-
+ src/xde_jwm.c       |   2 +-
+ src/xde_matwm2.c    |   2 +-
+ src/xde_metacity.c  |   2 +-
+ src/xde_mwm.c       |   2 +-
+ src/xde_openbox.c   |   2 +-
+ src/xde_pekwm.c     |   2 +-
+ src/xde_spectrwm.c  |   2 +-
+ src/xde_twm.c       |   2 +-
+ src/xde_uwm.c       |   2 +-
+ src/xde_vtwm.c      |   2 +-
+ src/xde_waimea.c    |   2 +-
+ src/xde_wind.c      |   2 +-
+ src/xde_wmaker.c    |   2 +-
+ src/xde_wmx.c       |   2 +-
+ src/xde_yeahwm.c    |   2 +-
+ 32 files changed, 203 insertions(+), 42 deletions(-)
+
+commit e636b473fe2be363f6aca40bd67a52aeec8c6e3c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 19 16:53:14 2015 -0600
+
+    detect window manager even when generating
+
+ src/xde-menu.c | 112 ++++++++++++++++++++++++++++++++++++-----------------
+ src/xde-menu.h |  52 ++++++++++++-------------
+ 2 files changed, 102 insertions(+), 62 deletions(-)
+
+commit bcabc510c9da2e3e34445e218cda1ada352f968a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 19 14:13:09 2015 -0600
+
+    fleshing out loadable modules
+
+ .indent.pro         | 233 ++++++++++++++++++++++++++++
+ src/Makefile.am     | 405 ++++++++++++++++++++++++++----------------------
+ src/xde-menu.c      | 308 +++++++++++-------------------------
+ src/xde-menu.h      | 263 +++++++++++++++++++++++++++++++
+ src/xde.h           |   0
+ src/xde_2bwm.c      | 133 ++++++++++++++++
+ src/xde_adwm.c      | 133 ++++++++++++++++
+ src/xde_afterstep.c | 133 ++++++++++++++++
+ src/xde_awesome.c   | 133 ++++++++++++++++
+ src/xde_blackbox.c  | 132 ++++++++++++++++
+ src/xde_ctwm.c      | 133 ++++++++++++++++
+ src/xde_cwm.c       | 133 ++++++++++++++++
+ src/xde_dtwm.c      | 133 ++++++++++++++++
+ src/xde_dwm.c       | 133 ++++++++++++++++
+ src/xde_echinus.c   | 133 ++++++++++++++++
+ src/xde_etwm.c      | 133 ++++++++++++++++
+ src/xde_fluxbox.c   | 133 ++++++++++++++++
+ src/xde_flwm.c      | 133 ++++++++++++++++
+ src/xde_fvwm.c      | 133 ++++++++++++++++
+ src/xde_icewm.c     | 133 ++++++++++++++++
+ src/xde_jwm.c       | 133 ++++++++++++++++
+ src/xde_matwm2.c    | 133 ++++++++++++++++
+ src/xde_metacity.c  | 133 ++++++++++++++++
+ src/xde_mwm.c       | 133 ++++++++++++++++
+ src/xde_openbox.c   | 133 ++++++++++++++++
+ src/xde_pekwm.c     | 133 ++++++++++++++++
+ src/xde_spectrwm.c  | 133 ++++++++++++++++
+ src/xde_twm.c       | 133 ++++++++++++++++
+ src/xde_uwm.c       | 133 ++++++++++++++++
+ src/xde_vtwm.c      | 133 ++++++++++++++++
+ src/xde_waimea.c    | 133 ++++++++++++++++
+ src/xde_wind.c      | 133 ++++++++++++++++
+ src/xde_wmaker.c    | 133 ++++++++++++++++
+ src/xde_wmx.c       | 133 ++++++++++++++++
+ src/xde_yeahwm.c    | 133 ++++++++++++++++
+ 35 files changed, 4790 insertions(+), 408 deletions(-)
+
+commit ed5b78350b684a1d7fdaaf48050c609e3f173d62
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 19 10:14:43 2015 -0600
+
+    set up for loadable modules
+
+ configure.template  |   3 +
+ man/xde-menu.pod    | 232 ++++++++++++++++++++++++++++++++++++++++++++++++
+ src/Makefile.am     | 196 +++++++++++++++++++++++++++++++++++++++-
+ src/xde.h           |   0
+ src/xde_2bwm.c      |   0
+ src/xde_adwm.c      |   0
+ src/xde_afterstep.c |   0
+ src/xde_awesome.c   |   0
+ src/xde_blackbox.c  |   0
+ src/xde_ctwm.c      |   0
+ src/xde_cwm.c       |   0
+ src/xde_dtwm.c      |   0
+ src/xde_dwm.c       |   0
+ src/xde_echinus.c   |   0
+ src/xde_etwm.c      |   0
+ src/xde_fluxbox.c   |   0
+ src/xde_flwm.c      |   0
+ src/xde_fvwm.c      |   0
+ src/xde_icewm.c     |   0
+ src/xde_jwm.c       |   0
+ src/xde_matwm2.c    |   0
+ src/xde_metacity.c  |   0
+ src/xde_mwm.c       |   0
+ src/xde_openbox.c   |   0
+ src/xde_pekwm.c     |   0
+ src/xde_spectrwm.c  |   0
+ src/xde_twm.c       |   0
+ src/xde_uwm.c       |   0
+ src/xde_vtwm.c      |   0
+ src/xde_waimea.c    |   0
+ src/xde_wind.c      |   0
+ src/xde_wmaker.c    |   0
+ src/xde_wmx.c       |   0
+ src/xde_yeahwm.c    |   0
+ 34 files changed, 430 insertions(+), 1 deletion(-)
+
+commit 199a7d829a0e2b499256c02b39e4222c6fbae188
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 19 09:44:00 2015 -0600
+
+    Initial commit of separate xde-menu package
+
+ .gitignore            |   57 ++
+ .indent.pro           |   94 ++
+ AUTHORS.in            |    3 +
+ Makefile.am           |   37 +
+ NEWS.in               |   11 +
+ README.in             |   70 ++
+ README.md             |   66 ++
+ THANKS.in             |    4 +
+ TODO.in               |    3 +
+ autogen.sh            |   41 +
+ configure.sh          |   38 +
+ configure.template    |  152 +++
+ data/Makefile.am      |    6 +
+ data/xde-menu.desktop |   15 +
+ man/Makefile.am       |   25 +
+ man/xde-menu.pod      |   94 ++
+ rebuild.sh            |    8 +
+ src/Makefile.am       |   11 +
+ src/xde-menu.c        | 2458 +++++++++++++++++++++++++++++++++++++++++++++
+ 19 files changed, 3193 insertions(+)

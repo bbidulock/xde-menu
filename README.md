@@ -1,7 +1,7 @@
 
 ## xde-menu
 
-Package xde-menu-0.2 was released under GPL license 2016-03-28.
+Package xde-menu-0.2.1 was released under GPL license 2016-06-22.
 
 This package provides a number of "C"-language tools for working with
 the X Desktop Envionment.  Most of these tools were previously written
@@ -12,13 +12,11 @@ available from perl(1).
 
 ### Release
 
-This is the `xde-menu-0.2` package, released 2016-03-28.  This release,
+This is the `xde-menu-0.2.1` package, released 2016-06-22.  This release,
 and the latest version, can be obtained from the GitHub repository at
 https://github.com/bbidulock/xde-menu, using a command such as:
 
-```bash
-git clone https://github.com/bbidulock/xde-menu.git
-```
+    git clone https://github.com/bbidulock/xde-menu.git
 
 Please see the [NEWS](NEWS) file for release notes and history of user visible
 changes for the current version, and the [ChangeLog](ChangeLog) file for a more
@@ -39,14 +37,12 @@ the file [COPYING](COPYING).
 The quickest and easiest way to get xde-menu up and running is to run
 the following commands:
 
-```bash
-git clone https://github.com/bbidulock/xde-menu.git xde-menu
-cd xde-menu
-./autogen.sh
-./configure --prefix=/usr
-make V=0
-make DESTDIR="$pkgdir" install
-```
+    $> git clone https://github.com/bbidulock/xde-menu.git xde-menu
+    $> cd xde-menu
+    $> ./autogen.sh
+    $> ./configure --prefix=/usr
+    $> make V=0
+    $> make DESTDIR="$pkgdir" install
 
 This will configure, compile and install xde-menu the quickest.  For
 those who would like to spend the extra 15 seconds reading `./configure

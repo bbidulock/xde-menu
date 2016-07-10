@@ -1,11 +1,11 @@
-@PACKAGE@ -- NEWS file.  @DATE@
+xde-menu -- NEWS file.  2016-06-22
 
 History of major user-visible changes:
 ======================================
 
-Release @PACKAGE@-@VERSION@ released @DATE@
+Release xde-menu-0.2.1 released 2016-06-22
 -------------------------------------------
 
-This is the initial development release of @PACKAGE@.
+This is the initial development release of xde-menu.
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

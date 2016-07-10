@@ -16,9 +16,7 @@ This is the `@PACKAGE@-@VERSION@` package, released @DATE@.  This release,
 and the latest version, can be obtained from the GitHub repository at
 https://github.com/bbidulock/@PACKAGE@, using a command such as:
 
-```bash
-git clone https://github.com/bbidulock/@PACKAGE@.git
-```
+    git clone https://github.com/bbidulock/@PACKAGE@.git
 
 Please see the [NEWS](NEWS) file for release notes and history of user visible
 changes for the current version, and the [ChangeLog](ChangeLog) file for a more
@@ -39,14 +37,12 @@ the file [COPYING](COPYING).
 The quickest and easiest way to get @PACKAGE@ up and running is to run
 the following commands:
 
-```bash
-git clone https://github.com/bbidulock/@PACKAGE@.git @PACKAGE@
-cd @PACKAGE@
-./autogen.sh
-./configure --prefix=/usr
-make V=0
-make DESTDIR="$pkgdir" install
-```
+    $> git clone https://github.com/bbidulock/@PACKAGE@.git @PACKAGE@
+    $> cd @PACKAGE@
+    $> ./autogen.sh
+    $> ./configure --prefix=/usr
+    $> make V=0
+    $> make DESTDIR="$pkgdir" install
 
 This will configure, compile and install @PACKAGE@ the quickest.  For
 those who would like to spend the extra 15 seconds reading `./configure
