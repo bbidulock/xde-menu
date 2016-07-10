@@ -66,7 +66,7 @@ char **saveArgv;
 #define RESCLAS "XDE-Menu"
 #define RESTITL "XDG Compliant Menu"
 
-#define USRDFLT "%s/.config/xde-menu/rc"
+#define USRDFLT "%s/.config/" RESNAME "/rc"
 #define APPDFLT	"/usr/share/X11/app-defaults/" RESCLAS
 
 int cmdArgc;
@@ -6112,57 +6112,40 @@ get_resources(void)
 		DPRINTF("no resource manager database found\n");
 		rdb = XrmGetStringDatabase("");
 	}
-	if ((val = get_resource(rdb, "debug", "0"))) {
+	if ((val = get_resource(rdb, "debug", "0")))
 		getXrmInt(val, &options.debug);
-	}
-	if ((val = get_resource(rdb, "rootmenu", NULL))) {
+	if ((val = get_resource(rdb, "rootmenu", NULL)))
 		getXrmString(val, &options.rootmenu);
-	}
-	if ((val = get_resource(rdb, "dieonerr", NULL))) {
+	if ((val = get_resource(rdb, "dieonerr", NULL)))
 		getXrmBool(val, &options.dieonerr);
-	}
-	if ((val = get_resource(rdb, "fileout", NULL))) {
+	if ((val = get_resource(rdb, "fileout", NULL)))
 		getXrmBool(val, &options.fileout);
-	}
-	if ((val = get_resource(rdb, "filename", NULL))) {
+	if ((val = get_resource(rdb, "filename", NULL)))
 		getXrmString(val, &options.filename);
-	}
-	if ((val = get_resource(rdb, "noicons", NULL))) {
+	if ((val = get_resource(rdb, "noicons", NULL)))
 		getXrmBool(val, &options.noicons);
-	}
-	if ((val = get_resource(rdb, "theme", NULL))) {
+	if ((val = get_resource(rdb, "theme", NULL)))
 		getXrmString(val, &options.theme);
-	}
-	if ((val = get_resource(rdb, "launch", NULL))) {
+	if ((val = get_resource(rdb, "launch", NULL)))
 		getXrmBool(val, &options.launch);
-	}
-	if ((val = get_resource(rdb, "runhist", NULL))) {
+	if ((val = get_resource(rdb, "runhist", NULL)))
 		getXrmString(val, &options.runhist);
-	}
-	if ((val = get_resource(rdb, "recapps", NULL))) {
+	if ((val = get_resource(rdb, "recapps", NULL)))
 		getXrmString(val, &options.recapps);
-	}
-	if ((val = get_resource(rdb, "recently", NULL))) {
+	if ((val = get_resource(rdb, "recently", NULL)))
 		getXrmString(val, &options.recently);
-	}
-	if ((val = get_resource(rdb, "recent", NULL))) {
+	if ((val = get_resource(rdb, "recent", NULL)))
 		getXrmString(val, &options.recent);
-	}
-	if ((val = get_resource(rdb, "keep", NULL))) {
+	if ((val = get_resource(rdb, "keep", NULL)))
 		getXrmString(val, &options.keep);
-	}
-	if ((val = get_resource(rdb, "menu", NULL))) {
+	if ((val = get_resource(rdb, "menu", NULL)))
 		getXrmString(val, &options.menu);
-	}
-	if ((val = get_resource(rdb, "display", NULL))) {
+	if ((val = get_resource(rdb, "display", NULL)))
 		getXrmString(val, &options.display);
-	}
-	if ((val = get_resource(rdb, "button", NULL))) {
+	if ((val = get_resource(rdb, "button", NULL)))
 		getXrmUint(val, &options.button);
-	}
-	if ((val = get_resource(rdb, "keypress", NULL))) {
+	if ((val = get_resource(rdb, "keypress", NULL)))
 		getXrmString(val, &options.keypress);
-	}
 	if ((val = get_resource(rdb, "which", NULL))) {
 		if (!strncasecmp(val, "default", strlen(val)))
 			options.which = UseScreenDefault;
@@ -6204,12 +6187,10 @@ get_resources(void)
 			}
 		}
 	}
-	if ((val = get_resource(rdb, "tray", NULL))) {
+	if ((val = get_resource(rdb, "tray", NULL)))
 		getXrmBool(val, &options.tray);
-	}
-	if ((val = get_resource(rdb, "generate", NULL))) {
+	if ((val = get_resource(rdb, "generate", NULL)))
 		getXrmBool(val, &options.generate);
-	}
 	if ((val = get_resource(rdb, "excluded", NULL))) {
 		if (getXrmBool(val, &flag)) {
 			if (flag)
@@ -6258,18 +6239,15 @@ get_resources(void)
 				options.treeflags &= ~GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
 		}
 	}
-	if ((val = get_resource(rdb, "tooltips", NULL))) {
+	if ((val = get_resource(rdb, "tooltips", NULL)))
 		getXrmBool(val, &options.tooltips);
-	}
-	if ((val = get_resource(rdb, "actions", NULL))) {
+	if ((val = get_resource(rdb, "actions", NULL)))
 		getXrmBool(val, &options.actions);
-	}
-	if ((val = get_resource(rdb, "unique", NULL))) {
+	if ((val = get_resource(rdb, "unique", NULL)))
 		getXrmBool(val, &options.unique);
-	}
-	if ((val = get_resource(rdb, "exit", NULL))) {
+	if ((val = get_resource(rdb, "exit", NULL)))
 		getXrmBool(val, &options.exit);
-	}
+
 	XrmDestroyDatabase(rdb);
 }
 
