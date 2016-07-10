@@ -6104,10 +6104,10 @@ get_resources(void)
 	}
 	usrdflt = g_strdup_printf(USRDFLT, getenv("HOME"));
 	if (!XrmCombineFileDatabase(usrdflt, &rdb, False))
-		EPRINTF("could not open rcfile %s\n", usrdflt);
+		DPRINTF("could not open rcfile %s\n", usrdflt);
 	g_free(usrdflt);
 	if (!XrmCombineFileDatabase(APPDFLT, &rdb, False))
-		EPRINTF("could not open rcfile %s\n", APPDFLT);
+		DPRINTF("could not open rcfile %s\n", APPDFLT);
 	if (!rdb) {
 		DPRINTF("no resource manager database found\n");
 		rdb = XrmGetStringDatabase("");
