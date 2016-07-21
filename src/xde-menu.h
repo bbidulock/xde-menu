@@ -42,6 +42,9 @@
 
  *****************************************************************************/
 
+/** @section Headers
+  * @{ */
+
 #ifndef __XDE_MENU_H__
 #define __XDE_MENU_H__
 
@@ -115,9 +118,6 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-#define GTK_EVENT_STOP		TRUE
-#define GTK_EVENT_PROPAGATE	FALSE
-
 #define WNCK_I_KNOW_THIS_IS_UNSTABLE
 #include <libwnck/libwnck.h>
 
@@ -134,29 +134,30 @@
 #include <getopt.h>
 #endif
 
-#include <langinfo.h>
-#include <locale.h>
+/** @} */
 
-#define XPRINTF(args...) do { } while (0)
-#define OPRINTF(args...) do { if (options.output > 1) { \
-	fprintf(stderr, "I: "); \
-	fprintf(stderr, args); \
-	fflush(stderr); } } while (0)
-#define DPRINTF(args...) do { if (options.debug) { \
-	fprintf(stderr, "D: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr); } } while (0)
-#define EPRINTF(args...) do { \
-	fprintf(stderr, "E: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr);   } while (0)
-#define WPRINTF(args...) do { \
-	fprintf(stderr, "W: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr);   } while (0)
-#define DPRINT() do { if (options.debug) { \
-	fprintf(stderr, "D: %s +%d %s()\n", __FILE__, __LINE__, __func__); \
-	fflush(stderr); } } while (0)
+/** @section Preamble
+  * @{ */
+
+#define XPRINTF(_args...) do { } while (0)
+
+#define DPRINTF(_num, _args...) do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": D: %12s: +%4d : %s() : ", __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr); } } while (0)
+
+#define EPRINTF(_args...) do { \
+		fprintf(stderr, NAME ": E: %12s +%4d : %s() : ", __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr); } while (0)
+
+#define OPRINTF(_num, _args...) do { if (options.debug >= _num || options.output > _num) { \
+		fprintf(stdout, NAME ": I: "); \
+		fprintf(stdout, _args); fflush(stdout); } } while (0)
+
+#define PTRACE(_num) do { if (options.debug >= _num || options.output >= _num) { \
+		fprintf(stderr, NAME ": T: %12s +%4d : %s()\n", __FILE__, __LINE__, __func__); \
+		fflush(stderr); } } while (0)
+
+extern void dumpstack(const char *file, const int line, const char *func);
 
 #undef EXIT_SUCCESS
 #undef EXIT_FAILURE
@@ -166,13 +167,36 @@
 #define EXIT_FAILURE	1
 #define EXIT_SYNTAXERR	2
 
-#define XA_SELECTION_NAME	"_XDE_MENU_S%d"
+#define GTK_EVENT_STOP		TRUE
+#define GTK_EVENT_PROPAGATE	FALSE
+
+extern const char *program;
+
+#define XA_PREFIX		"_XDE_MENU"
+#define XA_SELECTION_NAME	XA_PREFIX "_S%d"
+#if 0
+#define LOGO_NAME		"start-here"
+#else
+#define LOGO_NAME		"arch-logo"
+#endif
 
 extern int saveArgc;
 extern char **saveArgv;
 
+#define RESNAME "xde-menu"
+#define RESCLAS "XDE-Menu"
+#define RESTITL "XDG Compliant Menu"
+
+#define USRDFLT "%s/.config/" RESNAME "/rc"
+#define APPDFLT	"/usr/share/X11/app-defaults/" RESCLAS
+
 extern int cmdArgc;
 extern char **cmdArgv;
+
+/** @} */
+
+/** @section Globals and Structures
+  * @{ */
 
 extern Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
 extern Atom _XA_XDE_THEME_NAME;
@@ -209,17 +233,17 @@ extern Atom _XA_XDE_MENU_RESTART;
 extern Atom _XA_XDE_MENU_POPMENU;
 
 typedef enum {
-	CommandDefault,	    /* just generate WM root menu */
-	CommandMenugen,    /* just generate WM root menu */
-	CommandMonitor,	    /* run a new instance with monitoring */
-	CommandQuit,	    /* ask running instance to quit */
-	CommandPopMenu,	    /* ask running instance to pop menu */
-	CommandRefresh,	    /* ask running instance to refresh menu */
-	CommandRestart,	    /* ask running instance to restart */
-	CommandReplace,	    /* replace a running instance */
-	CommandHelp,	    /* print usage info and exit */
-	CommandVersion,	    /* print version info and exit */
-	CommandCopying,	    /* print copying info and exit */
+	CommandDefault,			/* just generate WM root menu */
+	CommandMenugen,			/* just generate WM root menu */
+	CommandMonitor,			/* run a new instance with monitoring */
+	CommandQuit,			/* ask running instance to quit */
+	CommandPopMenu,			/* ask running instance to pop menu */
+	CommandRefresh,			/* ask running instance to refresh menu */
+	CommandRestart,			/* ask running instance to restart */
+	CommandReplace,			/* replace a running instance */
+	CommandHelp,			/* print usage info and exit */
+	CommandVersion,			/* print version info and exit */
+	CommandCopying,			/* print copying info and exit */
 } Command;
 
 typedef enum {
@@ -353,7 +377,8 @@ struct MenuContext {
 			GList *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
 			GList *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
 			GList *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
-			GList *(*action) (MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action);
+			GList *(*action) (MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info,
+					  const char *action);
 			GList *(*pin) (MenuContext *ctx);
 		} ops;
 		GList *(*wmmenu) (MenuContext *ctx);
@@ -377,7 +402,8 @@ struct MenuContext {
 			GtkMenuItem *(*separator) (MenuContext *ctx, GMenuTreeSeparator *sep);
 			GtkMenuItem *(*entry) (MenuContext *ctx, GMenuTreeEntry *ent);
 			GtkMenuItem *(*alias) (MenuContext *ctx, GMenuTreeAlias *als);
-			GtkMenuItem *(*action) (MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action);
+			GtkMenuItem *(*action) (MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info,
+						const char *action);
 			GtkMenuItem *(*pin) (MenuContext *ctx);
 		} ops;
 		GtkMenuItem *(*wmmenu) (MenuContext *ctx);
@@ -389,21 +415,37 @@ struct MenuContext {
 	} gtk;
 };
 
-typedef struct {
-	int index;
-	GdkDisplay *disp;
-	GdkScreen *scrn;
-	GdkWindow *root;
-	WnckScreen *wnck;
-	char *theme;
-	char *itheme;
-	Window selwin;
-	Window owner;
-	Atom atom;
-	char *wmname;
-	Bool goodwm;
-	MenuContext *context;
-} XdeScreen;
+struct XdeScreen;
+typedef struct XdeScreen XdeScreen;
+struct XdeMonitor;
+typedef struct XdeMonitor XdeMonitor;
+
+struct XdeMonitor {
+	int index;			/* monitor number */
+	XdeScreen *xscr;		/* screen */
+	int current;			/* current desktop for this monitor */
+	GdkRectangle geom;		/* geometry of the monitor */
+};
+
+struct XdeScreen {
+	int index;			/* screen number */
+	GdkDisplay *disp;		/* gdk display */
+	GdkScreen *scrn;		/* gdk screen */
+	GdkWindow *root;		/* gdk root window */
+	WnckScreen *wnck;		/* wnck screen */
+	gint nmon;			/* number of monitors */
+	XdeMonitor *mons;		/* monitors for this screen */
+	Bool mhaware;			/* multi-head aware NetWM */
+	char *theme;			/* XDE theme name */
+	char *itheme;			/* XDE icon theme name */
+	Window selwin;			/* selection owner window */
+	Window owner;			/* current selection owner */
+	Atom atom;			/* selection atom for this screen */
+	int width, height;		/* dimensions of screen */
+	char *wmname;			/* window manager name (adjusted) */
+	Bool goodwm;			/* is the window manager usable? */
+	MenuContext *context;		/* menu context for screen */
+};
 
 extern Options options;
 extern Options defaults;
@@ -435,6 +477,11 @@ typedef struct {
 #define GET_ENTRY_ICON_FLAG_GIF (1<<4)
 #define GET_ENTRY_ICON_FLAG_TIF (1<<5)
 
+/** @} */
+
+/** @section Function Declarations
+  * @{ */
+
 int xde_reset_indent(MenuContext *ctx, int level);
 char *xde_increase_indent(MenuContext *ctx);
 char *xde_decrease_indent(MenuContext *ctx);
@@ -445,9 +492,12 @@ char *xde_get_icons(MenuContext *ctx, const char **inames);
 char *xde_get_icon(MenuContext *ctx, const char *iname);
 char *xde_get_icon2(MenuContext *ctx, const char *iname1, const char *iname2);
 gboolean xde_test_icon_ext(MenuContext *ctx, const char *path, int flags);
-char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
-char *xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
-char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const char *dflt1, const char *dflt2, int flags);
+char *xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *dflt1, const char *dflt2,
+			 int flags);
+char *xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon *gicon, const char *dflt1,
+			  const char *dflt2, int flags);
+char *xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const char *dflt1, const char *dflt2,
+		       int flags);
 
 char *xde_get_command(GDesktopAppInfo *app, const char *appid, const char *icon);
 char *xde_get_action(GDesktopAppInfo *app, const char *appid, const char *icon, const char *action);
@@ -477,7 +527,8 @@ GtkMenuItem *xde_gtk_common_header(MenuContext *ctx, GMenuTreeHeader *hdr);
 GtkMenuItem *xde_gtk_common_directory(MenuContext *ctx, GMenuTreeDirectory *dir);
 GtkMenuItem *xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent);
 GtkMenuItem *xde_gtk_common_alias(MenuContext *ctx, GMenuTreeAlias *als);
-GtkMenuItem *xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const char *action);
+GtkMenuItem *xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info,
+				   const char *action);
 GtkMenuItem *xde_gtk_common_pin(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_wmmenu(MenuContext *ctx);
 GtkMenuItem *xde_gtk_common_themes(MenuContext *ctx);
@@ -489,7 +540,8 @@ GtkMenuItem *xde_gtk_common_wkspcs(MenuContext *ctx);
 void xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data);
 void xde_entry_disconnect(gpointer data, GClosure *closure);
 
+/** @} */
 
 #endif				/* __XDE_MENU_H__ */
 
-// vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:
+// vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS fo+=tcqlorn foldmarker=@{,@} foldmethod=marker:

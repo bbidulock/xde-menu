@@ -238,7 +238,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 
 	esc = xde_character_escape(name, '"');
 
-	DPRINTF("Processing menu '%s'\n", name);
+	DPRINTF(1, "Processing menu '%s'\n", name);
 	if (ctx->stack)
 		gicon = gmenu_tree_directory_get_icon(ctx->stack->data);
 	if ((path = gmenu_tree_directory_get_desktop_file_path(dir))) {
@@ -258,7 +258,7 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 	text = g_list_concat(text, ctx->wmm.ops.menu(ctx, dir));
 	s = g_strdup_printf("%s}\n", ctx->indent);
 	text = g_list_append(text, s);
-	DPRINTF("Done processing menu '%s'\n", name);
+	DPRINTF(1, "Done processing menu '%s'\n", name);
 
 	free(icon);
 	free(esc);
