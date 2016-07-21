@@ -40,7 +40,6 @@ stamp-h*
 *.tar.*
 *.tmp
 xde-menu
-xde-menugen
 xde-menugen.man
 xde-menu-monitor.man
 xde-menu-popmenu.man
