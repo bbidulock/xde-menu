@@ -5819,7 +5819,9 @@ General options:\n\
     --display DISPLAY\n\
         specify the X11 display [default: %28$s]\n\
     --screen SCREEN\n\
-        specify the X11 scrfeen [default: %29$s]\n\
+        specify the X11 screen [default: %29$s]\n\
+    --monitor MONITOR\n\
+        specify the X11 monitor [default: %36$s]\n\
     -e, --die-on-error\n\
         abort on error [default: %30$s]\n\
     --notray\n\
@@ -5868,6 +5870,7 @@ General options:\n\
 	, show_bool(defaults.exit)
 	, defaults.debug
 	, defaults.output
+	, show_screen(defaults.monitor)
 );
 	/* *INDENT-ON* */
 }
