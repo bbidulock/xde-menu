@@ -304,6 +304,7 @@ typedef struct {
 	char *menu;
 	char *display;
 	int screen;
+	int monitor;
 	unsigned button;
 	char *keypress;
 	Time timestamp;

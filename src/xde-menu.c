@@ -142,7 +142,8 @@ Options defaults = {
 	.keypress = NULL,
 	.timestamp = 0,
 	.where = PositionDefault,
-	.screen = 0,
+	.screen = -1,
+	.monitor = -1,
 	.tray = True,
 	.generate = True,
 	.treeflags = 0,
@@ -2584,7 +2585,7 @@ xde_gtk_common_wmspec(MenuContext *ctx)
 	return (GTK_MENU_ITEM(item));
 }
 
-static WnckScreen *find_screen(GdkDisplay *disp);
+static XdeMonitor *find_monitor(GdkDisplay *disp);
 
 void
 workspace_activate(GtkMenuItem *item, gpointer user_data)
@@ -2607,28 +2608,29 @@ window_activate(GtkMenuItem *item, gpointer user_data)
 void
 add_workspace(GtkMenuItem *item, gpointer user_data)
 {
-	WnckScreen *scrn = user_data;
+	WnckScreen *wnck = user_data;
 	int count;
 
-	if ((count = wnck_screen_get_workspace_count(scrn)) && count < 32)
-		wnck_screen_change_workspace_count(scrn, count + 1);
+	if ((count = wnck_screen_get_workspace_count(wnck)) && count < 32)
+		wnck_screen_change_workspace_count(wnck, count + 1);
 }
 
 void
 del_workspace(GtkMenuItem *item, gpointer user_data)
 {
-	WnckScreen *scrn = user_data;
+	WnckScreen *wnck = user_data;
 	int count;
 
-	if ((count = wnck_screen_get_workspace_count(scrn)) && count > 1)
-		wnck_screen_change_workspace_count(scrn, count - 1);
+	if ((count = wnck_screen_get_workspace_count(wnck)) && count > 1)
+		wnck_screen_change_workspace_count(wnck, count - 1);
 }
 
 GtkMenuItem *
 xde_gtk_common_wkspcs(MenuContext *ctx)
 {
 	GdkDisplay *disp;
-	WnckScreen *scrn;
+	XdeMonitor *xmon;
+	WnckScreen *wnck;
 	GtkWidget *image, *menu, *sep;
 	GtkMenuItem *item;
 	GdkPixbuf *pixbuf = NULL;
@@ -2643,11 +2645,9 @@ xde_gtk_common_wkspcs(MenuContext *ctx)
 		EPRINTF("cannot get default display\n");
 		return (NULL);
 	}
-	if (!(scrn = find_screen(disp))) {
-		EPRINTF("cannot find screen\n");
-		return (NULL);
-	}
-	wnck_screen_force_update(scrn);
+	xmon = find_monitor(disp);
+	wnck = xmon->xscr->wnck;
+	wnck_screen_force_update(wnck);
 	menu = gtk_menu_new();
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	gtk_menu_item_set_submenu(item, menu);
@@ -2658,9 +2658,9 @@ xde_gtk_common_wkspcs(MenuContext *ctx)
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 	gtk_widget_show_all(menu);
 	gtk_widget_show_all(GTK_WIDGET(item));
-	workspaces = wnck_screen_get_workspaces(scrn);
-	windows = wnck_screen_get_windows(scrn);
-	active = wnck_screen_get_active_workspace(scrn);
+	workspaces = wnck_screen_get_workspaces(wnck);
+	windows = wnck_screen_get_windows(wnck);
+	active = wnck_screen_get_active_workspace(wnck);
 	anum = wnck_workspace_get_number(active);
 	{
 		GtkWidget *item, *submenu, *icon;
@@ -2897,16 +2897,16 @@ xde_gtk_common_wkspcs(MenuContext *ctx)
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
 		gtk_menu_append(menu, item);
 		gtk_widget_show(item);
-		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(add_workspace), scrn);
-		gtk_widget_set_sensitive(item, ((count = wnck_screen_get_workspace_count(scrn)) && count < 32));
+		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(add_workspace), wnck);
+		gtk_widget_set_sensitive(item, ((count = wnck_screen_get_workspace_count(wnck)) && count < 32));
 
 		icon = gtk_image_new_from_icon_name("preferences-desktop-display", GTK_ICON_SIZE_MENU);
 		item = gtk_image_menu_item_new_with_label("Remove last workspace");
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), icon);
 		gtk_menu_append(menu, item);
 		gtk_widget_show(item);
-		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(del_workspace), scrn);
-		gtk_widget_set_sensitive(item, ((count = wnck_screen_get_workspace_count(scrn)) && count > 1));
+		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(del_workspace), wnck);
+		gtk_widget_set_sensitive(item, ((count = wnck_screen_get_workspace_count(wnck)) && count > 1));
 	}
 
 	gtk_widget_show_all(menu);
@@ -3448,91 +3448,107 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
   * Either specified with options.screen, or if the DISPLAY environment variable
   * specifies a screen, use that screen; otherwise, return NULL.
   */
-static WnckScreen *
-find_specific_screen(GdkDisplay *disp)
+static XdeMonitor *
+find_specific_monitor(GdkDisplay *disp)
 {
-	WnckScreen *scrn = NULL;
+	XdeMonitor *xmon = NULL;
 	int nscr = gdk_display_get_n_screens(disp);
+	XdeScreen *xscr;
 
-	if (0 <= options.screen && options.screen < nscr)
+	if (0 <= options.screen && options.screen < nscr) {
 		/* user specified a valid screen number */
-		scrn = wnck_screen_get(options.screen);
-	return (scrn);
+		xscr = screens + options.screen;
+		if (0 <= options.monitor && options.monitor < xscr->nmon)
+			xmon = xscr->mons + options.monitor;
+	}
+	return (xmon);
 }
 
 /** @brief find the screen of window with the focus
   */
-static WnckScreen *
-find_focus_screen(GdkDisplay *disp)
+static XdeMonitor *
+find_focus_monitor(GdkDisplay *disp)
 {
-	WnckScreen *scrn = NULL;
-	Window focus = None, froot = None;
-	int di;
-	unsigned int du;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
+	XdeMonitor *xmon = NULL;
+	XdeScreen *xscr;
+	GdkScreen *scrn;
+	GdkWindow *win;
+	Window focus = None;
+	int revert_to, m;
 
-	XGetInputFocus(dpy, &focus, &di);
+	XGetInputFocus(dpy, &focus, &revert_to);
 	if (focus != PointerRoot && focus != None) {
-		XGetGeometry(dpy, focus, &froot, &di, &di, &du, &du, &du, &du);
-		if (froot)
-			scrn = wnck_screen_get_for_root(froot);
+		win = gdk_x11_window_foreign_new_for_display(disp, focus);
+		if (win) {
+			scrn = gdk_window_get_screen(win);
+			xscr = screens + gdk_screen_get_number(scrn);
+			m = gdk_screen_get_monitor_at_window(scrn, win);
+			g_object_unref(win);
+			xmon = xscr->mons + m;
+		}
 	}
-	return (scrn);
+	return (xmon);
 }
 
-static WnckScreen *
-find_pointer_screen(GdkDisplay *disp)
+static XdeMonitor *
+find_pointer_monitor(GdkDisplay *disp)
 {
-	WnckScreen *scrn = NULL;
-	GdkScreen *screen = NULL;
+	XdeMonitor *xmon = NULL;
+	XdeScreen *xscr = NULL;
+	GdkScreen *scrn = NULL;
+	int m, x = 0, y = 0;
 
-	gdk_display_get_pointer(disp, &screen, NULL, NULL, NULL);
-	if (screen)
-		scrn = wnck_screen_get(gdk_screen_get_number(screen));
-	return (scrn);
+	gdk_display_get_pointer(disp, &scrn, &x, &y, NULL);
+	if (scrn) {
+		xscr = screens + gdk_screen_get_number(scrn);
+		m = gdk_screen_get_monitor_at_point(scrn, x, y);
+		xmon = xscr->mons + m;
+	}
+	return (xmon);
 }
 
-static WnckScreen *
-find_screen(GdkDisplay *disp)
+static XdeMonitor *
+find_monitor(GdkDisplay *disp)
 {
-	WnckScreen *scrn = NULL;
+	XdeMonitor *xmon = NULL;
 
-	if ((scrn = find_specific_screen(disp)))
-		return (scrn);
+	if ((xmon = find_specific_monitor(disp)))
+		return (xmon);
 	switch (options.which) {
 	case UseScreenDefault:
 		if (options.button) {
-			if ((scrn = find_pointer_screen(disp)))
-				return (scrn);
-			if ((scrn = find_focus_screen(disp)))
-				return (scrn);
+			if ((xmon = find_pointer_monitor(disp)))
+				return (xmon);
+			if ((xmon = find_focus_monitor(disp)))
+				return (xmon);
 		} else {
-			if ((scrn = find_focus_screen(disp)))
-				return (scrn);
-			if ((scrn = find_pointer_screen(disp)))
-				return (scrn);
+			if ((xmon = find_focus_monitor(disp)))
+				return (xmon);
+			if ((xmon = find_pointer_monitor(disp)))
+				return (xmon);
 		}
 		break;
 	case UseScreenActive:
 		break;
 	case UseScreenFocused:
-		if ((scrn = find_focus_screen(disp)))
-			return (scrn);
+		if ((xmon = find_focus_monitor(disp)))
+			return (xmon);
 		break;
 	case UseScreenPointer:
-		if ((scrn = find_pointer_screen(disp)))
-			return (scrn);
+		if ((xmon = find_pointer_monitor(disp)))
+			return (xmon);
 		break;
 	case UseScreenSpecified:
 		break;
 	}
-	if (!scrn)
-		scrn = wnck_screen_get_default();
-	return (scrn);
+	if (!xmon)
+		xmon = screens->mons;
+	return (xmon);
 }
 
 static gboolean
-position_pointer(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+position_pointer(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 {
 	GdkDisplay *disp;
 
@@ -3543,34 +3559,27 @@ position_pointer(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 }
 
 static gboolean
-position_center_monitor(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+position_center_monitor(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 {
-	GdkDisplay *disp;
-	GdkScreen *scr;
-	GdkRectangle rect;
-	gint px, py, nmon;
 	GtkRequisition req;
 
 	PTRACE(5);
-	disp = gtk_widget_get_display(GTK_WIDGET(menu));
-	gdk_display_get_pointer(disp, &scr, &px, &py, NULL);
-	nmon = gdk_screen_get_monitor_at_point(scr, px, py);
-	gdk_screen_get_monitor_geometry(scr, nmon, &rect);
 	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
 
-	*x = rect.x + (rect.width - req.width) / 2;
-	*y = rect.y + (rect.height - req.height) / 2;
+	*x = xmon->geom.x + (xmon->geom.width - req.width) / 2;
+	*y = xmon->geom.y + (xmon->geom.height - req.height) / 2;
 
 	return TRUE;
 }
 
 static gboolean
-position_topleft_workarea(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+position_topleft_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 {
 #if 1
 	WnckWorkspace *wkspc;
 
-	wkspc = wnck_screen_get_active_workspace(scrn);
+	/* XXX: not sure this is what we want... */
+	wkspc = wnck_screen_get_active_workspace(xmon->xscr->wnck);
 	*x = wnck_workspace_get_viewport_x(wkspc);
 	*y = wnck_workspace_get_viewport_y(wkspc);
 #else
@@ -3593,13 +3602,14 @@ position_topleft_workarea(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 }
 
 static gboolean
-position_bottomright_workarea(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+position_bottomright_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 {
 #if 1
 	WnckWorkspace *wkspc;
 	GtkRequisition req;
 
-	wkspc = wnck_screen_get_active_workspace(scrn);
+	/* XXX: not sure this is what we want... */
+	wkspc = wnck_screen_get_active_workspace(xmon->xscr->wnck);
 	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
 	*x = wnck_workspace_get_viewport_x(wkspc) + wnck_workspace_get_width(wkspc) - req.width;
 	*y = wnck_workspace_get_viewport_y(wkspc) + wnck_workspace_get_height(wkspc) - req.height;
@@ -3625,15 +3635,12 @@ position_bottomright_workarea(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 }
 
 static gboolean
-position_specified(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
+position_specified(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 {
 	int x1, y1, sw, sh;
 
-	if (!scrn)
-		return FALSE;
-
-	sw = wnck_screen_get_width(scrn);
-	sh = wnck_screen_get_height(scrn);
+	sw = xmon->xscr->width;
+	sh = xmon->xscr->height;
 	DPRINTF(1, "screen width = %d\n", sw);
 	DPRINTF(1, "screen height = %d\n", sh);
 
@@ -3679,32 +3686,32 @@ position_specified(GtkMenu *menu, WnckScreen *scrn, gint *x, gint *y)
 static void
 position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
 {
-	WnckScreen *scrn = user_data;
+	XdeMonitor *xmon = user_data;
 
 	*push_in = FALSE;
 	if (options.button) {
-		position_pointer(menu, scrn, x, y);
+		position_pointer(menu, xmon, x, y);
 		return;
 	}
 	switch (options.where) {
 	case PositionDefault:
 	default:
-		position_center_monitor(menu, scrn, x, y);
+		position_center_monitor(menu, xmon, x, y);
 		break;
 	case PositionPointer:
-		position_pointer(menu, scrn, x, y);
+		position_pointer(menu, xmon, x, y);
 		break;
 	case PositionCenter:
-		position_center_monitor(menu, scrn, x, y);
+		position_center_monitor(menu, xmon, x, y);
 		break;
 	case PositionTopLeft:
-		position_topleft_workarea(menu, scrn, x, y);
+		position_topleft_workarea(menu, xmon, x, y);
 		break;
 	case PositionBottomRight:
-		position_bottomright_workarea(menu, scrn, x, y);
+		position_bottomright_workarea(menu, xmon, x, y);
 		break;
 	case PositionSpecified:
-		position_specified(menu, scrn, x, y);
+		position_specified(menu, xmon, x, y);
 		break;
 	}
 }
@@ -4003,6 +4010,15 @@ on_selection_notify(Display *dpy, XEvent *event, XPointer arg)
 }
 
 static long
+get_where(XdeMonitor *xmon)
+{
+	long flags = 0;
+	flags |= ((long) (xmon->xscr->index & 0xffff) << 16);
+	flags |= ((long) (xmon->index       & 0xffff) <<  0);
+	return (flags);
+}
+
+static long
 get_flags(void)
 {
 	long flags = 0;
@@ -4191,7 +4207,7 @@ do_popmenu(int argc, char *argv[])
 	Display *dpy;
 	int screen;
 	Window owner;
-	WnckScreen *scrn;
+	XdeMonitor *xmon;
 	char selection[64] = { 0, };
 	Atom atom;
 
@@ -4201,9 +4217,8 @@ do_popmenu(int argc, char *argv[])
 	}
 	disp = gdk_display_get_default();
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
-	scrn = find_screen(disp);
-	if ((screen = wnck_screen_get_number(scrn)) == -1)
-		screen = 0;
+	xmon = find_monitor(disp);
+	screen = xmon->index;
 	snprintf(selection, sizeof(selection), XA_SELECTION_NAME, screen);
 	atom = XInternAtom(dpy, selection, False);
 	if ((owner = XGetSelectionOwner(dpy, atom))) {
@@ -4217,7 +4232,7 @@ do_popmenu(int argc, char *argv[])
 		ev.xclient.message_type = _XA_XDE_MENU_POPMENU;
 		ev.xclient.format = 32;
 		ev.xclient.data.l[0] = CurrentTime;
-		ev.xclient.data.l[1] = atom;
+		ev.xclient.data.l[1] = get_where(xmon);
 		ev.xclient.data.l[2] = get_flags();
 		ev.xclient.data.l[3] = get_word1();
 		ev.xclient.data.l[4] = get_word2();
@@ -4255,7 +4270,7 @@ do_popmenu(int argc, char *argv[])
 		menu = ctx->gtk.create(ctx, options.style, NULL);
 		DPRINTF(1, "done create!\n");
 		g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
-		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xscr->wnck,
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, xmon,
 			       options.button, options.timestamp);
 		mainloop();
 
@@ -4460,8 +4475,9 @@ menu_restart(void)
 }
 
 static void
-menu_popmenu(XdeScreen *xscr)
+menu_popmenu(XdeMonitor *xmon)
 {
+	XdeScreen *xscr = xmon->xscr;
 	MenuContext *ctx;
 	GMenuTree *tree;
 	int screen = 0;
@@ -4492,7 +4508,7 @@ menu_popmenu(XdeScreen *xscr)
 		// g_object_ref(ctx->menu);
 		DPRINTF(1, "done create!\n");
 	}
-	gtk_menu_popup(GTK_MENU(ctx->menu), NULL, NULL, position_menu, xscr->wnck,
+	gtk_menu_popup(GTK_MENU(ctx->menu), NULL, NULL, position_menu, xmon,
 		       options.button, options.timestamp);
 	return;
 }
@@ -4523,6 +4539,23 @@ event_handler_PropertyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
 		}
 	}
 	return GDK_FILTER_CONTINUE;
+}
+
+static void
+set_where(long flags, XdeMonitor **xmonp)
+{
+	XdeMonitor *xmon;
+	XdeScreen *xscr;
+	int s = (flags >> 16) & 0xffff;
+	int m = (flags >>  0) & 0xffff;
+
+	options.screen = s;
+	options.monitor = m;
+	xscr = screens + s;
+	xmon = xscr->mons + m;
+	if (xmonp)
+		*xmonp = xmon;
+	return;
 }
 
 static void
@@ -4637,11 +4670,14 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 		// set_word2(xev->xclient.data.l[4]);
 		menu_restart();
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_MENU_POPMENU) {
+	} else if (xev->xclient.message_type == _XA_XDE_MENU_POPMENU) {
+		XdeMonitor *xmon = NULL;
+
+		set_where(xev->xclient.data.l[1], &xmon);
 		set_flags(xev->xclient.data.l[2]);
 		set_word1(xev->xclient.data.l[3]);
 		set_word2(xev->xclient.data.l[4]);
-		menu_popmenu(xscr);
+		menu_popmenu(xmon);
 		return GDK_FILTER_REMOVE;
 	}
 	return GDK_FILTER_CONTINUE;
@@ -5235,6 +5271,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 	const char *data = NULL;
 	gsize len = 0;
 	XdeScreen *xscr;
+	XdeMonitor *xmon;
 
 	command = cmd;
 	OPRINTF(1, "%d command received\n", command);
@@ -5251,6 +5288,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 	cmdArgv = get_msg_argv(data, len, &cmdArgc);
 
 	xscr = screens + screen;
+	xmon = xscr->mons;
 
 	switch (options.command = command) {
 	case CommandDefault:
@@ -5278,7 +5316,7 @@ on_message_received(UniqueApp * unique, gint cmd, UniqueMessageData * msg_data, 
 		return (UNIQUE_RESPONSE_OK);
 	case CommandPopMenu:
 		parse_args(cmdArgc, cmdArgv);
-		menu_popmenu(xscr);
+		menu_popmenu(xmon);
 		return (UNIQUE_RESPONSE_OK);
 	case CommandRefresh:
 		parse_args(cmdArgc, cmdArgv);
@@ -5607,6 +5645,17 @@ show_bool(Bool boolval)
 	return ("false");
 }
 
+static const char *
+show_screen(int snum)
+{
+	static char screen[64] = { 0, };
+
+	if (snum == -1)
+		return ("None");
+	snprintf(screen, sizeof(screen), "%d", snum);
+	return (screen);
+}
+
 const char *
 show_style(Style style)
 {
@@ -5770,7 +5819,7 @@ General options:\n\
     --display DISPLAY\n\
         specify the X11 display [default: %28$s]\n\
     --screen SCREEN\n\
-        specify the X11 scrfeen [default: %29$d]\n\
+        specify the X11 scrfeen [default: %29$s]\n\
     -e, --die-on-error\n\
         abort on error [default: %30$s]\n\
     --notray\n\
@@ -5812,7 +5861,7 @@ General options:\n\
 	, show_where(defaults.where)
 	, show_bool(defaults.tooltips)
 	, defaults.display
-	, defaults.screen
+	, show_screen(defaults.screen)
 	, show_bool(defaults.dieonerr)
 	, show_bool(!defaults.tray)
 	, show_bool(!defaults.generate)
@@ -6960,6 +7009,7 @@ parse_args(int argc, char *argv[])
 
 			{"display",		required_argument,	NULL,	 1 },
 			{"screen",		required_argument,	NULL,	 4 },
+			{"monitor",		required_argument,	NULL,	 5 },
 			{"die-on-error",	no_argument,		NULL,	'e'},
 			{"nodie-on-error",	no_argument,		NULL,	 18},
 			{"tray",		no_argument,		NULL,	 19},
@@ -7168,6 +7218,9 @@ parse_args(int argc, char *argv[])
 			break;
 		case 4:	/* --screen SCREEN */
 			options.screen = atoi(optarg);
+			break;
+		case 5: /* --monitor MONITOR */
+			options.monitor = atoi(optarg);
 			break;
 		case 'e':	/* -e, --die-on-error */
 			defaults.dieonerr = options.dieonerr = True;
