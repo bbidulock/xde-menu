@@ -124,8 +124,6 @@
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-tree.h>
 
-#include <unique/unique.h>
-
 #include <pwd.h>
 #include <fontconfig/fontconfig.h>
 #include <pango/pangofc-fontmap.h>
@@ -320,7 +318,6 @@ typedef struct {
 	int treeflags;
 	Bool tooltips;
 	Bool actions;
-	Bool unique;
 	Bool exit;
 } Options;
 
