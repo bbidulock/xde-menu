@@ -3745,7 +3745,7 @@ popup_refresh(XdeScreen *xscr)
 	GMenuTree *tree;
 
 	if (!(ctx = xscr->context)) {
-		EPRINTF("no menu context for screen 0\n");
+		EPRINTF("no menu context for screen %d\n", xscr->index);
 		return;
 	}
 	if (!(tree = ctx->tree)) {
@@ -3768,7 +3768,7 @@ menu_pop(XdeScreen *xscr)
 		exit(EXIT_FAILURE);
 	}
 	if (!(ctx = xscr->context)) {
-		EPRINTF("no menu context for screen 0\n");
+		EPRINTF("no menu context for screen %d\n", xscr->index);
 		exit(EXIT_FAILURE);
 	}
 	ctx->stack = NULL;
@@ -3793,19 +3793,14 @@ menu_show(XdeScreen *xscr)
 {
 	MenuContext *ctx;
 	GMenuTree *tree;
-	int screen = 0;
 
 	if (!(ctx = xscr->context)) {
-		if (xscr->scrn)
-			screen = gdk_screen_get_number(xscr->scrn);
-		EPRINTF("no menu context for screen %d\n", screen);
+		EPRINTF("no menu context for screen %d\n", xscr->index);
 		return;
 	}
 	if (!ctx->menu) {
 		if (!(tree = ctx->tree)) {
-			if (xscr->scrn)
-				screen = gdk_screen_get_number(xscr->scrn);
-			EPRINTF("no menu tree for context for screen %d\n", screen);
+			EPRINTF("no menu tree for context for screen %d\n", xscr->index);
 			return;
 		}
 		DPRINTF(1, "poping the GTK+ menu for button %d\n", options.button);
@@ -6454,9 +6449,9 @@ size_changed(GdkScreen *scrn, gpointer user_data)
 }
 
 static void
-popup_show(XdeMonitor *xmon)
+popup_show(XdeScreen *xscr)
 {
-	menu_show(xmon->xscr);
+	menu_show(xscr);
 }
 
 static GdkFilterReturn
@@ -6465,15 +6460,17 @@ event_handler_ClientMessage(XEvent *xev)
 	XdeScreen *xscr = NULL;
 	int s, nscr = ScreenCount(dpy);
 	Atom type;
-	XdeMonitor *xmon;
 
+	PTRACE(5);
 	for (s = 0; s < nscr; s++)
 		if (xev->xclient.window == RootWindow(dpy, s)) {
 			xscr = screens + s;
 			break;
 		}
-
-	PTRACE(5);
+	if (!xscr) {
+		EPRINTF("could not find screen for client message with window 0%08lx\n", xev->xclient.window);
+		xscr = screens;
+	}
 	if (options.debug > 1) {
 		fprintf(stderr, "==> ClientMessage: %p\n", xscr);
 		fprintf(stderr, "    --> window = 0x%08lx\n", xev->xclient.window);
@@ -6504,36 +6501,32 @@ event_handler_ClientMessage(XEvent *xev)
 		fprintf(stderr, "<== ClientMessage: %p\n", xscr);
 	}
 	type = xev->xclient.message_type;
-	if (xscr) {
-		if (type == _XA_GTK_READ_RCFILES) {
-			update_theme(xscr, type);
-			update_icon_theme(xscr, type);
-			return GDK_FILTER_REMOVE;	/* event handled */
-		} else if (type == _XA_PREFIX_REFRESH) {
-			set_scmon(xev->xclient.data.l[1]);
-			set_flags(xev->xclient.data.l[2]);
-			set_word1(xev->xclient.data.l[3]);
-			set_word2(xev->xclient.data.l[4]);
-			popup_refresh(xscr);
-			return GDK_FILTER_REMOVE;
-		} else if (type == _XA_PREFIX_RESTART) {
-			set_scmon(xev->xclient.data.l[1]);
-			set_flags(xev->xclient.data.l[2]);
-			set_word1(xev->xclient.data.l[3]);
-			set_word2(xev->xclient.data.l[4]);
-			popup_restart();
-			return GDK_FILTER_REMOVE;
-		} else if (type == _XA_PREFIX_POPMENU) {
-			set_scmon(xev->xclient.data.l[1]);
-			set_flags(xev->xclient.data.l[2]);
-			set_word1(xev->xclient.data.l[3]);
-			set_word2(xev->xclient.data.l[4]);
-			xmon = xscr->mons + options.monitor;
-			popup_show(xmon);
-			return GDK_FILTER_REMOVE;
-		}
-	} else
-		xscr = screens;
+	if (type == _XA_GTK_READ_RCFILES) {
+		update_theme(xscr, type);
+		update_icon_theme(xscr, type);
+		return GDK_FILTER_REMOVE;	/* event handled */
+	} else if (type == _XA_PREFIX_REFRESH) {
+		set_scmon(xev->xclient.data.l[1]);
+		set_flags(xev->xclient.data.l[2]);
+		set_word1(xev->xclient.data.l[3]);
+		set_word2(xev->xclient.data.l[4]);
+		popup_refresh(xscr);
+		return GDK_FILTER_REMOVE;
+	} else if (type == _XA_PREFIX_RESTART) {
+		set_scmon(xev->xclient.data.l[1]);
+		set_flags(xev->xclient.data.l[2]);
+		set_word1(xev->xclient.data.l[3]);
+		set_word2(xev->xclient.data.l[4]);
+		popup_restart();
+		return GDK_FILTER_REMOVE;
+	} else if (type == _XA_PREFIX_POPMENU) {
+		set_scmon(xev->xclient.data.l[1]);
+		set_flags(xev->xclient.data.l[2]);
+		set_word1(xev->xclient.data.l[3]);
+		set_word2(xev->xclient.data.l[4]);
+		popup_show(xscr);
+		return GDK_FILTER_REMOVE;
+	}
 #if 0
 	if (type == _XA_NET_STARTUP_INFO) {
 		return sn_display_process_event(sn_dpy, xev);
@@ -7226,6 +7219,7 @@ do_run(int argc, char *argv[])
 	GdkScreen *scrn = gdk_display_get_default_screen(disp);
 	GdkWindow *root = gdk_screen_get_root_window(scrn);
 	Window selwin, owner, broadcast = GDK_WINDOW_XID(root);
+	long mask = StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask;
 	XdeMonitor *xmon;
 
 	PTRACE(5);
@@ -7259,7 +7253,7 @@ do_run(int argc, char *argv[])
 				ev.xclient.data.l[2] = get_flags();
 				ev.xclient.data.l[3] = get_word1();
 				ev.xclient.data.l[4] = get_word2();
-				XSendEvent(dpy, broadcast, False, NoEventMask, &ev);
+				XSendEvent(dpy, broadcast, False, mask, &ev);
 				XSync(dpy, False);
 				break;
 			case CommandRefresh:
@@ -7276,7 +7270,7 @@ do_run(int argc, char *argv[])
 				ev.xclient.data.l[2] = get_flags();
 				ev.xclient.data.l[3] = get_word1();
 				ev.xclient.data.l[4] = get_word2();
-				XSendEvent(dpy, broadcast, False, NoEventMask, &ev);
+				XSendEvent(dpy, broadcast, False, mask, &ev);
 				XSync(dpy, False);
 				break;
 			case CommandPopMenu:
@@ -7293,14 +7287,14 @@ do_run(int argc, char *argv[])
 				ev.xclient.data.l[2] = get_flags();
 				ev.xclient.data.l[3] = get_word1();
 				ev.xclient.data.l[4] = get_word2();
-				XSendEvent(dpy, broadcast, False, NoEventMask, &ev);
+				XSendEvent(dpy, broadcast, False, mask, &ev);
 				XSync(dpy, False);
 				break;
 			}
 			exit(EXIT_SUCCESS);
 		}
 	}
-	XSelectInput(dpy, selwin, StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask);
+	XSelectInput(dpy, selwin, mask);
 
 	oldhandler = XSetErrorHandler(handler);
 	oldiohandler = XSetIOErrorHandler(iohandler);
