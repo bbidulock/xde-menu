@@ -85,7 +85,9 @@
 #include <stdarg.h>
 #include <strings.h>
 #include <regex.h>
-#include <pwd.h>
+#include <wordexp.h>
+#include <execinfo.h>
+#include <math.h>
 #include <dlfcn.h>
 
 #include <X11/Xatom.h>
@@ -104,6 +106,9 @@
 #include <X11/extensions/Xvnc.h>
 #endif
 #include <X11/extensions/scrnsaver.h>
+#include <X11/extensions/dpms.h>
+#include <X11/extensions/xf86misc.h>
+#include <X11/XKBlib.h>
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
@@ -111,10 +116,13 @@
 #include <X11/Xdmcp.h>
 #include <X11/Xauth.h>
 #include <X11/SM/SMlib.h>
-#include <glib.h>
 #include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
+#include <glib.h>
+#include <glib-unix.h>
 #include <gdk/gdkx.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <cairo.h>
 
@@ -172,6 +180,7 @@ extern const char *program;
 
 #define XA_PREFIX		"_XDE_MENU"
 #define XA_SELECTION_NAME	XA_PREFIX "_S%d"
+#define XA_NET_DESKTOP_LAYOUT	"_NET_DESKTOP_LAYOUT_S%d"
 #if 0
 #define LOGO_NAME		"start-here"
 #else
@@ -226,19 +235,18 @@ extern Atom _XA_XDE_WM_VERSION;
 extern Atom _XA_GTK_READ_RCFILES;
 extern Atom _XA_MANAGER;
 
-extern Atom _XA_XDE_MENU_REFRESH;
-extern Atom _XA_XDE_MENU_RESTART;
-extern Atom _XA_XDE_MENU_POPMENU;
+extern Atom _XA_PREFIX_REFRESH;
+extern Atom _XA_PREFIX_RESTART;
+extern Atom _XA_PREFIX_POPMENU;
 
 typedef enum {
 	CommandDefault,			/* just generate WM root menu */
 	CommandMenugen,			/* just generate WM root menu */
 	CommandMonitor,			/* run a new instance with monitoring */
 	CommandQuit,			/* ask running instance to quit */
-	CommandPopMenu,			/* ask running instance to pop menu */
-	CommandRefresh,			/* ask running instance to refresh menu */
 	CommandRestart,			/* ask running instance to restart */
-	CommandReplace,			/* replace a running instance */
+	CommandRefresh,			/* ask running instance to refresh menu */
+	CommandPopMenu,			/* ask running instance to pop menu */
 	CommandHelp,			/* print usage info and exit */
 	CommandVersion,			/* print version info and exit */
 	CommandCopying,			/* print copying info and exit */
@@ -275,6 +283,11 @@ typedef enum {
 } MenuPosition;
 
 typedef struct {
+	int mask, x, y;
+	unsigned int w, h;
+} XdeGeometry;
+
+typedef struct {
 	int debug;
 	int output;
 	Command command;
@@ -308,12 +321,9 @@ typedef struct {
 	Time timestamp;
 	UseScreen which;
 	MenuPosition where;
-	struct {
-		int value;
-		int sign;
-	} x, y;
-	unsigned int w, h;
-	Bool tray;
+	XdeGeometry geom;
+	Bool replace;
+	Bool systray;
 	Bool generate;
 	int treeflags;
 	Bool tooltips;
@@ -413,6 +423,9 @@ struct MenuContext {
 	} gtk;
 };
 
+extern Display *dpy;
+extern GdkDisplay *disp;
+
 struct XdeScreen;
 typedef struct XdeScreen XdeScreen;
 struct XdeMonitor;
@@ -423,6 +436,15 @@ struct XdeMonitor {
 	XdeScreen *xscr;		/* screen */
 	int current;			/* current desktop for this monitor */
 	GdkRectangle geom;		/* geometry of the monitor */
+	struct {
+		GList *oldlist;		/* clients for this monitor (old gnome) */
+		GList *clients;		/* clients for this monitor */
+		GList *stacked;		/* clients for this monitor (stacked) */
+		struct {
+			GdkWindow *old;	/* active window (previous) */
+			GdkWindow *now;	/* active window (current) */
+		} active;
+	};
 };
 
 struct XdeScreen {
@@ -437,16 +459,26 @@ struct XdeScreen {
 	char *theme;			/* XDE theme name */
 	char *itheme;			/* XDE icon theme name */
 	Window selwin;			/* selection owner window */
-	Window owner;			/* current selection owner */
 	Atom atom;			/* selection atom for this screen */
+	Window laywin;			/* desktop layout selection owner */
+	Atom prop;			/* dekstop layout selection atom */
 	int width, height;		/* dimensions of screen */
+	int current;			/* current desktop for this screen */
 	char *wmname;			/* window manager name (adjusted) */
 	Bool goodwm;			/* is the window manager usable? */
 	MenuContext *context;		/* menu context for screen */
+	struct {
+		GList *oldlist;		/* clients for this screen (old gnome) */
+		GList *clients;		/* clients for this screen */
+		GList *stacked;		/* clients for this screen (stacked) */
+		struct {
+			GdkWindow *old;	/* active window (previous) */
+			GdkWindow *now;	/* active window (current) */
+		} active;
+	};
 };
 
 extern Options options;
-extern Options defaults;
 
 extern XdeScreen *screens;
 
