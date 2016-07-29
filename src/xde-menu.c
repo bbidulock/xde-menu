@@ -5525,6 +5525,8 @@ good_window_manager(XdeScreen *xscr)
 		return False;
 	return True;
 }
+
+static void setup_button_proxy(XdeScreen *xscr);
 #endif
 
 static void
@@ -6348,6 +6350,10 @@ update_theme(XdeScreen *xscr, Atom prop)
 	if (changed) {
 		DPRINTF(1, "New theme is %s\n", xscr->theme);
 		/* FIXME: do something more about it. */
+#if 0
+		if (options.show.setbg)
+			read_theme(xscr);
+#endif
 	} else
 		DPRINTF(1, "No change in current theme %s\n", xscr->theme);
 }
@@ -6356,6 +6362,8 @@ static void
 update_screen(XdeScreen *xscr)
 {
 #if 0
+	if (options.show.setbg)
+		update_root_pixmap(xscr, None);
 	update_layout(xscr, None);
 	update_current_desktop(xscr, None);
 #endif
@@ -6427,6 +6435,8 @@ monitors_changed(GdkScreen *scrn, gpointer user_data)
 	refresh_screen(xscr, scrn);
 #if 0
 	refresh_layout(xscr);
+	if (options.show.setbg)
+		read_theme(xscr);
 #endif
 }
 
@@ -6445,6 +6455,8 @@ size_changed(GdkScreen *scrn, gpointer user_data)
 	refresh_screen(xscr, scrn);
 #if 0
 	refresh_layout(xscr);
+	if (options.show.setbg)
+		read_theme(xscr);
 #endif
 }
 
@@ -6664,14 +6676,18 @@ event_handler_PropertyNotify(XEvent *xev, XdeScreen *xscr)
 #endif
 		} else if (atom == _XA_NET_ACTIVE_WINDOW) {
 			update_active_window(xscr, atom);
+#if 1
 		} else if (atom == _XA_NET_CLIENT_LIST) {
 			update_client_list(xscr, atom);
 		} else if (atom == _XA_NET_CLIENT_LIST_STACKING) {
 			update_client_list(xscr, atom);
+#endif
 		} else if (atom == _XA_WIN_FOCUS) {
 			update_active_window(xscr, atom);
+#if 1
 		} else if (atom == _XA_WIN_CLIENT_LIST) {
 			update_client_list(xscr, atom);
+#endif
 		}
 	}
 	return GDK_FILTER_CONTINUE;	/* event not handled */
@@ -6966,7 +6982,7 @@ startup(int argc, char *argv[])
 	atom = gdk_atom_intern_static_string("_GTK_READ_RCFILES");
 	_XA_GTK_READ_RCFILES = gdk_x11_atom_to_xatom_for_display(disp, atom);
 	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
-
+#if 1
 	atom = gdk_atom_intern_static_string("_NET_DESKTOP_LAYOUT");
 	_XA_NET_DESKTOP_LAYOUT = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
@@ -7011,6 +7027,7 @@ startup(int argc, char *argv[])
 
 	atom = gdk_atom_intern_static_string("_WIN_CLIENT_LIST");
 	_XA_WIN_CLIENT_LIST = gdk_x11_atom_to_xatom_for_display(disp, atom);
+#endif
 #if 0
 	atom = gdk_atom_intern_static_string("_NET_STARTUP_INFO");
 	_XA_NET_STARTUP_INFO = gdk_x11_atom_to_xatom_for_display(disp, atom);
@@ -7089,8 +7106,10 @@ init_screens(Window selwin)
 #endif
 		update_theme(xscr, None);
 		update_icon_theme(xscr, None);
+#if 1
 		update_active_window(xscr, None);
 		update_client_list(xscr, None);
+#endif
 	}
 	xmon = find_monitor();
 	return (xmon);
@@ -8301,7 +8320,7 @@ main(int argc, char *argv[])
 			{"screen",		required_argument,	NULL,	 4 },
 
 			{"timestamp",		required_argument,	NULL,	'T'},
-			{"pointer",		no_argument,		NULL,	'P'},
+			{"pointer",		no_argument,		NULL,	'p'},
 			{"keyboard",		no_argument,		NULL,	'K'},
 			{"keypress",		optional_argument,	NULL,	'k'},
 			{"button",		required_argument,	NULL,	'b'},
