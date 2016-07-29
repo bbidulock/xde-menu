@@ -146,10 +146,10 @@ Options options = {
 	.wmname = NULL,
 	.format = NULL,
 	.style = StyleFullmenu,
-	.desktop = "XDE",
-	.charset = "UTF-8",
+	.desktop = NULL, // "XDE",
+	.charset = NULL, // "UTF-8",
 	.language = NULL,
-	.locale = "en_US.UTF-8",
+	.locale = NULL, // "en_US.UTF-8",
 	.rootmenu = NULL,
 	.dieonerr = False,
 	.fileout = False,
@@ -7835,7 +7835,7 @@ set_defaults(void)
 static void
 get_default_locale(void)
 {
-	char *val;
+	char *val, *loc;
 	int len, set;
 
 	set = (options.charset || options.language);
@@ -7853,8 +7853,10 @@ get_default_locale(void)
 		strcat(val, ".");
 		strcat(val, options.charset);
 		DPRINTF(1, "setting locale to: '%s'\n", val);
-		if (!setlocale(LC_ALL, val))
+		if (!(loc = setlocale(LC_ALL, val)))
 			EPRINTF("cannot set locale to '%s'\n", val);
+		else
+			options.locale = strdup(loc);
 		free(val);
 	}
 	DPRINTF(1, "locale is '%s'\n", options.locale);
