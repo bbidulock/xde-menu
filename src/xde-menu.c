@@ -5783,6 +5783,7 @@ sn_handler(SnMonitorEvent *event, void *data)
 }
 #endif				/* STARTUP_NOTIFICATION */
 
+#if 0
 static void
 update_client_list(XdeScreen *xscr, Atom prop)
 {
@@ -5899,6 +5900,7 @@ update_client_list(XdeScreen *xscr, Atom prop)
 		}
 	}
 }
+#endif
 
 static void
 update_screen_active_window(XdeScreen *xscr)
@@ -6678,15 +6680,15 @@ event_handler_PropertyNotify(XEvent *xev, XdeScreen *xscr)
 			update_active_window(xscr, atom);
 #if 1
 		} else if (atom == _XA_NET_CLIENT_LIST) {
-			update_client_list(xscr, atom);
+			// update_client_list(xscr, atom);
 		} else if (atom == _XA_NET_CLIENT_LIST_STACKING) {
-			update_client_list(xscr, atom);
+			// update_client_list(xscr, atom);
 #endif
 		} else if (atom == _XA_WIN_FOCUS) {
 			update_active_window(xscr, atom);
 #if 1
 		} else if (atom == _XA_WIN_CLIENT_LIST) {
-			update_client_list(xscr, atom);
+			// update_client_list(xscr, atom);
 #endif
 		}
 	}
@@ -7108,7 +7110,7 @@ init_screens(Window selwin)
 		update_icon_theme(xscr, None);
 #if 1
 		update_active_window(xscr, None);
-		update_client_list(xscr, None);
+		// update_client_list(xscr, None);
 #endif
 	}
 	xmon = find_monitor();
