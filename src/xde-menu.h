@@ -204,7 +204,30 @@ extern char **cmdArgv;
 /** @section Globals and Structures
   * @{ */
 
-extern Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
+extern Atom _XA_GTK_READ_RCFILES;
+
+extern Atom _XA_NET_ACTIVE_WINDOW;
+extern Atom _XA_NET_CLIENT_LIST;
+extern Atom _XA_NET_CLIENT_LIST_STACKING;
+extern Atom _XA_NET_CURRENT_DESKTOP;
+extern Atom _XA_NET_DESKTOP_LAYOUT;
+extern Atom _XA_NET_DESKTOP_NAMES;
+extern Atom _XA_NET_NUMBER_OF_DESKTOPS;
+
+extern Atom _XA_WIN_AREA;
+extern Atom _XA_WIN_AREA_COUNT;
+extern Atom _XA_WIN_CLIENT_LIST;
+extern Atom _XA_WIN_DESKTOP_BUTTON_PROXY;
+extern Atom _XA_WIN_FOCUS;
+extern Atom _XA_WIN_WORKSPACE;
+extern Atom _XA_WIN_WORKSPACE_COUNT;
+
+extern Atom _XA_WM_DESKTOP;
+
+extern Atom _XA_ESETROOT_PMAP_ID;
+extern Atom _XA_XROOTPMAP_ID;
+
+extern Atom _XA_XDE_ICON_THEME_NAME;		/* XXX */
 extern Atom _XA_XDE_THEME_NAME;
 extern Atom _XA_XDE_WM_CLASS;
 extern Atom _XA_XDE_WM_CMDLINE;
@@ -214,7 +237,7 @@ extern Atom _XA_XDE_WM_HOST;
 extern Atom _XA_XDE_WM_HOSTNAME;
 extern Atom _XA_XDE_WM_ICCCM_SUPPORT;
 extern Atom _XA_XDE_WM_ICON;
-extern Atom _XA_XDE_WM_ICONTHEME;	/* XXX */
+extern Atom _XA_XDE_WM_ICONTHEME;		/* XXX */
 extern Atom _XA_XDE_WM_INFO;
 extern Atom _XA_XDE_WM_MENU;
 extern Atom _XA_XDE_WM_NAME;
@@ -230,9 +253,6 @@ extern Atom _XA_XDE_WM_THEME;
 extern Atom _XA_XDE_WM_THEMEFILE;
 extern Atom _XA_XDE_WM_USRDIR;
 extern Atom _XA_XDE_WM_VERSION;
-
-extern Atom _XA_GTK_READ_RCFILES;
-extern Atom _XA_MANAGER;
 
 extern Atom _XA_PREFIX_REFRESH;
 extern Atom _XA_PREFIX_RESTART;
@@ -338,7 +358,7 @@ typedef struct {
 	char *rootmenu;
 	Bool dieonerr;
 	Bool fileout;
-	char *filename;
+	char *menufile;
 	Bool noicons;
 	char *theme;
 	Bool launch;
@@ -353,12 +373,15 @@ typedef struct {
 	char *display;
 	int screen;
 	int monitor;
-	unsigned button;
 	char *keypress;
+	Bool keyboard;
+	Bool pointer;
+	int button;
 	Time timestamp;
 	UseScreen which;
 	MenuPosition where;
 	XdeGeometry geom;
+	char *filename;
 	Bool replace;
 	Bool systray;
 	Bool generate;

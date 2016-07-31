@@ -146,14 +146,14 @@ Options options = {
 	.wmname = NULL,
 	.format = NULL,
 	.style = StyleFullmenu,
-	.desktop = NULL, // "XDE",
-	.charset = NULL, // "UTF-8",
+	.desktop = NULL,
+	.charset = NULL,
 	.language = NULL,
-	.locale = NULL, // "en_US.UTF-8",
+	.locale = NULL,
 	.rootmenu = NULL,
 	.dieonerr = False,
 	.fileout = False,
-	.filename = NULL,
+	.menufile = NULL,
 	.noicons = False,
 	.theme = NULL,
 	.launch = True,
@@ -166,9 +166,12 @@ Options options = {
 	.keep = "10",
 	.menu = "applications",
 	.display = NULL,
-	.button = 3,
 	.keypress = NULL,
-	.timestamp = 0,
+	.keyboard = False,
+	.pointer = False,
+	.button = 0,
+	.timestamp = CurrentTime,
+	.which = UseScreenDefault,
 	.where = PositionDefault,
 	.geom = {
 		.mask = 0,
@@ -179,6 +182,7 @@ Options options = {
 		},
 	.screen = -1,
 	.monitor = -1,
+	.filename = NULL,
 	.replace = False,
 	.systray = False,
 	.generate = True,
@@ -3457,9 +3461,9 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 	DPRINTF(1, "calling create!\n");
 	menu = ctx->wmm.create(ctx, options.style, NULL);
 	DPRINTF(1, "done create!\n");
-	if (options.filename) {
-		if (!(file = fopen(options.filename, "w"))) {
-			EPRINTF("cannot open %s for writing\n", options.filename);
+	if (options.menufile) {
+		if (!(file = fopen(options.menufile, "w"))) {
+			EPRINTF("cannot open %s for writing\n", options.menufile);
 			g_list_free_full(menu, &xde_menu_free);
 			return;
 		}
@@ -4618,6 +4622,8 @@ put_resources(void)
 		put_resource(rdb, "dieonerr", val);
 	if ((val = putXrmBool(options.fileout)))
 		put_resource(rdb, "fileout", val);
+	if ((val = putXrmString(options.menufile)))
+		put_resource(rdb, "menufile", val);
 	if ((val = putXrmString(options.filename)))
 		put_resource(rdb, "filename", val);
 	if ((val = putXrmBool(options.noicons)))
@@ -5057,6 +5063,8 @@ get_resources(void)
 		getXrmBool(val, &options.dieonerr);
 	if ((val = get_resource(rdb, "fileout", NULL)))
 		getXrmBool(val, &options.fileout);
+	if ((val = get_resource(rdb, "menufile", NULL)))
+		getXrmString(val, &options.menufile);
 	if ((val = get_resource(rdb, "filename", NULL)))
 		getXrmString(val, &options.filename);
 	if ((val = get_resource(rdb, "noicons", NULL)))
@@ -5080,7 +5088,7 @@ get_resources(void)
 	if ((val = get_resource(rdb, "display", NULL)))
 		getXrmString(val, &options.display);
 	if ((val = get_resource(rdb, "button", NULL)))
-		getXrmUint(val, &options.button);
+		getXrmInt(val, &options.button);
 	if ((val = get_resource(rdb, "keypress", NULL)))
 		getXrmString(val, &options.keypress);
 	if ((val = get_resource(rdb, "systray", NULL)))
@@ -8078,7 +8086,7 @@ General options:\n\
 	, options.charset
 	, options.language
 	, options.rootmenu
-	, options.filename
+	, options.menufile
 	, show_bool(options.noicons)
 	, options.theme
 	, show_bool(options.launch)
@@ -8218,7 +8226,7 @@ static void
 set_defaults(void)
 {
 	const char *env, *p, *q;
-	char *endptr = NULL;
+	char *file, *endptr = NULL;
 	int n, monitor;
 	Time timestamp;
 
@@ -8250,6 +8258,10 @@ set_defaults(void)
 	}
 	if ((env = getenv("XDE_DEBUG")))
 		options.debug = atoi(env);
+	file = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
+	free(options.filename);
+	options.filename = strdup(file);
+	g_free(file);
 	set_default_paths();
 	set_default_files();
 }
@@ -8424,8 +8436,8 @@ get_default_desktop(void)
 static void
 get_default_output(void)
 {
-	if (options.filename) {
-		DPRINTF(1, "option output is set to '%s'\n", options.filename);
+	if (options.menufile) {
+		DPRINTF(1, "option output is set to '%s'\n", options.menufile);
 		return;
 	}
 	if (options.display) {
@@ -8437,12 +8449,12 @@ get_default_output(void)
 		int strings = 0;
 
 		if (get_text_property(root, prop, &list, &strings)) {
-			if (!options.filename) {
-				free(options.filename);
-				options.filename = strdup(list[0]);
-			} else if (strcmp(options.filename, list[0]))
+			if (!options.menufile) {
+				free(options.menufile);
+				options.menufile = strdup(list[0]);
+			} else if (strcmp(options.menufile, list[0]))
 				DPRINTF(1, "default filename %s different from actual '%s'\n",
-					options.filename, list[0]);
+					options.menufile, list[0]);
 			if (list)
 				XFreeStringList(list);
 		} else {
@@ -8452,8 +8464,8 @@ get_default_output(void)
 	} else
 		EPRINTF("cannot determine filename without DISPLAY\n");
 
-	if (options.filename)
-		DPRINTF(1, "assigned filename as '%s'\n", options.filename);
+	if (options.menufile)
+		DPRINTF(1, "assigned filename as '%s'\n", options.menufile);
 }
 
 static void
@@ -8790,11 +8802,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv,
-				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:exv::D::GPmFSRqhVCH?",
+		c = getopt_long_only(argc, argv, "T:pKk::b:i:W:w:d:c:l:t:f:FNr:o::nL0s:M:GmPESRqexD::v::hVCH?",
 				     long_options, &option_index);
 #else
-		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:exv:D:GPmFSRqhVCH?");
+		c = getopt(argc, argv, "T:pKk:b:i:W:w:d:c:l:t:f:FNr:o:nL0s:M:GmPESRqexDvhVCH?");
 #endif
 		if (c == -1) {
 			DPRINTF(1, "%s: done options processing\n", argv[0]);
@@ -8837,8 +8848,8 @@ main(int argc, char *argv[])
 		case 'o':	/* -o, --output [OUTPUT] */
 			options.fileout = True;
 			if (optarg != NULL) {
-				free(options.filename);
-				options.filename = strdup(optarg);
+				free(options.menufile);
+				options.menufile = strdup(optarg);
 			}
 			break;
 		case 'n':	/* -n, --noicons */
@@ -8877,14 +8888,36 @@ main(int argc, char *argv[])
 			options.menu = strdup(optarg);
 			break;
 
+		case 'K':	/* -K, --keyboard */
+			options.keyboard = True;
+			options.pointer = False;
+			options.button = 0;
+			break;
+		case 'p':	/* -p, --pointer */
+			options.pointer = True;
+			options.keyboard = False;
+			if (!options.button)
+				options.button = 1;
+			break;
+
 		case 'b':	/* -b, --button [BUTTON] */
 			if (options.command != CommandPopMenu)
 				goto bad_option;
-			if (!optarg)
-				break;
-			val = strtoul(optarg, &endptr, 0);
-			if (endptr && *endptr)
-				goto bad_option;
+			if (optarg) {
+				val = strtoul(optarg, &endptr, 0);
+				if (endptr && *endptr)
+					goto bad_option;
+				if (val < 0 || val > 8)
+					goto bad_option;
+			} else
+				val = 1;
+			if (val) {
+				options.keyboard = False;
+				options.pointer = True;
+			} else {
+				options.keyboard = True;
+				options.pointer = False;
+			}
 			options.button = val;
 			break;
 		case 'k':	/* -k, --keypress [KEYSPEC] */
@@ -8910,7 +8943,9 @@ main(int argc, char *argv[])
 				goto bad_option;
 			if (!(len = strlen(optarg)))
 				goto bad_option;
-			if (!strncasecmp("active", optarg, len))
+			if (!strncasecmp("default", optarg, len))
+				options.which = UseScreenDefault;
+			else if (!strncasecmp("active", optarg, len))
 				options.which = UseScreenActive;
 			else if (!strncasecmp("focused", optarg, len))
 				options.which = UseScreenFocused;
@@ -8930,7 +8965,9 @@ main(int argc, char *argv[])
 				goto bad_option;
 			if (!(len = strlen(optarg)))
 				goto bad_option;
-			if (!strncasecmp("pointer", optarg, len))
+			if (!strncasecmp("default", optarg, len))
+				options.where = PositionDefault;
+			else if (!strncasecmp("pointer", optarg, len))
 				options.where = PositionPointer;
 			else if (!strncasecmp("center", optarg, len))
 				options.where = PositionCenter;
@@ -9013,7 +9050,7 @@ main(int argc, char *argv[])
 				command = CommandMonitor;
 			options.command = CommandMonitor;
 			break;
-		case 'E':	/* -F, --refresh */
+		case 'E':	/* -E, --refresh */
 			if (options.command != CommandDefault)
 				goto bad_command;
 			if (command == CommandDefault)

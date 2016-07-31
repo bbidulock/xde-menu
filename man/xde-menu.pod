@@ -67,26 +67,6 @@ sequence of a particular window manager or panel.  The B<--wmname>,
 B<--format>, B<--output> and B<--die-on-error> options are normally
 specified in this case.
 
-=item B<--popmenu>, B<-P>
-
-Specifies that B<xde-menu> is to request a running instance to pop-up a
-menu.  The menu to pop up, the location and invocation of the pop-up is
-controlled by additional general options.  Depending on the setting of
-the B<--button> option, this will either pop up the menu at the current
-pointer position, or will pop up the menu at the centre of the screen.
-When multiple monitors are present, the menu will pop up at the centre
-of the monitor in which the pointer currently resides (which is used by
-most tiling window managers as the "current" monitor).
-This option does not cause an error when no current instance of
-B<xde-menu> is running.
-This is the default when B<xde-menu> is invoked as B<xde-menu-popmenu>.
-
-For pop-up menu operation, an background instance of B<xde-menu> can be
-asked to pop up an applications or other menu using the B<--popmenu>
-command option.  The major use of this operation is to pop a menu from
-another program (such as a panel), or to pop a menu as a result of a
-button click or button press using window manager bindings.
-
 =item B<--monitor>, B<-m>
 
 Specifies that B<xde-menu> is not to exit after successfully
@@ -117,20 +97,25 @@ status icon to the system tray can be avoided using the B<--notray>
 option.  The status icon can also be removed using the status icon
 pop-up configuration menu.
 
-=item B<--replace>, B<-R>
+=item B<--popmenu>, B<-P>
 
-Replace a currently running instance (that was invoked with the
-B<--monitor> option).
-It is not an error if no other instance is running.
-Runs a new instance of B<xde-menu> and specifies that the program is to
-monitor pertinent directories for changes and regenerate all menus when
-changes are detected.
-This option implies the B<--output> and B<--monitor> option.
-This option normally requires L<libinotify(3)>.
-This option (unlike B<--monitor>) does not cause an error when another
-instance of B<xde-menu> is already running, and simply replaces all
-other instances.
-This is the default when B<xde-menu> is invoked as B<xde-menu-replace>.
+Specifies that B<xde-menu> is to request a running instance to pop-up a
+menu.  The menu to pop up, the location and invocation of the pop-up is
+controlled by additional general options.  Depending on the setting of
+the B<--button> option, this will either pop up the menu at the current
+pointer position, or will pop up the menu at the centre of the screen.
+When multiple monitors are present, the menu will pop up at the centre
+of the monitor in which the pointer currently resides (which is used by
+most tiling window managers as the "current" monitor).
+This option does not cause an error when no current instance of
+B<xde-menu> is running.
+This is the default when B<xde-menu> is invoked as B<xde-menu-popmenu>.
+
+For pop-up menu operation, an background instance of B<xde-menu> can be
+asked to pop up an applications or other menu using the B<--popmenu>
+command option.  The major use of this operation is to pop a menu from
+another program (such as a panel), or to pop a menu as a result of a
+button click or button press using window manager bindings.
 
 =item B<--refresh>, B<-E>
 
@@ -151,6 +136,21 @@ B<xde-menu> executables have been upgraded.
 This option causes an error when no current instance of B<xde-menu> is
 running.
 This is the default when B<xde-menu> is invoked as B<xde-menu-restart>.
+
+=item B<--replace>, B<-R>
+
+Replace a currently running instance (that was invoked with the
+B<--monitor> option).
+It is not an error if no other instance is running.
+Runs a new instance of B<xde-menu> and specifies that the program is to
+monitor pertinent directories for changes and regenerate all menus when
+changes are detected.
+This option implies the B<--output> and B<--monitor> option.
+This option normally requires L<libinotify(3)>.
+This option (unlike B<--monitor>) does not cause an error when another
+instance of B<xde-menu> is already running, and simply replaces all
+other instances.
+This is the default when B<xde-menu> is invoked as B<xde-menu-replace>.
 
 =item B<--quit>, B<-q>
 
@@ -182,12 +182,6 @@ Print copying information and exit.
 Specify the display to use (overriding the C<DISPLAY> environment
 variable).  The default is the value of the C<DISPLAY> environment
 variable.
-
-=item B<--screen> I<SCREEN>
-
-Specify the screen number to use when positioning the menu.  The default
-is either specified by the C<DISPLAY> environment variable (when that
-variable specifies a screen); otherwise, all screens will be considered.
 
 =item B<--die-on-error>, B<-e>
 
@@ -548,15 +542,28 @@ pop-up menu.
 
 =over
 
-=item B<--button>, B<-b> [I<BUTTON>]
+=item B<--screen> I<SCREEN>
 
-Specifies the button that was used to invoke the pop-up.  Defaults to
-C<Button3> (3).  This should be the button that was used to pop the
-menu.  A window manager that invokes this command in response to a
-button press should release its passive grab on the button before
-invoking the pop-up menu so that the popped up menu can grab the button.
-A I<BUTTON> of zero (0) means that the program was invoked with a
-key press instead of a button.
+Specify the screen number, I<SCREEN>, to use when positioning the menu.
+The default is either specified by the C<DISPLAY> environment variable
+(when that variable specifies a screen); otherwise, all screens will be
+considered, and the screen containing the selected monitor will be used.
+
+=item B<--timestamp>, B<-T> I<TIMESTAMP>
+
+Provides the X11 server time stamp of the event that caused the pop-up.
+This is the X11 server time stamp of the button or key press that
+invoked the pop-up.  When the program is launched with startup
+notification, the time stamp will be take from the B<DESKTOP_STARTUP_ID>
+environment variable.
+
+=item B<--pointer>, B<-p>
+
+An alternate way of specifying B<--button=1>.
+
+=item B<--keyboard>, B<-K>
+
+An alternate way of specifying B<--keypress> with no option argument.
 
 =item B<--keypress>, B<-k> [I<KEYSPEC>]
 
@@ -567,13 +574,80 @@ should release its passive grab on the key before invoking the pop-up
 menu so that the popped up menu can grab the keyboard.  A I<KEYSPEC> of
 none means that the program was invoked with an unknown key press.
 
-=item B<--timestamp>, B<-T> I<TIMESTAMP>
+=item B<--button>, B<-b> [I<BUTTON>]
 
-Provides the X11 server time stamp of the event that caused the pop-up.
-This is the X11 server time stamp of the button or key press that
-invoked the pop-up.
+Specifies the button that was used to invoke the pop-up.  Defaults to
+C<Button3> (3).  This should be the button that was used to pop the
+menu.  A window manager that invokes this command in response to a
+button press should release its passive grab on the button before
+invoking the pop-up menu so that the popped up menu can grab the button.
+A I<BUTTON> of zero (0) means that the program was invoked with a
+key press instead of a button.
 
-=item B<--where>, B<-W> {B<default>|B<pointer>|B<center>|B<topleft>}
+=item B<--which>, B<-i> {B<active>|B<focused>|B<pointer>|I<MONITOR>}
+
+Specifies the monitor on which to pop the menu.  The default is to
+determine the monitor based on other options (such as the B<--button>
+option).  The option argument can be one of the following (case
+insensitive, may be abbreviated):
+
+=over
+
+=item C<default>
+
+When unspecified or specified as C<default>, the default monitor
+selection algorithm is used as follows:
+
+=over 4
+
+=item 1.
+
+When the B<--button> or B<--pointer> option is specified and non-zero,
+select the monitor containing the pointer.
+
+=item 2.
+
+When neither B<--button> nor B<--pointer> option is specified, or
+B<--button> is specified as zero, or B<--keypress> or B<--keyboard> is
+specified, select the monitor with the keyboard focus.
+
+=item 3.
+
+When there is no monitor with the keyboard focus, select the monitor
+with the active window.
+
+=item 4.
+
+When there is no active window and no window with the keyboard focus,
+select the monitor containing (or nearest to) the pointer.
+
+=back
+
+=item C<active>
+
+Use the monitor containing the active client.
+
+=item C<focused>
+
+Use the monitor containing the window with the keyboard focus (focused
+client).
+
+=item C<pointer>
+
+Use the monitor containing (or closest to) the pointer.
+
+=item I<MONITOR>
+
+Use the specified monitor number, I<MONITOR>, indexed from zero (0),
+specifying the screen and monitor on which to pop the menu.  When
+there is one screen and multiple monitors (typical case for Xinerama or
+RANDR multi-head setups), I<MONITOR> specifies the monitor, indexed from
+zero (0).  When there are multiple screens, the B<--screen> option
+specifies the screen and I<MONITOR> specifies the monitor.
+
+=back
+
+=item B<--where>, B<-W> {B<default>|B<pointer>|B<center>|B<topleft>|B<bottomright>|I<WHERE>}
 
 Specifies the position for the pop-up menu.  This can be one of the
 following values (case insensitive, may be abbreviated):
@@ -590,16 +664,18 @@ unspecified.  The default placement algorithm is as follows:
 
 =item 1.
 
-If B<--button> is specified and non-zero, place the menu at the pointer
-regardless of the screen and monitor currently containing the pointer.
-If the pointer is positioned outside an active monitor, fall back to the
-behaviour as if B<--button> was not specified.
+If B<--button> is specified and non-zero, or B<--pointer> is specified,
+place the menu at the pointer regardless of the screen and monitor
+currently containing the pointer.  If the pointer is positioned outside
+an active monitor, fall back to the behaviour as if B<--button> or
+B<--pointer> was not specified.
 
 =item 2.
 
-If B<--button> is unspecified or zero (0), place the menu in the centre
-(considering work area) of the screen and monitor which currently
-contains the keyboard focus.
+If B<--button> is unspecified or zero (0), or B<--keyboard> is
+specified, place the menu in the centre (considering work area) of the
+screen and monitor which currently contains the keyboard focus or active
+window.
 
 =back
 
@@ -613,12 +689,28 @@ and non-zero.
 
 Place the menu in the centre of the root window on the current screen
 and monitor.  This is the default when B<--button> is unspecified or
-zero.
+zero, or B<--keyboard> is specified.
 
 =item C<topleft>
 
 Place the menu in the top-left corner of the current screen and monitor
 work area (considering panels and docks).
+
+=item C<bottomright>
+
+Place the menu in the bottom-right corner of the current screen and
+monitor work area (considering panels and docks).
+
+=item I<WHERE>
+
+Place the menu at the location specified by I<WHERE>, which should be a
+string containing a screen geometry that can be parsed by
+L<XParseGeometry(3)>.  This is useful when the menu is launched from a
+menu button in an external program and the menu should be positioned
+adjacent to the button.  The geometry should be the geometry of the
+widget against which the menu should be placed.  When the width and
+height of the geometry are zero (or unspecified), it describes the point
+at which the menu should be placed.
 
 =back
 

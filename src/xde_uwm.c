@@ -145,10 +145,10 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	xde_decrease_indent(ctx);
 	s = strdup("    ]\n");
 	text = g_list_append(text, s);
-	if (options.filename) {
+	if (options.menufile) {
 		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-redo-ltr"));
 		s = g_strdup_printf("xdg-menugen -format uwm -desktop UWM -launch -o %s",
-				    options.filename);
+				    options.menufile);
 		s = g_strdup_printf("%s[ %stext = \"%s\", execute = \"%s\" ]\n", ctx->indent, icon,
 				    "Refresh Menu", s);
 		text = g_list_append(text, s);

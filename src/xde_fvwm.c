@@ -600,10 +600,10 @@ xde_wmspec(MenuContext *ctx)
 	s = strdup("+ \"&Screen Saver%mini.display.xpm%\" Popup Screen\n");
 	text = g_list_append(text, s);
 	text = g_list_concat(text, ctx->wmm.ops.separator(ctx, NULL));
-	if (options.filename) {
+	if (options.menufile) {
 		s = g_strdup_printf
 		    ("+ \"Refresh &Menu%%mini.turn.xpm%%\" Exec xdg-menugen -format fvwm -desktop FVWM -o %s\n",
-		     options.filename);
+		     options.menufile);
 		text = g_list_append(text, s);
 	}
 	s = strdup("+ \"&Restart%mini.turn.xpm%\" Popup Restart\n");

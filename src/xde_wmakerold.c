@@ -157,8 +157,8 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = strdup("  \"Preferences\" EXEC WPrefs\n");
 	text = g_list_append(text, s);
 
-	if (options.filename) {
-		s = g_strdup_printf("  \"Refresh Menu\" SHEXEC xdg-menugen -format wmakerold -desktop WMAKER -launch -o %s\n", options.filename);
+	if (options.menufile) {
+		s = g_strdup_printf("  \"Refresh Menu\" SHEXEC xdg-menugen -format wmakerold -desktop WMAKER -launch -o %s\n", options.menufile);
 		text = g_list_append(text, s);
 	}
 

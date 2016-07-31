@@ -165,7 +165,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_append(text, s);
 	free(icon);
 
-	if (options.filename) {
+	if (options.menufile) {
 		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf("%s<item label=\"%s\"%s>\n", ctx->indent, "Refresh Menu",
 				    icon);
@@ -176,7 +176,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 
 		s = g_strdup_printf("%s    <command>%s %s</command>\n", ctx->indent,
 				    "xde-menugen -format openbox3 -desktop OPENBOX -launch -o",
-				    options.filename);
+				    options.menufile);
 		text = g_list_append(text, s);
 
 		s = g_strdup_printf("%s  </action>\n", ctx->indent);
