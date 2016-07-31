@@ -273,8 +273,6 @@ find_monitor(void)
 {
 	XdeMonitor *xmon = NULL;
 
-	if ((xmon = find_specific_monitor()))
-		return (xmon);
 	switch (options.which) {
 	case UseScreenDefault:
 		if (options.button) {
@@ -300,6 +298,8 @@ find_monitor(void)
 			return (xmon);
 		break;
 	case UseScreenSpecified:
+		if ((xmon = find_specific_monitor()))
+			return (xmon);
 		break;
 	}
 
@@ -442,7 +442,7 @@ position_specified(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 	return TRUE;
 }
 
-static void
+void
 position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
 {
 	XdeMonitor *xmon = user_data;
@@ -483,6 +483,7 @@ position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_
 /** @section Setting Arguments
   * @{ */
 
+#if 1
 static void
 set_scmon(long scmon)
 {
@@ -501,6 +502,7 @@ set_flags(long flags)
 	options.generate = (flags & XDE_MENU_FLAG_GENERATE) ? True : False;
 	options.tooltips = (flags & XDE_MENU_FLAG_TOOLTIPS) ? True : False;
 	options.actions = (flags & XDE_MENU_FLAG_ACTIONS) ? True : False;
+#if 1
 	if (flags & XDE_MENU_FLAG_EXCLUDED)
 		options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
 	else
@@ -525,6 +527,7 @@ set_flags(long flags)
 		options.treeflags |= GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
 	else
 		options.treeflags &= ~GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
+#endif
 	options.button = (flags >> 16) & 0x0f;
 	options.which = (flags >> 20) & 0x0f;
 	options.screen = (flags >> 24) & 0x0f;
@@ -552,12 +555,14 @@ set_word2(long word2)
 	options.geom.mask |= ((word2 >> 30) & 0x01) ? YValue : 0;
 	options.geom.mask |= ((word2 >> 31) & 0x01) ? YNegative : 0;
 }
+#endif
 
 /** @} */
 
 /** @section Getting Arguments
   * @{ */
 
+#if 1
 static long
 get_scmon(void)
 {
@@ -589,6 +594,7 @@ get_flags(void)
 		flags |= XDE_MENU_FLAG_TOOLTIPS;
 	if (options.actions)
 		flags |= XDE_MENU_FLAG_ACTIONS;
+#if 1
 	if (options.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED)
 		flags |= XDE_MENU_FLAG_EXCLUDED;
 	if (options.treeflags & GMENU_TREE_FLAGS_INCLUDE_NODISPLAY)
@@ -601,6 +607,7 @@ get_flags(void)
 		flags |= XDE_MENU_FLAG_SEPARATORS;
 	if (options.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME)
 		flags |= XDE_MENU_FLAG_SORT;
+#endif
 	flags |= ((long) (options.button & 0x0f) << 16);
 	flags |= ((long) (options.which & 0x0f) << 20);
 	flags |= ((long) (options.screen & 0x0f) << 24);
@@ -633,6 +640,7 @@ get_word2(void)
 	word2 |= ((long) (options.geom.mask & YNegative ? 1 : 0) << 31);
 	return (word2);
 }
+#endif
 
 /** @} */
 
@@ -3707,55 +3715,6 @@ wm_menu_context(const char *name)
 	return ops;
 }
 
-/** @brief restart the menu
-  *
-  * We restart the menu by executing ourselves with the same arguments that were
-  * provided in the command that started us.  However, if we are running under
-  * session management with restart hint SmRestartImmediately, the session
-  * manager will restart us if we simply exit.
-  */
-static void
-popup_restart(void)
-{
-	/* asked to restart the menu (as though we were re-executed) */
-	char **argv;
-	int i;
-
-	if (smcConn) {
-		/* When running under a session manager, simply exit and the session
-		   manager will restart us immediately. */
-		exit(EXIT_SUCCESS);
-	}
-
-	argv = calloc(saveArgc + 1, sizeof(*argv));
-	for (i = 0; i < saveArgc; i++)
-		argv[i] = saveArgv[i];
-
-	DPRINTF(1, "restarting the menus\n");
-	if (execvp(argv[0], argv) == -1)
-		EPRINTF("%s: %s\n", argv[0], strerror(errno));
-	return;
-}
-
-static void
-popup_refresh(XdeScreen *xscr)
-{
-	/* asked to refresh the menu (as though there was a change) */
-	MenuContext *ctx;
-	GMenuTree *tree;
-
-	if (!(ctx = xscr->context)) {
-		EPRINTF("no menu context for screen %d\n", xscr->index);
-		return;
-	}
-	if (!(tree = ctx->tree)) {
-		EPRINTF("no menu tree for context\n");
-		return;
-	}
-	DPRINTF(1, "refreshing the menus\n");
-	menu_tree_changed(tree, ctx);
-}
-
 static void
 menu_pop(XdeScreen *xscr)
 {
@@ -4069,6 +4028,7 @@ add_sequence(XdeScreen *xscr, const char *id, SnStartupSequence *sn_seq)
 /** @section Session Management
   * @{ */
 
+#if 1
 static void
 clientSetProperties(SmcConn smcConn, SmPointer data)
 {
@@ -4411,6 +4371,7 @@ static SmcCallbacks clientCBs = {
 	.save_complete = {.callback = &clientSaveCompleteCB,.client_data = NULL,},
 	.shutdown_cancelled = {.callback = &clientShutdownCancelledCB,.client_data = NULL,},
 };
+#endif
 
 /** @} */
 
@@ -4611,7 +4572,6 @@ putXrmWhere(MenuPosition where, XdeGeometry *geom)
 	return (NULL);
 }
 
-#if 0
 char *
 putXrmOrder(WindowOrder order)
 {
@@ -4625,18 +4585,19 @@ putXrmOrder(WindowOrder order)
 	}
 	return (NULL);
 }
-#endif
 
 void
 put_resources(void)
 {
-	char *usrdb = g_strdup_printf("%s/.config/xde/inputrc", getenv("HOME"));
+	char *usrdb;
 	XrmDatabase rdb = NULL;
 	Display *dpy;
 	char *val;
 
 	if (!options.display)
 		return;
+
+	usrdb = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		EPRINTF("could not open display %s\n", options.display);
@@ -4713,6 +4674,7 @@ put_resources(void)
 	XrmSetDatabase(dpy, rdb);
 	XrmDestroyDatabase(rdb);
 	XCloseDisplay(dpy);
+	g_free(usrdb);
 }
 
 /** @} */
@@ -5027,7 +4989,6 @@ getXrmWhere(const char *val, MenuPosition *where, XdeGeometry *geom)
 	return False;
 }
 
-#if 0
 Bool
 getXrmOrder(const char *val, WindowOrder *order)
 {
@@ -5045,7 +5006,6 @@ getXrmOrder(const char *val, WindowOrder *order)
 	}
 	return False;
 }
-#endif
 
 static void
 get_resources(void)
@@ -5072,7 +5032,7 @@ get_resources(void)
 	if (options.filename)
 		if (!XrmCombineFileDatabase(options.filename, &rdb, False))
 			DPRINTF(1, "could not open rcfile %s\n", options.filename);
-	usrdflt = g_strdup_printf(USRDFLT, getenv("HOME"));
+	usrdflt = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
 	if (!options.filename || strcmp(options.filename, usrdflt))
 		if (!XrmCombineFileDatabase(usrdflt, &rdb, False))
 			DPRINTF(1, "could not open rcfile %s\n", usrdflt);
@@ -5233,7 +5193,24 @@ button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 	return GTK_EVENT_STOP;
 }
 
-static void popup_refresh(XdeScreen *xscr);
+static void
+popup_refresh(XdeScreen *xscr)
+{
+	/* asked to refresh the menu (as though there was a change) */
+	MenuContext *ctx;
+	GMenuTree *tree;
+
+	if (!(ctx = xscr->context)) {
+		EPRINTF("no menu context for screen %d\n", xscr->index);
+		return;
+	}
+	if (!(tree = ctx->tree)) {
+		EPRINTF("no menu tree for context\n");
+		return;
+	}
+	DPRINTF(1, "refreshing the menus\n");
+	menu_tree_changed(tree, ctx);
+}
 
 void
 refresh_selected(GtkMenuItem *item, gpointer user_data)
@@ -5261,7 +5238,36 @@ about_selected(GtkMenuItem *item, gpointer user_data)
 	return;
 }
 
-static void popup_restart(void);
+/** @brief restart the menu
+  *
+  * We restart the menu by executing ourselves with the same arguments that were
+  * provided in the command that started us.  However, if we are running under
+  * session management with restart hint SmRestartImmediately, the session
+  * manager will restart us if we simply exit.
+  */
+static void
+popup_restart(void)
+{
+	/* asked to restart the menu (as though we were re-executed) */
+	char **argv;
+	int i;
+
+	if (smcConn) {
+		/* When running under a session manager, simply exit and the session
+		   manager will restart us immediately. */
+		exit(EXIT_SUCCESS);
+	}
+
+	argv = calloc(saveArgc + 1, sizeof(*argv));
+	for (i = 0; i < saveArgc; i++)
+		argv[i] = saveArgv[i];
+
+	DPRINTF(1, "restarting the menus\n");
+	if (execvp(argv[0], argv) == -1)
+		EPRINTF("%s: %s\n", argv[0], strerror(errno));
+	return;
+}
+
 
 void
 redo_selected(GtkMenuItem *item, gpointer user_data)
@@ -5612,6 +5618,7 @@ active_workspace_changed(WnckScreen *wnck, WnckWorkspace *prev, gpointer data)
 /** @section Specific Window Events
   * @{ */
 
+#if 1
 static void
 actions_changed(WnckWindow *window, WnckWindowActions changed, WnckWindowActions state, gpointer xscr)
 {
@@ -5648,6 +5655,98 @@ workspace_changed(WnckWindow *window, gpointer xscr)
   * @{ */
 
 #if 0
+static WnckWorkspace *
+same_desk(WnckScreen *wnck, WnckWindow *win1, WnckWindow *win2)
+{
+	WnckWorkspace *desk;
+
+	if (((desk = wnck_window_get_workspace(win1)) && wnck_window_is_on_workspace(win2, desk)) ||
+	    ((desk = wnck_window_get_workspace(win2)) && wnck_window_is_on_workspace(win1, desk)) ||
+	    ((desk = wnck_screen_get_active_workspace(wnck)) &&
+	     wnck_window_is_on_workspace(win2, desk) && wnck_window_is_on_workspace(win1, desk)))
+		return (desk);
+	return (NULL);
+}
+
+static gboolean
+is_cyclic(WnckWorkspace *desk, WnckWindow *prev, WnckWindow *actv, GList *list)
+{
+	GList *l, *lprev = NULL, *lactv = NULL;
+
+	for (l = list; l; l = l->next) {
+		if (l->data == prev)
+			lprev = l;
+		if (l->data == actv)
+			lactv = l;
+	}
+	if (lprev && lactv) {
+		for (l = lprev->next ? : list; l; l = l->next ? : list) {
+			WnckWindow *curr = l->data;
+
+			if (l == lactv)
+				return TRUE;
+			if (!wnck_window_is_visible_on_workspace(curr, desk))
+				continue;
+			if (wnck_window_is_skip_tasklist(curr))
+				continue;
+			break;
+		}
+		for (l = lactv->next ? : list; l; l = l->next ? : list) {
+			WnckWindow *curr = l->data;
+
+			if (l == lprev)
+				return TRUE;
+			if (!wnck_window_is_visible_on_workspace(curr, desk))
+				continue;
+			if (wnck_window_is_skip_tasklist(curr))
+				continue;
+			break;
+		}
+	}
+	return FALSE;
+}
+
+static XdeMonitor *
+is_cycle(XdeScreen *xscr, WnckScreen *wnck, WnckWindow *prev, WnckWindow *actv)
+{
+	XdeMonitor *xmon = NULL;
+	WnckWorkspace *desk;
+	GdkWindow *wp, *wa;
+	int mp, ma;
+
+	if (!prev || !actv)
+		return (NULL);
+	if (prev == actv)
+		return (NULL);
+	wp = gdk_x11_window_foreign_new_for_display(disp, wnck_window_get_xid(prev));
+	wa = gdk_x11_window_foreign_new_for_display(disp, wnck_window_get_xid(actv));
+	if (!wp || !wa) {
+		if (wp)
+			g_object_unref(G_OBJECT(wp));
+		if (wa)
+			g_object_unref(G_OBJECT(wa));
+		return (NULL);
+	}
+	mp = gdk_screen_get_monitor_at_window(xscr->scrn, wp);
+	ma = gdk_screen_get_monitor_at_window(xscr->scrn, wa);
+	if (mp != ma) {
+		g_object_unref(G_OBJECT(wp));
+		g_object_unref(G_OBJECT(wa));
+		return (NULL);
+	}
+	xmon = &xscr->mons[ma];
+
+	if (!(desk = same_desk(wnck, prev, actv)))
+		return (NULL);
+	if (options.order != WindowOrderStacking)
+		if (is_cyclic(desk, prev, actv, wnck_screen_get_windows(wnck)))
+			return (xmon);
+	if (options.order != WindowOrderClient)
+		if (is_cyclic(desk, prev, actv, wnck_screen_get_windows_stacked(wnck)))
+			return (xmon);
+	return (NULL);
+}
+
 /** @brief active window changed
   *
   * The active window changing only affects the cycling window.  We should only
@@ -5784,9 +5883,125 @@ sn_handler(SnMonitorEvent *event, void *data)
 #endif				/* STARTUP_NOTIFICATION */
 
 #if 0
+/** @brief refresh desktop
+  *
+  * The current desktop has changed for the screen.  Update the root pixmaps for
+  * the screen.  Whether the window manager is multihead aware can be determined
+  * by checking the mhaware boolean on the screen structure.
+  */
+static void
+refresh_desktop(XdeScreen *xscr)
+{
+	GdkWindow *root = gdk_screen_get_root_window(xscr->scrn);
+	GdkColormap *cmap = gdk_drawable_get_colormap(GDK_DRAWABLE(root));
+	GdkPixmap *pixmap;
+	cairo_t *cr;
+	XdeMonitor *xmon;
+	XdeImage *im;
+	XdePixmap *pm;
+	int d, m;
+	Pixmap pmap;
+
+	/* render the current desktop on the screen */
+	pmap = get_temporary_pixmap(xscr);
+	DPRINTF(1, "using temporary pixmap (0x%08lx)\n", pmap);
+	DPRINTF(1, "creating temporary pixmap contents\n");
+	pixmap = gdk_pixmap_foreign_new_for_display(disp, pmap);
+	gdk_drawable_set_colormap(GDK_DRAWABLE(pixmap), cmap);
+	cr = gdk_cairo_create(GDK_DRAWABLE(pixmap));
+	for (m = 0, xmon = xscr->mons; m < xscr->nmon; m++, xmon++) {
+		DPRINTF(1, "adding monitor %d to pixmap\n", m);
+		d = xmon->current;
+		DPRINTF(1, "monitor %d current destop is %d\n", m, d);
+		if ((im = xscr->backdrops[d]) && (im->pixbuf || im->file)) {
+			DPRINTF(1, "monitor %d desktop %d has an image\n", m, d);
+			for (pm = im->pixmaps; pm; pm = pm->next) {
+				if (pm->geom.width == xmon->geom.width && pm->geom.height == xmon->geom.height)
+					break;
+			}
+			if (!pm && !im->pixbuf) {
+				DPRINTF(1, "creating pixbuf from file %s\n", im->file);
+				im->pixbuf = gdk_pixbuf_new_from_file(im->file, NULL);
+			}
+			if (!pm && im->pixbuf) {
+				GdkPixbuf *scaled;
+				cairo_t *cr;
+
+				DPRINTF(1, "allocating a new pixmap for image\n");
+				pm = calloc(1, sizeof(*pm));
+				pm->refs = 1;
+				pm->index = im->index;
+				if ((pm->next = im->pixmaps))
+					pm->next->pprev = &pm->next;
+				pm->pprev = &im->pixmaps;
+				im->pixmaps = pm;
+				pm->geom = xmon->geom;
+				pm->pixmap =
+				    gdk_pixmap_new(GDK_DRAWABLE(root), xmon->geom.width, xmon->geom.height, -1);
+				gdk_drawable_set_colormap(GDK_DRAWABLE(pm->pixmap), cmap);
+				cr = gdk_cairo_create(GDK_DRAWABLE(pm->pixmap));
+				/* FIXME: tiling and other things.... */
+				scaled = gdk_pixbuf_scale_simple(im->pixbuf,
+								 pm->geom.width,
+								 pm->geom.height, GDK_INTERP_BILINEAR);
+				gdk_cairo_set_source_pixbuf(cr, scaled, 0, 0);
+				cairo_paint(cr);
+				cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+				cairo_destroy(cr);
+				g_object_unref(scaled);
+				if (im->pixbuf && im->file) {
+					g_object_unref(im->pixbuf);
+					im->pixbuf = NULL;
+					/* save some resident memory */
+				}
+			} else
+				DPRINTF(1, "using existing pixmap for image\n");
+			gdk_cairo_rectangle(cr, &xmon->geom);
+			if (pm) {
+				DPRINTF(1, "painting pixmap into screen image\n");
+				gdk_cairo_set_source_pixmap(cr, pm->pixmap, 0, 0);
+				cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+				cairo_paint(cr);
+			} else {
+				/* FIXME: use color for desktop */
+				DPRINTF(1, "painting color into screen image\n");
+				cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+				cairo_paint(cr);
+			}
+		} else {
+			DPRINTF(1, "monitor %d desktop %d has no image\n", m, d);
+		}
+	}
+	cairo_destroy(cr);
+	DPRINTF(1, "installing pixmap 0x%08lx as root pixmap\n", pmap);
+	XChangeProperty(GDK_DISPLAY_XDISPLAY(disp), GDK_WINDOW_XID(root), _XA_XROOTPMAP_ID,
+			XA_PIXMAP, 32, PropModeReplace, (unsigned char *) &pmap, 1);
+	gdk_window_set_back_pixmap(root, pixmap, FALSE);
+	gdk_window_clear(root);
+	if (xscr->pixmap) {
+		DPRINTF(1, "killing old unused temporary pixmap 0x%08lx\n", xscr->pixmap);
+		XKillClient(GDK_DISPLAY_XDISPLAY(disp), xscr->pixmap);
+	}
+	xscr->pixmap = pmap;
+}
+
+/** @brief refresh monitor
+  *
+  * The current view for a multi-head aware window manager has changed.  Update
+  * the background for the monitor.
+  */
+static void
+refresh_monitor(XdeMonitor *xmon)
+{
+	/* for now */
+	refresh_desktop(xmon->xscr);
+}
+#endif
+
 static void
 update_client_list(XdeScreen *xscr, Atom prop)
 {
+#if 0
 	Window root = RootWindow(dpy, xscr->index);
 	Atom actual = None;
 	int format = 0;
@@ -5899,6 +6114,7 @@ update_client_list(XdeScreen *xscr, Atom prop)
 			mstacked[m] = g_list_append(mstacked[m], window);
 		}
 	}
+#endif
 }
 #endif
 
@@ -6061,6 +6277,90 @@ update_root_pixmap(XdeScreen *xscr, Atom prop)
 #endif
 
 #if 0
+static void
+update_current_desktop(XdeScreen *xscr, Atom prop)
+{
+	Window root = RootWindow(dpy, xscr->index);
+	Atom actual = None;
+	int format = 0;
+	unsigned long nitems = 0, after = 0, i, j = 0, *x;
+	unsigned long *data = NULL;
+	XdeMonitor *xmon;
+	unsigned long *current;
+
+	PTRACE(5);
+	current = calloc(xscr->nmon + 1, sizeof(*current));
+
+	if (prop == None || prop == _XA_WM_DESKTOP) {
+		if (XGetWindowProperty(dpy, root, _XA_WM_DESKTOP, 0, 64, False,
+				       XA_CARDINAL, &actual, &format, &nitems, &after,
+				       (unsigned char **) &data) == Success &&
+		    format == 32 && actual && nitems >= 1 && data) {
+			current[0] = data[0];
+			x = (xscr->mhaware = (nitems >= xscr->nmon)) ? &i : &j;
+			for (i = 0; i < xscr->nmon; i++)
+				current[i + 1] = data[*x];
+		}
+		if (data) {
+			XFree(data);
+			data = NULL;
+		}
+	}
+	if (prop == None || prop == _XA_WIN_WORKSPACE) {
+		if (XGetWindowProperty(dpy, root, _XA_WIN_WORKSPACE, 0, 64, False,
+				       XA_CARDINAL, &actual, &format, &nitems, &after,
+				       (unsigned char **) &data) == Success &&
+		    format == 32 && actual && nitems >= 1 && data) {
+			current[0] = data[0];
+			x = (xscr->mhaware = (nitems >= xscr->nmon)) ? &i : &j;
+			for (i = 0; i < xscr->nmon; i++)
+				current[i + 1] = data[*x];
+		}
+		if (data) {
+			XFree(data);
+			data = NULL;
+		}
+	}
+	if (prop == None || prop == _XA_NET_CURRENT_DESKTOP) {
+		if (XGetWindowProperty(dpy, root, _XA_NET_CURRENT_DESKTOP, 0, 64, False,
+				       XA_CARDINAL, &actual, &format, &nitems, &after,
+				       (unsigned char **) &data) == Success &&
+		    format == 32 && actual && nitems >= 1 && data) {
+			current[0] = data[0];
+			x = (xscr->mhaware = (nitems >= xscr->nmon)) ? &i : &j;
+			for (i = 0; i < xscr->nmon; i++)
+				current[i + 1] = data[*x];
+		}
+		if (data) {
+			XFree(data);
+			data = NULL;
+		}
+	}
+	/* There are two things to do when the workspace changes: */
+	/* First off, drop any cycle or task windows that we have open. */
+	/* Second, queue deferred action to refresh pixmaps on the desktop. */
+	/* Third, pop the pager window. */
+	if (xscr->current != current[0]) {
+		xscr->current = current[0];
+		if (xscr->setbg)
+			add_deferred_refresh_desktop(xscr);
+		DPRINTF(1, "Current desktop for screen %d changed.\n", xscr->index);
+		if (xscr->pager) {
+		}
+	}
+	for (i = 0, xmon = xscr->mons; i < xscr->nmon; i++, xmon++) {
+		if (xmon->current != current[i + 1]) {
+			xmon->current = current[i + 1];
+			if (xscr->setbg)
+				add_deferred_refresh_monitor(xmon);
+			DPRINTF(1, "Current view for monitor %d chaged.\n", xmon->index);
+			if (xscr->pager) {
+			}
+		}
+	}
+	free(current);
+}
+
 static GdkFilterReturn
 proxy_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 {
@@ -6146,6 +6446,47 @@ proxy_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	}
 	EPRINTF("wrong message type for handler %d on window 0x%08lx\n", xev->type, xev->xany.window);
 	return GDK_FILTER_CONTINUE;
+}
+
+static void
+refresh_layout(XdeScreen *xscr)
+{
+	if (options.show.pager) {
+		unsigned int w, h, f, wmax, hmax;
+		int i;
+
+		w = xscr->width * xscr->cols;
+		h = xscr->height * xscr->rows;
+		for (i = 0; i < xscr->nmon; i++) {
+			XdeMonitor *xmon = &xscr->mons[i];
+
+			wmax = (xmon->geom.width * 8) / 10;
+			hmax = (xmon->geom.height * 8) / 10;
+			for (f = 10; w > wmax * f || h > hmax * f; f++) ;
+			if (xmon->pager.popup)
+				gtk_window_set_default_size(GTK_WINDOW(xmon->pager.popup), w / f, h / f);
+		}
+	}
+	if (options.show.setbg) {
+		int n, d;
+
+		/* redistribute images over desktops */
+		DPRINTF(1, "There are %d desktops\n", xscr->ndsk);
+		for (d = 0; d < xscr->ndsk; d++) {
+			DPRINTF(1, "Attempting to unref image %d (desktops is %p)\n", d, xscr->backdrops + d);
+			xde_image_unref(xscr->backdrops + d);
+		}
+		d = xscr->ndsk = xscr->desks;
+		DPRINTF(1, "Reallocating %d desktops\n", (int) d);
+		xscr->backdrops = realloc(xscr->backdrops, d * sizeof(*xscr->backdrops));
+		memset(xscr->backdrops, 0, d * sizeof(*xscr->backdrops));
+		if (xscr->nimg)
+			for (n = 0, d = 0; d < xscr->ndsk; d++, n = (n + 1) % xscr->nimg) {
+				DPRINTF(1, "desktop %d assigned source image %d\n", d, n);
+				xde_image_ref((xscr->backdrops[d] = xscr->sources[n]));
+			}
+		refresh_desktop(xscr);
+	}
 }
 #endif
 
@@ -6238,6 +6579,10 @@ update_layout(XdeScreen *xscr, Atom prop)
 			for (num = xscr->desks; num > 0; xscr->cols++, num -= xscr->rows) ;
 		if (xscr->rows == 0)
 			for (num = xscr->desks; num > 0; xscr->rows++, num -= xscr->cols) ;
+#if 0
+		// refresh_layout(xscr); /* XXX: should be deferred */
+		add_deferred_refresh_layout(xscr);
+#endif
 	}
 }
 #endif
@@ -6878,6 +7223,7 @@ startup(int argc, char *argv[])
 	gtk_rc_add_default_file(file);
 	g_free(file);
 
+#if 1
 	/* We can start session management without a display; however, we then need to
 	   run a GLIB event loop instead of a GTK event loop.  */
 	init_smclient();
@@ -6887,6 +7233,7 @@ startup(int argc, char *argv[])
 		loop = g_main_loop_new(NULL, FALSE);
 		return;
 	}
+#endif
 
 	gtk_init(&argc, &argv);
 
@@ -7069,8 +7416,6 @@ startup(int argc, char *argv[])
 XdeMonitor *
 init_screens(Window selwin)
 {
-	GdkWindow *sel;
-	char selection[65] = { 0, };
 	XdeMonitor *xmon = NULL;
 	XdeScreen *xscr;
 	int s, nscr;
@@ -7078,18 +7423,26 @@ init_screens(Window selwin)
 	nscr = gdk_display_get_n_screens(disp);
 	screens = calloc(nscr, sizeof(*screens));
 
-	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
-	gdk_window_add_filter(sel, selwin_handler, screens);
-	g_object_unref(G_OBJECT(sel));
+	if (selwin) {
+		GdkWindow *sel;
+
+		sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
+		gdk_window_add_filter(sel, selwin_handler, screens);
+		g_object_unref(G_OBJECT(sel));
+	}
 	gdk_window_add_filter(NULL, events_handler, NULL);
 
 	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
 		xscr->index = s;
-		xscr->atom = XInternAtom(dpy, selection, False);
+		if (selwin) {
+			char selection[65] = { 0, };
+
+			snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
+			xscr->atom = XInternAtom(dpy, selection, False);
+			xscr->selwin = selwin;
+		}
 		xscr->scrn = gdk_display_get_screen(disp, s);
 		xscr->root = gdk_screen_get_root_window(xscr->scrn);
-		xscr->selwin = selwin;
 		xscr->width = gdk_screen_get_width(xscr->scrn);
 		xscr->height = gdk_screen_get_height(xscr->scrn);
 #if 0
@@ -7110,7 +7463,7 @@ init_screens(Window selwin)
 		update_icon_theme(xscr, None);
 #if 1
 		update_active_window(xscr, None);
-		// update_client_list(xscr, None);
+		update_client_list(xscr, None);
 #endif
 	}
 	xmon = find_monitor();
@@ -7201,8 +7554,13 @@ get_selection(Bool replace, Window selwin)
 		}
 		if (selwin) {
 			XEvent ev = { 0, };
+			Atom manager = XInternAtom(dpy, "MANAGER", False);
+			GdkScreen *scrn;
+			Window root;
 
 			for (s = 0; s < nscr; s++) {
+				scrn = gdk_display_get_screen(disp, s);
+				root = GDK_WINDOW_XID(gdk_screen_get_root_window(scrn));
 				snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
 				atom = XInternAtom(dpy, selection, False);
 
@@ -7210,16 +7568,16 @@ get_selection(Bool replace, Window selwin)
 				ev.xclient.serial = 0;
 				ev.xclient.send_event = False;
 				ev.xclient.display = dpy;
-				ev.xclient.window = RootWindow(dpy, s);
-				ev.xclient.message_type = XInternAtom(dpy, "MANAGER", False);
+				ev.xclient.window = root;
+				ev.xclient.message_type = manager;
 				ev.xclient.format = 32;
 				ev.xclient.data.l[0] = CurrentTime;	/* FIXME */
-				ev.xclient.data.l[1] = XInternAtom(dpy, selection, False);
+				ev.xclient.data.l[1] = atom;
 				ev.xclient.data.l[2] = selwin;
 				ev.xclient.data.l[3] = 0;
 				ev.xclient.data.l[4] = 0;
 
-				XSendEvent(dpy, RootWindow(dpy, s), False, StructureNotifyMask, &ev);
+				XSendEvent(dpy, root, False, StructureNotifyMask, &ev);
 				XFlush(dpy);
 			}
 		}
@@ -7545,6 +7903,55 @@ show_where(MenuPosition where)
 	return NULL;
 }
 
+const char *
+show_include(Include include)
+{
+	switch (include) {
+	case IncludeDefault:
+	case IncludeDocs:
+		return ("documents");
+	case IncludeApps:
+		return ("applications");
+	case IncludeBoth:
+		return ("both");
+	}
+	return NULL;
+}
+
+const char *
+show_sorting(Sorting sorting)
+{
+	switch (sorting) {
+	case SortByDefault:
+	case SortByRecent:
+		return ("recent");
+	case SortByFavorite:
+		return ("favorite");
+	}
+	return NULL;
+}
+
+const char *
+show_organize(Organize organize)
+{
+	switch (organize) {
+	case OrganizeDefault:
+	case OrganizeNone:
+		return ("none");
+	case OrganizeDate:
+		return ("date");
+	case OrganizeFreq:
+		return ("freq");
+	case OrganizeGroup:
+		return ("group");
+	case OrganizeContent:
+		return ("content");
+	case OrganizeApp:
+		return ("app");
+	}
+	return NULL;
+}
+
 static void
 help(int argc, char *argv[])
 {
@@ -7812,8 +8219,8 @@ set_defaults(void)
 {
 	const char *env, *p, *q;
 	char *endptr = NULL;
-	Time timestamp;
 	int n, monitor;
+	Time timestamp;
 
 	if ((env = getenv("DISPLAY"))) {
 		free(options.display);
@@ -8651,7 +9058,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 'D':	/* -D, --debug [LEVEL] */
-			DPRINTF(1, "%s: increasing debug verbosity\n", argv[0]);
+			DPRINTF(1, "increasing debug verbosity\n");
 			if (optarg == NULL) {
 				options.debug++;
 				break;
@@ -8663,7 +9070,7 @@ main(int argc, char *argv[])
 			options.debug = val;
 			break;
 		case 'v':	/* -v, --verbose [LEVEL] */
-			DPRINTF(1, "%s: increasing output verbosity\n", argv[0]);
+			DPRINTF(1, "increasing output verbosity\n");
 			if (optarg == NULL) {
 				options.output++;
 				break;
@@ -8701,14 +9108,14 @@ main(int argc, char *argv[])
 		      bad_nonopt:
 			if (options.output || options.debug) {
 				if (optind < argc) {
-					EPRINTF("%s: syntax error near '", argv[0]);
+					EPRINTF("syntax error near '");
 					while (optind < argc) {
 						fprintf(stderr, "%s", argv[optind++]);
 						fprintf(stderr, "%s", (optind < argc) ? " " : "");
 					}
 					fprintf(stderr, "'\n");
 				} else {
-					EPRINTF("%s: missing option or argument", argv[0]);
+					EPRINTF("missing option or argument");
 					fprintf(stderr, "\n");
 				}
 				fflush(stderr);
@@ -8724,7 +9131,7 @@ main(int argc, char *argv[])
 	DPRINTF(1, "%s: option index = %d\n", argv[0], optind);
 	DPRINTF(1, "%s: option count = %d\n", argv[0], argc);
 	if (optind < argc) {
-		EPRINTF("%s: excess non-option arguments near '", argv[0]);
+		EPRINTF("excess non-option arguments near '");
 		while (optind < argc) {
 			fprintf(stderr, "%s", argv[optind++]);
 			fprintf(stderr, "%s", (optind < argc) ? " " : "");
@@ -8748,35 +9155,35 @@ main(int argc, char *argv[])
 		do_run(argc, argv);
 		break;
 	case CommandRefresh:
-		DPRINTF(1, "%s: asking existing instance to refresh\n", argv[0]);
+		DPRINTF(1, "asking existing instance to refresh\n");
 		do_run(argc, argv);
 		break;
 	case CommandRestart:
-		DPRINTF(1, "%s: asking existing instance to restart\n", argv[0]);
+		DPRINTF(1, "asking existing instance to restart\n");
 		do_run(argc, argv);
 		break;
 	case CommandPopMenu:
-		DPRINTF(1, "%s: asking existing instance to pop menu\n", argv[0]);
+		DPRINTF(1, "asking existing instance to pop menu\n");
 		do_run(argc, argv);
 		break;
 	case CommandQuit:
 		if (!options.display) {
-			EPRINTF("%s: cannot ask instance to quit without DISPLAY\n", argv[0]);
+			EPRINTF("cannot ask instance to quit without DISPLAY\n");
 			exit(EXIT_FAILURE);
 		}
-		DPRINTF(1, "%s: asking existing instance to quit\n", argv[0]);
+		DPRINTF(1, "asking existing instance to quit\n");
 		do_quit(argc, argv);
 		break;
 	case CommandHelp:
-		DPRINTF(1, "%s: printing help message\n", argv[0]);
+		DPRINTF(1, "printing help message\n");
 		help(argc, argv);
 		break;
 	case CommandVersion:
-		DPRINTF(1, "%s: printing version message\n", argv[0]);
+		DPRINTF(1, "printing version message\n");
 		version(argc, argv);
 		break;
 	case CommandCopying:
-		DPRINTF(1, "%s: printing copying message\n", argv[0]);
+		DPRINTF(1, "printing copying message\n");
 		copying(argc, argv);
 		break;
 	default:

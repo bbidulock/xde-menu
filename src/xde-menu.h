@@ -48,12 +48,12 @@
 #ifndef __XDE_MENU_H__
 #define __XDE_MENU_H__
 
-#ifdef HAVE_CONFIG_H
-#include "autoconf.h"
-#endif
-
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include "autoconf.h"
 #endif
 
 #include <stddef.h>
@@ -194,7 +194,6 @@ extern char **saveArgv;
 #define RESCLAS "XDE-Menu"
 #define RESTITL "XDG Compliant Menu"
 
-#define USRDFLT "%s/.config/" RESNAME "/rc"
 #define APPDFLT	"/usr/share/X11/app-defaults/" RESCLAS
 
 extern int cmdArgc;
@@ -281,6 +280,44 @@ typedef enum {
 	PositionBottomRight,		/* bottom right of work area */
 	PositionSpecified,		/* specified position (X geometry) */
 } MenuPosition;
+
+typedef enum {
+	WindowOrderDefault,
+	WindowOrderClient,
+	WindowOrderStacking,
+} WindowOrder;
+
+typedef enum {
+	SortByDefault,			/* default sorting */
+	SortByRecent,			/* sort from most recent */
+	SortByFavorite,			/* sort from most frequent */
+} Sorting;
+
+typedef enum {
+	IncludeDefault,			/* default things */
+	IncludeDocs,			/* documents (files) only */
+	IncludeApps,			/* applications only */
+	IncludeBoth,			/* both documents and applications */
+} Include;
+
+typedef enum {
+	OrganizeDefault,
+	OrganizeNone,
+	OrganizeDate,
+	OrganizeFreq,
+	OrganizeGroup,
+	OrganizeContent,
+	OrganizeApp,
+} Organize;
+
+typedef enum {
+	PopupPager,			/* desktop pager feedback */
+	PopupTasks,			/* task list feedback */
+	PopupCycle,			/* window cycling feedback */
+	PopupSetBG,			/* workspace background feedback */
+	PopupStart,			/* startup notification feedback */
+	PopupLast,
+} PopupType;
 
 typedef struct {
 	int mask, x, y;
