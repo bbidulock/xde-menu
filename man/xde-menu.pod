@@ -41,14 +41,6 @@ Command options affect the primary operating mode of the program.  Only
 one command option can be specified.
 B<xde-menu> recognizes the following command options:
 
-B<xde-menu> is typically invoked as an XDG I<autostart> item with the
-B<--monitor> command option at startup of the X11 session.  The
-B<--wmname> and B<--format> options can often be unspecified.
-
-An XDG I<autostart> F<.desktop> file is installed when the package
-installs that will invoke B<xde-menu> and add a status icon to the
-system tray.
-
 =over
 
 =item [B<--menugen>, B<-G>]
@@ -69,10 +61,11 @@ specified in this case.
 
 =item B<--monitor>, B<-m>
 
-Specifies that B<xde-menu> is not to exit after successfully
-generating the menu, but to monitor pertinent directories for changes,
-and regenerate the menu when changes are detected.  This option implies
-the B<--output> option, without an argument.
+Specifies that B<xde-menu> is not to exit after successfully generating
+the menu, but to monitor pertinent directories for changes, and
+regenerate the menu when changes are detected.  This option implies the
+B<--output> option, without an argument (i.e. the default or detected
+menu file will be used).
 
 When changes are detected in the application database, the menu is
 regenerated after an interval of no changes.  When changes are detected
@@ -88,14 +81,20 @@ This option normally requires L<libinotify(3)>.
 This option causes an error when another instance of B<xde-menu> is
 already running.
 (See the B<--replace> option, below.)
-This is the default when B<xde-menu> is invoked as B<xde-menu-monitor>.
+This is the default when B<xde-menu> is invoked as L<xde-menu-monitor(1)>.
 
 When performing background operation with the B<--monitor> command
 option, the program will add a status icon to the system tray.  The
-status icon will be able to be used to  pop up the menu.  Addition of a
+status icon will be able to be used to pop up the menu.  Addition of a
 status icon to the system tray can be avoided using the B<--notray>
 option.  The status icon can also be removed using the status icon
 pop-up configuration menu.
+
+B<xde-menu> is typically invoked as an XDG I<autostart> item with the
+B<--monitor> command option at startup of the X11 session.  The
+B<--wmname> and B<--format> options can often be unspecified.  An XDG
+I<autostart> F<.desktop> file is installed when the package installs
+that will invoke B<xde-menu> and add a status icon to the system tray.
 
 =item B<--popmenu>, B<-P>
 
@@ -106,10 +105,10 @@ the B<--button> option, this will either pop up the menu at the current
 pointer position, or will pop up the menu at the centre of the screen.
 When multiple monitors are present, the menu will pop up at the centre
 of the monitor in which the pointer currently resides (which is used by
-most tiling window managers as the "current" monitor).
-This option does not cause an error when no current instance of
-B<xde-menu> is running.
-This is the default when B<xde-menu> is invoked as B<xde-menu-popmenu>.
+most tiling window managers as the "current" monitor).  This option does
+not cause an error when no current instance of B<xde-menu> is running.
+This is the default when B<xde-menu> is invoked as
+L<xde-menu-popmenu(1)>.
 
 For pop-up menu operation, an background instance of B<xde-menu> can be
 asked to pop up an applications or other menu using the B<--popmenu>
@@ -123,40 +122,36 @@ Asks a running instance of B<xde-menu> to refresh the menu.  This is
 normally not required when B<xde-menu> is run with the B<--monitor>
 option, as B<xde-menu> then detects when F<.desktop> files, icons, theme
 files or window managers have changed and automatically refreshes the
-menus in response.
-This option causes an error when no current instance of B<xde-menu> is
-running.
-This is the default when B<xde-menu> is invoked as B<xde-menu-refresh>.
+menus in response.  This option causes an error when no current instance
+of B<xde-menu> is running.  This is the default when B<xde-menu> is
+invoked as L<xde-menu-refresh(1)>.
 
 =item B<--restart>, B<-S>
 
 Asks a running instance of B<xde-menu> to restart (re-execute itself
 with the same options and arguments).  This is useful when the
-B<xde-menu> executables have been upgraded.
-This option causes an error when no current instance of B<xde-menu> is
-running.
-This is the default when B<xde-menu> is invoked as B<xde-menu-restart>.
+B<xde-menu> executables have been upgraded.  This option causes an error
+when no current instance of B<xde-menu> is running.  This is the default
+when B<xde-menu> is invoked as L<xde-menu-restart(1)>.
 
 =item B<--replace>, B<-R>
 
 Replace a currently running instance (that was invoked with the
-B<--monitor> option).
-It is not an error if no other instance is running.
-Runs a new instance of B<xde-menu> and specifies that the program is to
-monitor pertinent directories for changes and regenerate all menus when
-changes are detected.
-This option implies the B<--output> and B<--monitor> option.
-This option normally requires L<libinotify(3)>.
-This option (unlike B<--monitor>) does not cause an error when another
-instance of B<xde-menu> is already running, and simply replaces all
-other instances.
-This is the default when B<xde-menu> is invoked as B<xde-menu-replace>.
+B<--monitor> option).  It is not an error if no other instance is
+running.  Runs a new instance of B<xde-menu> and specifies that the
+program is to monitor pertinent directories for changes and regenerate
+all menus when changes are detected.  This option implies the
+B<--output> and B<--monitor> option.  This option normally requires
+L<libinotify(3)>.  This option (unlike B<--monitor>) does not cause an
+error when another instance of B<xde-menu> is already running, and
+simply replaces all other instances.  This is the default when
+B<xde-menu> is invoked as L<xde-menu-replace(1)>.
 
 =item B<--quit>, B<-q>
 
 Ask a currently running instance (that was invoked with the B<--monitor>
 option) to quit.  It is not an error if no other instance is running.
-This is the default when B<xde-menu> is invoked as B<xde-menu-quit>.
+This is the default when B<xde-menu> is invoked as L<xde-menu-quit(1)>.
 
 =item B<--help>, B<-h>
 
@@ -191,7 +186,8 @@ Useful in conjunction with the B<--menugen> option.
 =item B<--notray>
 
 Run without installing the menu in the system tray.
-This is the default when the program in invoked as B<xde-menu-generate>
+This is the default when the program in invoked as
+L<xde-menu-generate(1)>
 or when the B<--menugen> option is specified.
 
 =item B<--nogenerate>
@@ -287,15 +283,16 @@ L<yeahwm(1)>.
 When unspecified, or when a window manager change is detected, the
 setting of the C<_XDE_WM_NAME> property on the root window (or the
 C<WM_NAME> or C<_NET_WM_NAME> property on the window manager check
-window) is examined to determine the window manager name.  This is
-accomplished by converting the value of either property to all
-lowercase.  See also, L</ENVIRONMENT> and L</PROPERTIES>.
+window, or on the window owning the window manager selection, C<WM_S%d>)
+is examined to determine the window manager name.  This is accomplished
+by converting the value of either property to all lowercase.  See also,
+L</ENVIRONMENT> and L</PROPERTIES>.
 
 When the program is running in monitor mode for the active window
 manager, the window manager name need not be specified explicitly.
 However, when using the program in B<--menugen> mode to simply generate
-a root menu, this option (or the B<--format> option) must be specified
-explicitly.
+a root menu without a C<DISPLAY> environment variable, this option (or
+the B<--format> option) must be specified explicitly.
 
 =item B<--format>, B<-f> I<FORMAT>
 
@@ -349,15 +346,17 @@ When unspecified, the setting or implied setting of the B<--wmname>
 option is used.  If the B<--wmname> option is also unspecified, or when
 a window manager change is detected, the setting of the C<_XDE_WM_NAME>
 property on the root window (or the C<WM_NAME> or C<_NET_WM_NAME>
-property on the window manager check window) is examined to determine
+property on the window manager check window, or on the window owning the
+window manager selection, C<WM_S%d>) is examined to determine
 the window manager name.  This is accomplished by converting the first
 word in the value of either property to all lowercase.  See also,
 L</ENVIRONMENT> and L</PROPERTIES>.
 
 When the program is running in monitor mode for the active window
 manager, the format need not be specified explicitly.  However, when
-using the program in B<--menugen> mode to simply generate a root menu,
-this option (or the B<--wmname> option) must be specified explicitly.
+using the program in B<--menugen> mode to simply generate a root menu
+without a C<DISPLAY> environment variable, this option (or the
+B<--wmname> option) must be specified explicitly.
 
 Note that L<openbox(1)> and L<wmaker(1)> support both an old and new
 menu format.  The old formats are only selected when explicitly

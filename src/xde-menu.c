@@ -8042,29 +8042,38 @@ Format options:\n\
     --actions\n\
         provide submenu for actions [default: %21$s]\n\
 Pop up menu options:\n\
-    -b, --button [BUTTON]\n\
-        specify the button pressed when popping menu [default: %22$u]\n\
-    -k, --keypress [KEYSPEC]\n\
-        specify the key sequence active whne popping menu [default: %23$s]\n\
+    --screen SCREEN\n\
+        specify the X11 screen for the menu [default: %29$s]\n\
+    --monitor MONITOR\n\
+        specify the X11 monitor for the menu [default: %36$s]\n\
     -T, --timestamp TIMESTAMP\n\
         specify the button/keypress event timestamp [default: %24$lu]\n\
-    -i, --which {active|focused|pointer|SCREEN}\n\
+    -b, --button [BUTTON] | --pointer\n\
+        specify the button pressed when popping menu [default: %22$u]\n\
+    -k, --keypress [KEYSPEC] | --keyboard\n\
+        specify the key sequence active when popping menu [default: %23$s]\n\
+    -i, --which {default|active|focused|pointer|SCREEN}\n\
         specify on which screen to display the menu: [default: %25$s]\n\
+        default - specify default selection algorithm\n\
         active  - the screen with the active window\n\
         focused - the screen with the window with the keyboard focus\n\
         pointer - the screen containing (or nearest) the pointer\n\
         SCREEN  - a specific screen number\n\
-    -w, --where WHERE\n\
-        where to put menu: pointer, center or topleft [default: %26$s]\n\
+    -w, --where {default|pointer|center|topleft|bottomright|WHERE}\n\
+        where to put menu: [default: %26$s]\n\
+        default - specify default position algorithm\n\
+        pointer - position the menu at the pointer\n\
+        center  - center the menu in the current monitor\n\
+        topleft - position menu at top left of work area on monitor\n\
+        bottom  - position menu at bottom right of work area\n\
+        WHERE   - beside or at a specific screen geometry\n\
     --tooltips\n\
         include verbose tooltips for application menu items [default: %27$s]\n\
 General options:\n\
     --display DISPLAY\n\
         specify the X11 display [default: %28$s]\n\
-    --screen SCREEN\n\
-        specify the X11 screen [default: %29$s]\n\
-    --monitor MONITOR\n\
-        specify the X11 monitor [default: %36$s]\n\
+    --filename FILENAME\n\
+        use a different configuration file [default: %37$s]\n\
     -e, --die-on-error\n\
         abort on error [default: %30$s]\n\
     --notray\n\
@@ -8114,6 +8123,7 @@ General options:\n\
 	, options.debug
 	, options.output
 	, show_screen(options.monitor)
+	, options.filename
 );
 	/* *INDENT-ON* */
 }
