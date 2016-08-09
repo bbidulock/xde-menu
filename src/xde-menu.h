@@ -257,6 +257,7 @@ extern Atom _XA_XDE_WM_VERSION;
 extern Atom _XA_PREFIX_REFRESH;
 extern Atom _XA_PREFIX_RESTART;
 extern Atom _XA_PREFIX_POPMENU;
+extern Atom _XA_PREFIX_EDITOR;
 
 typedef enum {
 	CommandDefault,			/* just generate WM root menu */
@@ -266,6 +267,7 @@ typedef enum {
 	CommandRestart,			/* ask running instance to restart */
 	CommandRefresh,			/* ask running instance to refresh menu */
 	CommandPopMenu,			/* ask running instance to pop menu */
+	CommandEditor,			/* ask running instance to pop editor */
 	CommandHelp,			/* print usage info and exit */
 	CommandVersion,			/* print version info and exit */
 	CommandCopying,			/* print copying info and exit */
@@ -336,6 +338,7 @@ typedef enum {
 	PopupCycle,			/* window cycling feedback */
 	PopupSetBG,			/* workspace background feedback */
 	PopupStart,			/* startup notification feedback */
+	PopupInput,			/* desktop input manager */
 	PopupLast,
 } PopupType;
 
@@ -347,32 +350,27 @@ typedef struct {
 typedef struct {
 	int debug;
 	int output;
-	Command command;
+	char *display;
+	int screen;
+	int monitor;
+	Time timeout;
+	unsigned iconsize;
+	double fontsize;
+	int border;
 	char *wmname;
 	char *format;
 	Style style;
 	char *desktop;
-	char *charset;
-	char *language;
-	char *locale;
 	char *rootmenu;
 	Bool dieonerr;
-	Bool fileout;
 	char *menufile;
-	Bool noicons;
 	char *theme;
-	Bool launch;
-	char *clientId;
-	char *saveFile;
 	char *runhist;
 	char *recapps;
 	char *recently;
 	char *recent;
 	char *keep;
 	char *menu;
-	char *display;
-	int screen;
-	int monitor;
 	char *keypress;
 	Bool keyboard;
 	Bool pointer;
@@ -381,12 +379,27 @@ typedef struct {
 	UseScreen which;
 	MenuPosition where;
 	XdeGeometry geom;
+	WindowOrder order;
 	char *filename;
 	Bool replace;
 	Bool systray;
-	Bool generate;
 	int treeflags;
+	Bool normal;
+	Bool hidden;
+	Bool minimized;
+	Bool monitors;
+	Bool workspaces;
+	Bool activate;
+	Bool raise;
+	Bool restore;
+	Command command;
 	Bool tooltips;
+	char *clientId;
+	char *saveFile;
+	Bool fileout;
+	Bool noicons;
+	Bool launch;
+	Bool generate;
 	Bool actions;
 	Bool exit;
 } Options;
@@ -490,6 +503,22 @@ struct XdeScreen;
 typedef struct XdeScreen XdeScreen;
 struct XdeMonitor;
 typedef struct XdeMonitor XdeMonitor;
+struct XdePopup;
+typedef struct XdePopup XdePopup;
+
+struct XdePopup {
+	PopupType type;			/* popup type */
+	GtkWidget *popup;		/* popup window */
+	GtkWidget *content;		/* content of popup window */
+	GtkListStore *model;		/* model for icon-view content */
+	int seqcount;			/* number of sequences in store */
+	unsigned timer;			/* drop popup timer */
+	Bool inside;			/* pointer inside popup */
+	Bool keyboard;			/* have a keyboard grab */
+	Bool pointer;			/* have a pointer grab */
+	Bool popped;			/* popup is popped */
+	GdkModifierType mask;
+};
 
 struct XdeMonitor {
 	int index;			/* monitor number */
@@ -536,6 +565,8 @@ struct XdeScreen {
 			GdkWindow *now;	/* active window (current) */
 		} active;
 	};
+	GtkWidget* ttwindow;		/* tooltip window for status icon */
+	GtkStatusIcon *icon;		/* system tray status icon this screen */
 };
 
 extern Options options;

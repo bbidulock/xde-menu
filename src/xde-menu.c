@@ -133,6 +133,7 @@ Atom _XA_XDE_WM_VERSION;
 Atom _XA_PREFIX_REFRESH;
 Atom _XA_PREFIX_RESTART;
 Atom _XA_PREFIX_POPMENU;
+Atom _XA_PREFIX_EDITOR;
 
 #if 0
 static Atom _XA_NET_STARTUP_INFO;
@@ -142,30 +143,26 @@ static Atom _XA_NET_STARTUP_INFO_BEGIN;
 Options options = {
 	.debug = 0,
 	.output = 1,
-	.command = CommandDefault,
+	.display = NULL,
+	.screen = -1,
+	.monitor = -1,
+	.timeout = 1000,
+	.iconsize = 48,
+	.fontsize = 12.0,
+	.border = 3,
 	.wmname = NULL,
 	.format = NULL,
 	.style = StyleFullmenu,
 	.desktop = NULL,
-	.charset = NULL,
-	.language = NULL,
-	.locale = NULL,
 	.rootmenu = NULL,
-	.dieonerr = False,
-	.fileout = False,
 	.menufile = NULL,
-	.noicons = False,
 	.theme = NULL,
-	.launch = True,
-	.clientId = NULL,
-	.saveFile = NULL,
 	.runhist = NULL,
 	.recapps = NULL,
 	.recently = NULL,
 	.recent = NULL,
 	.keep = "10",
 	.menu = "applications",
-	.display = NULL,
 	.keypress = NULL,
 	.keyboard = False,
 	.pointer = False,
@@ -174,21 +171,33 @@ Options options = {
 	.which = UseScreenDefault,
 	.where = PositionDefault,
 	.geom = {
-		.mask = 0,
-		.x = 0,
-		.y = 0,
-		.w = 0,
-		.h = 0,
-		},
-	.screen = -1,
-	.monitor = -1,
+		 .mask = 0,
+		 .x = 0,
+		 .y = 0,
+		 .w = 0,
+		 .h = 0,
+		 },
+	.order = WindowOrderDefault,
 	.filename = NULL,
 	.replace = False,
 	.systray = False,
-	.generate = True,
 	.treeflags = 0,
-	.tooltips = 0,
-	.actions = 0,
+	.normal = False,
+	.hidden = False,
+	.minimized = False,
+	.monitors = False,
+	.workspaces = False,
+	.activate = True,
+	.raise = False,
+	.command = CommandDefault,
+	.tooltips = False,
+	.clientId = NULL,
+	.saveFile = NULL,
+	.fileout = False,
+	.noicons = False,
+	.launch = True,
+	.generate = True,
+	.actions = False,
 	.exit = False,
 };
 
@@ -318,7 +327,7 @@ find_monitor(void)
   * @{ */
 
 static gboolean
-position_pointer(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
+position_pointer(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
 	PTRACE(5);
 	gdk_display_get_pointer(disp, NULL, x, y, NULL);
@@ -326,12 +335,12 @@ position_pointer(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 }
 
 static gboolean
-position_center_monitor(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
+position_center_monitor(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
 	GtkRequisition req;
 
 	PTRACE(5);
-	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
+	gtk_widget_get_requisition(widget, &req);
 
 	*x = xmon->geom.x + (xmon->geom.width - req.width) / 2;
 	*y = xmon->geom.y + (xmon->geom.height - req.height) / 2;
@@ -340,7 +349,7 @@ position_center_monitor(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 }
 
 static gboolean
-position_topleft_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
+position_topleft_workarea(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
 #if 1
 	WnckWorkspace *wkspc;
@@ -367,7 +376,7 @@ position_topleft_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 }
 
 static gboolean
-position_bottomright_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
+position_bottomright_workarea(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
 #if 1
 	WnckWorkspace *wkspc;
@@ -375,7 +384,7 @@ position_bottomright_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 
 	/* XXX: not sure this is what we want... */
 	wkspc = wnck_screen_get_active_workspace(xmon->xscr->wnck);
-	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
+	gtk_widget_get_requisition(widget, &req);
 	*x = wnck_workspace_get_viewport_x(wkspc) + wnck_workspace_get_width(wkspc) - req.width;
 	*y = wnck_workspace_get_viewport_y(wkspc) + wnck_workspace_get_height(wkspc) - req.height;
 #else
@@ -388,7 +397,7 @@ position_bottomright_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 	gdk_display_get_pointer(disp, &scrn, &px, &py, NULL);
 	nmon = gdk_screen_get_monitor_at_point(scrn, px, py);
 	gdk_screen_get_monitor_geometry(scrn, nmon, &rect);
-	gtk_widget_get_requisition(GTK_WIDGET(menu), &req);
+	gtk_widget_get_requisition(widget, &req);
 
 	*x = rect.x + rect.width - req.width;
 	*y = rect.y + rect.height - req.height;
@@ -398,7 +407,7 @@ position_bottomright_workarea(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 }
 
 static gboolean
-position_specified(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
+position_specified(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
 	int x1, y1, sw, sh;
 
@@ -422,7 +431,7 @@ position_specified(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 		GtkRequisition req;
 		int x2, y2;
 
-		gtk_widget_size_request(GTK_WIDGET(menu), &req);
+		gtk_widget_size_request(widget, &req);
 		x2 = x1 + options.geom.w;
 		y2 = y1 + options.geom.h;
 		DPRINTF(1, "geometry x2 = %d\n", x2);
@@ -442,8 +451,38 @@ position_specified(GtkMenu *menu, XdeMonitor *xmon, gint *x, gint *y)
 		else
 			*y = 0;
 	}
-	DPRINTF(1, "placing menu at +%d+%d\n", *x, *y);
+	DPRINTF(1, "placing window at +%d+%d\n", *x, *y);
 	return TRUE;
+}
+
+void
+position_widget(GtkWidget *widget, gint *x, gint *y, XdeMonitor *xmon)
+{
+	if (options.button) {
+		position_pointer(widget, xmon, x, y);
+		return;
+	}
+	switch (options.where) {
+	case PositionDefault:
+	default:
+		position_center_monitor(widget, xmon, x, y);
+		break;
+	case PositionPointer:
+		position_pointer(widget, xmon, x, y);
+		break;
+	case PositionCenter:
+		position_center_monitor(widget, xmon, x, y);
+		break;
+	case PositionTopLeft:
+		position_topleft_workarea(widget, xmon, x, y);
+		break;
+	case PositionBottomRight:
+		position_bottomright_workarea(widget, xmon, x, y);
+		break;
+	case PositionSpecified:
+		position_specified(widget, xmon, x, y);
+		break;
+	}
 }
 
 void
@@ -451,32 +490,9 @@ position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_
 {
 	XdeMonitor *xmon = user_data;
 
-	*push_in = FALSE;
-	if (options.button) {
-		position_pointer(menu, xmon, x, y);
-		return;
-	}
-	switch (options.where) {
-	case PositionDefault:
-	default:
-		position_center_monitor(menu, xmon, x, y);
-		break;
-	case PositionPointer:
-		position_pointer(menu, xmon, x, y);
-		break;
-	case PositionCenter:
-		position_center_monitor(menu, xmon, x, y);
-		break;
-	case PositionTopLeft:
-		position_topleft_workarea(menu, xmon, x, y);
-		break;
-	case PositionBottomRight:
-		position_bottomright_workarea(menu, xmon, x, y);
-		break;
-	case PositionSpecified:
-		position_specified(menu, xmon, x, y);
-		break;
-	}
+	if (push_in)
+		*push_in = FALSE;
+	position_widget(GTK_WIDGET(menu), x, y, xmon);
 }
 
 /** @} */
@@ -498,14 +514,19 @@ set_scmon(long scmon)
 static void
 set_flags(long flags)
 {
-	options.dieonerr = (flags & XDE_MENU_FLAG_DIEONERR) ? True : False;
+#if 1
 	options.fileout = (flags & XDE_MENU_FLAG_FILEOUT) ? True : False;
 	options.noicons = (flags & XDE_MENU_FLAG_NOICONS) ? True : False;
 	options.launch = (flags & XDE_MENU_FLAG_LAUNCH) ? True : False;
+#endif
 	options.systray = (flags & XDE_MENU_FLAG_TRAY) ? True : False;
+#if 1
 	options.generate = (flags & XDE_MENU_FLAG_GENERATE) ? True : False;
+#endif
 	options.tooltips = (flags & XDE_MENU_FLAG_TOOLTIPS) ? True : False;
+#if 1
 	options.actions = (flags & XDE_MENU_FLAG_ACTIONS) ? True : False;
+#endif
 #if 1
 	if (flags & XDE_MENU_FLAG_EXCLUDED)
 		options.treeflags |= GMENU_TREE_FLAGS_INCLUDE_EXCLUDED;
@@ -582,22 +603,26 @@ get_flags(void)
 {
 	long flags = 0;
 
-	if (options.dieonerr)
-		flags |= XDE_MENU_FLAG_DIEONERR;
+#if 1
 	if (options.fileout)
 		flags |= XDE_MENU_FLAG_FILEOUT;
 	if (options.noicons)
 		flags |= XDE_MENU_FLAG_NOICONS;
 	if (options.launch)
 		flags |= XDE_MENU_FLAG_LAUNCH;
+#endif
 	if (options.systray)
 		flags |= XDE_MENU_FLAG_TRAY;
+#if 1
 	if (options.generate)
 		flags |= XDE_MENU_FLAG_GENERATE;
+#endif
 	if (options.tooltips)
 		flags |= XDE_MENU_FLAG_TOOLTIPS;
+#if 1
 	if (options.actions)
 		flags |= XDE_MENU_FLAG_ACTIONS;
+#endif
 #if 1
 	if (options.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED)
 		flags |= XDE_MENU_FLAG_EXCLUDED;
@@ -2114,8 +2139,8 @@ xde_gtk_common_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *i
 	if (!actions || !*actions)
 		return (menu);
 	menu = GTK_MENU(gtk_menu_new());
-	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(application_menu_key_press), NULL);
 	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(application_menu_key_press), NULL);
 	for (; actions && *actions; actions++) {
 		GtkMenuItem *item;
 
@@ -3784,8 +3809,492 @@ menu_show(XdeScreen *xscr)
 	return;
 }
 
+/** @section Popup Window Event Handlers
+  * @{ */
+
+#if 1
+static gboolean
+stop_popup_timer(XdePopup *xpop)
+{
+	PTRACE(5);
+	if (xpop->timer) {
+		DPRINTF(1, "stopping popup timer\n");
+		g_source_remove(xpop->timer);
+		xpop->timer = 0;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static void
+release_grabs(XdePopup *xpop)
+{
+	PTRACE(5);
+	if (xpop->pointer) {
+#if 0
+		/* will be broken when window unmaps */
+		DPRINTF(1, "ungrabbing pointer\n");
+		gdk_display_pointer_ungrab(disp, GDK_CURRENT_TIME);
+#endif
+		xpop->pointer = False;
+	}
+	if (xpop->keyboard) {
+#if 0
+		/* will be broken when window unmaps */
+		DPRINTF(1, "ungrabbing keyboard\n");
+		gdk_display_keyboard_ungrab(disp, GDK_CURRENT_TIME);
+#endif
+		xpop->keyboard = False;
+	}
+}
+
+static void
+drop_popup(XdePopup *xpop)
+{
+	PTRACE(5);
+	if (xpop->popped) {
+		stop_popup_timer(xpop);
+		release_grabs(xpop);
+		gtk_widget_hide(xpop->popup);
+		xpop->popped = False;
+	}
+}
+
+static gboolean
+workspace_timeout(gpointer user)
+{
+	XdePopup *xpop = user;
+
+	DPRINTF(1, "popup timeout!\n");
+	drop_popup(xpop);
+	xpop->timer = 0;
+	return G_SOURCE_REMOVE;
+}
+
+static gboolean
+start_popup_timer(XdePopup *xpop)
+{
+	PTRACE(5);
+	if (xpop->timer)
+		return FALSE;
+	DPRINTF(1, "starting popup timer\n");
+	xpop->timer = g_timeout_add(options.timeout, workspace_timeout, xpop);
+	return TRUE;
+}
+
+void
+restart_popup_timer(XdePopup *xpop)
+{
+	DPRINTF(1, "restarting popup timer\n");
+	stop_popup_timer(xpop);
+	start_popup_timer(xpop);
+}
+
+#if 0
+static void
+show_popup(XdeScreen *xscr, XdePopup *xpop, gboolean grab_p, gboolean grab_k)
+{
+	GdkGrabStatus status;
+	Window win;
+
+	if (!xpop->popup)
+		return;
+	DPRINTF(1, "popping the window\n");
+	gdk_display_get_pointer(disp, NULL, NULL, NULL, &xpop->mask);
+	stop_popup_timer(xpop);
+	if (xpop->popped)
+		gtk_window_reshow_with_initial_size(GTK_WINDOW(xpop->popup));
+	else {
+		if (xpop->type == PopupStart) {
+			gtk_window_set_default_size(GTK_WINDOW(xpop->popup), -1, -1);
+			gtk_widget_set_size_request(GTK_WIDGET(xpop->popup), -1, -1);
+		}
+		gtk_window_set_screen(GTK_WINDOW(xpop->popup), gdk_display_get_screen(disp, xscr->index));
+		gtk_window_set_position(GTK_WINDOW(xpop->popup), GTK_WIN_POS_CENTER_ALWAYS);
+		gtk_window_present(GTK_WINDOW(xpop->popup));
+		gtk_widget_show_now(GTK_WIDGET(xpop->popup));
+		xpop->popped = True;
+	}
+	win = GDK_WINDOW_XID(xpop->popup->window);
+
+	if (grab_p && !xpop->pointer) {
+		GdkEventMask mask =
+		    GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
+		    GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+		    GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
+		XSetInputFocus(dpy, win, RevertToPointerRoot, CurrentTime);
+		status = gdk_pointer_grab(xpop->popup->window, TRUE, mask, NULL, NULL, GDK_CURRENT_TIME);
+		switch (status) {
+		case GDK_GRAB_SUCCESS:
+			DPRINTF(1, "pointer grabbed\n");
+			xpop->pointer = True;
+			break;
+		case GDK_GRAB_ALREADY_GRABBED:
+			DPRINTF(1, "pointer already grabbed\n");
+			break;
+		case GDK_GRAB_INVALID_TIME:
+			EPRINTF("pointer grab invalid time\n");
+			break;
+		case GDK_GRAB_NOT_VIEWABLE:
+			EPRINTF("pointer grab on unviewable window\n");
+			break;
+		case GDK_GRAB_FROZEN:
+			EPRINTF("pointer grab on frozen pointer\n");
+			break;
+		}
+	}
+	if (grab_k && !xpop->keyboard) {
+		XSetInputFocus(dpy, win, RevertToPointerRoot, CurrentTime);
+		status = gdk_keyboard_grab(xpop->popup->window, TRUE, GDK_CURRENT_TIME);
+		switch (status) {
+		case GDK_GRAB_SUCCESS:
+			DPRINTF(1, "keyboard grabbed\n");
+			xpop->keyboard = True;
+			break;
+		case GDK_GRAB_ALREADY_GRABBED:
+			DPRINTF(1, "keyboard already grabbed\n");
+			break;
+		case GDK_GRAB_INVALID_TIME:
+			EPRINTF("keyboard grab invalid time\n");
+			break;
+		case GDK_GRAB_NOT_VIEWABLE:
+			EPRINTF("keyboard grab on unviewable window\n");
+			break;
+		case GDK_GRAB_FROZEN:
+			EPRINTF("keyboard grab on frozen keyboard\n");
+			break;
+		}
+	}
+	// if (!xpop->keyboard || !xpop->pointer)
+	if (!(xpop->mask & ~(GDK_LOCK_MASK | GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK)))
+		if (!xpop->inside)
+			start_popup_timer(xpop);
+}
+#endif
+#endif
+
 /** @section Popup Window GDK Events
   * @{ */
+
+#define PASSED_EVENT_MASK (KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|SubstructureNotifyMask|SubstructureRedirectMask)
+
+#if 0
+static GdkFilterReturn
+event_handler_KeyPress(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> KeyPress: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xkey.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xkey.window);
+		fprintf(stderr, "    --> root = 0x%lx\n", xev->xkey.root);
+		fprintf(stderr, "    --> subwindow = 0x%lx\n", xev->xkey.subwindow);
+		fprintf(stderr, "    --> time = %lu\n", xev->xkey.time);
+		fprintf(stderr, "    --> x = %d\n", xev->xkey.x);
+		fprintf(stderr, "    --> y = %d\n", xev->xkey.y);
+		fprintf(stderr, "    --> x_root = %d\n", xev->xkey.x_root);
+		fprintf(stderr, "    --> y_root = %d\n", xev->xkey.y_root);
+		fprintf(stderr, "    --> state = 0x%08x\n", xev->xkey.state);
+		fprintf(stderr, "    --> keycode = %u\n", xev->xkey.keycode);
+		fprintf(stderr, "    --> same_screen = %s\n", xev->xkey.same_screen ? "true" : "false");
+		fprintf(stderr, "<== KeyPress: %p\n", xpop);
+	}
+	if (!xev->xkey.send_event) {
+		XEvent ev = *xev;
+
+		start_popup_timer(xpop);
+		ev.xkey.window = ev.xkey.root;
+		XSendEvent(dpy, ev.xkey.root, True, PASSED_EVENT_MASK, &ev);
+		XFlush(dpy);
+		return GDK_FILTER_CONTINUE;
+	}
+	return GDK_FILTER_REMOVE;
+}
+
+static GdkFilterReturn
+event_handler_KeyRelease(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> KeyRelease: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xkey.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xkey.window);
+		fprintf(stderr, "    --> root = 0x%lx\n", xev->xkey.root);
+		fprintf(stderr, "    --> subwindow = 0x%lx\n", xev->xkey.subwindow);
+		fprintf(stderr, "    --> time = %lu\n", xev->xkey.time);
+		fprintf(stderr, "    --> x = %d\n", xev->xkey.x);
+		fprintf(stderr, "    --> y = %d\n", xev->xkey.y);
+		fprintf(stderr, "    --> x_root = %d\n", xev->xkey.x_root);
+		fprintf(stderr, "    --> y_root = %d\n", xev->xkey.y_root);
+		fprintf(stderr, "    --> state = 0x%08x\n", xev->xkey.state);
+		fprintf(stderr, "    --> keycode = %u\n", xev->xkey.keycode);
+		fprintf(stderr, "    --> same_screen = %s\n", xev->xkey.same_screen ? "true" : "false");
+		fprintf(stderr, "<== KeyRelease: %p\n", xpop);
+	}
+	if (!xev->xkey.send_event) {
+		XEvent ev = *xev;
+
+		// start_popup_timer(xpop);
+		ev.xkey.window = ev.xkey.root;
+		XSendEvent(dpy, ev.xkey.root, True, PASSED_EVENT_MASK, &ev);
+		XFlush(dpy);
+		return GDK_FILTER_CONTINUE;
+	}
+	return GDK_FILTER_REMOVE;
+}
+
+static GdkFilterReturn
+event_handler_ButtonPress(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> ButtonPress: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xbutton.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xbutton.window);
+		fprintf(stderr, "    --> root = 0x%lx\n", xev->xbutton.root);
+		fprintf(stderr, "    --> subwindow = 0x%lx\n", xev->xbutton.subwindow);
+		fprintf(stderr, "    --> time = %lu\n", xev->xbutton.time);
+		fprintf(stderr, "    --> x = %d\n", xev->xbutton.x);
+		fprintf(stderr, "    --> y = %d\n", xev->xbutton.y);
+		fprintf(stderr, "    --> x_root = %d\n", xev->xbutton.x_root);
+		fprintf(stderr, "    --> y_root = %d\n", xev->xbutton.y_root);
+		fprintf(stderr, "    --> state = 0x%08x\n", xev->xbutton.state);
+		fprintf(stderr, "    --> button = %u\n", xev->xbutton.button);
+		fprintf(stderr, "    --> same_screen = %s\n", xev->xbutton.same_screen ? "true" : "false");
+		fprintf(stderr, "<== ButtonPress: %p\n", xpop);
+	}
+	if (!xev->xbutton.send_event) {
+		XEvent ev = *xev;
+
+		if (ev.xbutton.button == 4 || ev.xbutton.button == 5) {
+			if (!xpop->inside)
+				start_popup_timer(xpop);
+			DPRINTF(1, "ButtonPress = %d passing to root window\n", ev.xbutton.button);
+			ev.xbutton.window = ev.xbutton.root;
+			XSendEvent(dpy, ev.xbutton.root, True, PASSED_EVENT_MASK, &ev);
+			XFlush(dpy);
+		}
+		return GDK_FILTER_CONTINUE;
+	}
+	return GDK_FILTER_REMOVE;
+}
+
+static GdkFilterReturn
+event_handler_ButtonRelease(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> ButtonRelease: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xbutton.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xbutton.window);
+		fprintf(stderr, "    --> root = 0x%lx\n", xev->xbutton.root);
+		fprintf(stderr, "    --> subwindow = 0x%lx\n", xev->xbutton.subwindow);
+		fprintf(stderr, "    --> time = %lu\n", xev->xbutton.time);
+		fprintf(stderr, "    --> x = %d\n", xev->xbutton.x);
+		fprintf(stderr, "    --> y = %d\n", xev->xbutton.y);
+		fprintf(stderr, "    --> x_root = %d\n", xev->xbutton.x_root);
+		fprintf(stderr, "    --> y_root = %d\n", xev->xbutton.y_root);
+		fprintf(stderr, "    --> state = 0x%08x\n", xev->xbutton.state);
+		fprintf(stderr, "    --> button = %u\n", xev->xbutton.button);
+		fprintf(stderr, "    --> same_screen = %s\n", xev->xbutton.same_screen ? "true" : "false");
+		fprintf(stderr, "<== ButtonRelease: %p\n", xpop);
+	}
+	if (!xev->xbutton.send_event) {
+		XEvent ev = *xev;
+
+		if (ev.xbutton.button == 4 || ev.xbutton.button == 5) {
+			// start_popup_timer(xpop);
+			DPRINTF(1, "ButtonRelease = %d passing to root window\n", ev.xbutton.button);
+			ev.xbutton.window = ev.xbutton.root;
+			XSendEvent(dpy, ev.xbutton.root, True, PASSED_EVENT_MASK, &ev);
+			XFlush(dpy);
+		}
+		return GDK_FILTER_CONTINUE;
+	}
+	return GDK_FILTER_REMOVE;
+}
+
+static const char *
+show_mode(int mode)
+{
+	PTRACE(5);
+	switch (mode) {
+	case NotifyNormal:
+		return ("NotifyNormal");
+	case NotifyGrab:
+		return ("NotifyGrab");
+	case NotifyUngrab:
+		return ("NotifyUngrab");
+	case NotifyWhileGrabbed:
+		return ("NotifyWhileGrabbed");
+	}
+	return NULL;
+}
+
+static const char *
+show_detail(int detail)
+{
+	PTRACE(5);
+	switch (detail) {
+	case NotifyAncestor:
+		return ("NotifyAncestor");
+	case NotifyVirtual:
+		return ("NotifyVirtual");
+	case NotifyInferior:
+		return ("NotifyInferior");
+	case NotifyNonlinear:
+		return ("NotifyNonlinear");
+	case NotifyNonlinearVirtual:
+		return ("NotifyNonlinearVirtual");
+	case NotifyPointer:
+		return ("NotifyPointer");
+	case NotifyPointerRoot:
+		return ("NotifyPointerRoot");
+	case NotifyDetailNone:
+		return ("NotifyDetailNone");
+	}
+	return NULL;
+}
+
+static GdkFilterReturn
+event_handler_EnterNotify(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> EnterNotify: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xcrossing.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xcrossing.window);
+		fprintf(stderr, "    --> root = 0x%lx\n", xev->xcrossing.root);
+		fprintf(stderr, "    --> subwindow = 0x%lx\n", xev->xcrossing.subwindow);
+		fprintf(stderr, "    --> time = %lu\n", xev->xcrossing.time);
+		fprintf(stderr, "    --> x = %d\n", xev->xcrossing.x);
+		fprintf(stderr, "    --> y = %d\n", xev->xcrossing.y);
+		fprintf(stderr, "    --> x_root = %d\n", xev->xcrossing.x_root);
+		fprintf(stderr, "    --> y_root = %d\n", xev->xcrossing.y_root);
+		fprintf(stderr, "    --> mode = %s\n", show_mode(xev->xcrossing.mode));
+		fprintf(stderr, "    --> detail = %s\n", show_detail(xev->xcrossing.detail));
+		fprintf(stderr, "    --> same_screen = %s\n", xev->xcrossing.same_screen ? "true" : "false");
+		fprintf(stderr, "    --> focus = %s\n", xev->xcrossing.focus ? "true" : "false");
+		fprintf(stderr, "    --> state = 0x%08x\n", xev->xcrossing.state);
+		fprintf(stderr, "<== EnterNotify: %p\n", xpop);
+	}
+	if (xev->xcrossing.mode == NotifyNormal) {
+		if (!xpop->inside) {
+			DPRINTF(1, "entered popup\n");
+			stop_popup_timer(xpop);
+			xpop->inside = True;
+		}
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+event_handler_LeaveNotify(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> LeaveNotify: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xcrossing.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xcrossing.window);
+		fprintf(stderr, "    --> root = 0x%lx\n", xev->xcrossing.root);
+		fprintf(stderr, "    --> subwindow = 0x%lx\n", xev->xcrossing.subwindow);
+		fprintf(stderr, "    --> time = %lu\n", xev->xcrossing.time);
+		fprintf(stderr, "    --> x = %d\n", xev->xcrossing.x);
+		fprintf(stderr, "    --> y = %d\n", xev->xcrossing.y);
+		fprintf(stderr, "    --> x_root = %d\n", xev->xcrossing.x_root);
+		fprintf(stderr, "    --> y_root = %d\n", xev->xcrossing.y_root);
+		fprintf(stderr, "    --> mode = %s\n", show_mode(xev->xcrossing.mode));
+		fprintf(stderr, "    --> detail = %s\n", show_detail(xev->xcrossing.detail));
+		fprintf(stderr, "    --> same_screen = %s\n", xev->xcrossing.same_screen ? "true" : "false");
+		fprintf(stderr, "    --> focus = %s\n", xev->xcrossing.focus ? "true" : "false");
+		fprintf(stderr, "    --> state = 0x%08x\n", xev->xcrossing.state);
+		fprintf(stderr, "<== LeaveNotify: %p\n", xpop);
+	}
+	if (xev->xcrossing.mode == NotifyNormal) {
+		if (xpop->inside) {
+			DPRINTF(1, "left popup\n");
+			start_popup_timer(xpop);
+			xpop->inside = False;
+		}
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+event_handler_FocusIn(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> FocusIn: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xfocus.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xfocus.window);
+		fprintf(stderr, "    --> mode = %s\n", show_mode(xev->xfocus.mode));
+		fprintf(stderr, "    --> detail = %s\n", show_detail(xev->xfocus.detail));
+		fprintf(stderr, "<== FocusIn: %p\n", xpop);
+	}
+	switch (xev->xfocus.mode) {
+	case NotifyNormal:
+	case NotifyUngrab:
+		DPRINTF(1, "focused popup\n");
+		break;
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+event_handler_FocusOut(Display *dpy, XEvent *xev, XdePopup *xpop)
+{
+	PTRACE(5);
+	if (options.debug > 1) {
+		fprintf(stderr, "==> FocusOut: %p\n", xpop);
+		fprintf(stderr, "    --> send_event = %s\n", xev->xfocus.send_event ? "true" : "false");
+		fprintf(stderr, "    --> window = 0x%lx\n", xev->xfocus.window);
+		fprintf(stderr, "    --> mode = %s\n", show_mode(xev->xfocus.mode));
+		fprintf(stderr, "    --> detail = %s\n", show_detail(xev->xfocus.detail));
+		fprintf(stderr, "<== FocusOut: %p\n", xpop);
+	}
+	switch (xev->xfocus.mode) {
+	case NotifyNormal:
+	case NotifyGrab:
+	case NotifyWhileGrabbed:
+		DPRINTF(1, "unfocused popup\n");
+		if (!xpop->keyboard) {
+			DPRINTF(1, "no grab or focus\n");
+			start_popup_timer(xpop);
+		}
+		break;
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+popup_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
+{
+	XEvent *xev = (typeof(xev)) xevent;
+	XdePopup *xpop = data;
+
+	PTRACE(5);
+	switch (xev->type) {
+	case KeyPress:
+		return event_handler_KeyPress(dpy, xev, xpop);
+	case KeyRelease:
+		return event_handler_KeyRelease(dpy, xev, xpop);
+	case ButtonPress:
+		return event_handler_ButtonPress(dpy, xev, xpop);
+	case ButtonRelease:
+		return event_handler_ButtonRelease(dpy, xev, xpop);
+	case EnterNotify:
+		return event_handler_EnterNotify(dpy, xev, xpop);
+	case LeaveNotify:
+		return event_handler_LeaveNotify(dpy, xev, xpop);
+	case FocusIn:
+		return event_handler_FocusIn(dpy, xev, xpop);
+	case FocusOut:
+		return event_handler_FocusOut(dpy, xev, xpop);
+	}
+	return GDK_FILTER_CONTINUE;
+}
+#endif
 
 /** @} */
 
@@ -3966,19 +4475,19 @@ cha_sequence(XdeScreen *xscr, Sequence *seq)
 		desc = sn_startup_sequence_get_description(seq->seq);
 	if (!desc && seq->info)
 		desc = g_app_info_get_description(G_APP_INFO(seq->info));
-	markup = g_markup_printf_escaped("<b>%s</b>\n%s", name ? : "", desc ? : "");
+	markup = g_markup_printf_escaped("<span font=\"%.1f\"><b>%s</b>\n%s</span>", options.fontsize, name ? : "", desc ? : "");
 	/* for now, ellipsize later */
 	tip = desc;
-		/* *INDENT-OFF* */
-		gtk_list_store_set(xpop->model, &seq->iter,
-				0, pixbuf,
-				1, name,
-				2, desc,
-				3, markup,
-				4, tip,
-				5, seq,
-				-1);
-		/* *INDENT-ON* */
+	/* *INDENT-OFF* */
+	gtk_list_store_set(xpop->model, &seq->iter,
+			0, pixbuf,
+			1, name,
+			2, desc,
+			3, markup,
+			4, tip,
+			5, seq,
+			-1);
+	/* *INDENT-ON* */
 	g_object_unref(pixbuf);
 	g_free(markup);
 }
@@ -4616,10 +5125,9 @@ put_resources(void)
 		put_resource(rdb, "debug", val);
 	if ((val = putXrmInt(options.output)))
 		put_resource(rdb, "verbose", val);
+	/* put a bunch of resources */
 	if ((val = putXrmString(options.rootmenu)))
 		put_resource(rdb, "rootmenu", val);
-	if ((val = putXrmBool(options.dieonerr)))
-		put_resource(rdb, "dieonerr", val);
 	if ((val = putXrmBool(options.fileout)))
 		put_resource(rdb, "fileout", val);
 	if ((val = putXrmString(options.menufile)))
@@ -4654,8 +5162,22 @@ put_resources(void)
 		put_resource(rdb, "which", val);
 	if ((val = putXrmWhere(options.where, &options.geom)))
 		put_resource(rdb, "where", val);
+	if ((val = putXrmBool(options.normal)))
+		put_resource(rdb, "normal", val);
+	if ((val = putXrmBool(options.hidden)))
+		put_resource(rdb, "hidden", val);
+	if ((val = putXrmBool(options.minimized)))
+		put_resource(rdb, "minimized", val);
+	if ((val = putXrmBool(options.monitors)))
+		put_resource(rdb, "allMonitors", val);
+	if ((val = putXrmBool(options.workspaces)))
+		put_resource(rdb, "allWorkspaces", val);
+	if ((val = putXrmBool(options.activate)))
+		put_resource(rdb, "activate", val);
+	if ((val = putXrmBool(options.raise)))
+		put_resource(rdb, "raise", val);
 	if ((val = putXrmBool(options.systray)))
-		put_resource(rdb, "systray", val);
+		put_resource(rdb, "sysTray", val);
 	if ((val = putXrmBool(options.generate)))
 		put_resource(rdb, "generate", val);
 	if ((val = putXrmBool(options.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED)))
@@ -4671,7 +5193,7 @@ put_resources(void)
 	if ((val = putXrmBool(options.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME)))
 		put_resource(rdb, "sort", val);
 	if ((val = putXrmBool(options.tooltips)))
-		put_resource(rdb, "tooltips", val);
+		put_resource(rdb, "toolTips", val);
 	if ((val = putXrmBool(options.actions)))
 		put_resource(rdb, "actions", val);
 	if ((val = putXrmBool(options.exit)))
@@ -4681,6 +5203,169 @@ put_resources(void)
 	XrmDestroyDatabase(rdb);
 	XCloseDisplay(dpy);
 	g_free(usrdb);
+}
+
+/** @} */
+
+/** @section Putting Key File
+  * @{ */
+
+void
+put_keyfile(void)
+{
+#if 0
+	char *val, buf[256] = { 0, };
+
+	if (!file) {
+		EPRINTF("no key file!\n");
+		return;
+	}
+	if (support.Keyboard) {
+		int i, j;
+
+		g_key_file_set_integer(file, KFG_Keyboard,
+				       KFK_Keyboard_KeyClickPercent, state.Keyboard.key_click_percent);
+		g_key_file_set_integer(file, KFG_Keyboard, KFK_Keyboard_BellPercent, state.Keyboard.bell_percent);
+		g_key_file_set_integer(file, KFG_Keyboard, KFK_Keyboard_BellPitch, state.Keyboard.bell_pitch);
+		g_key_file_set_integer(file, KFG_Keyboard,
+				       KFK_Keyboard_BellDuration, state.Keyboard.bell_duration);
+		g_key_file_set_integer(file, KFG_Keyboard, KFK_Keyboard_LEDMask, state.Keyboard.led_mask);
+		g_key_file_set_boolean(file, KFG_Keyboard,
+				       KFK_Keyboard_GlobalAutoRepeat, state.Keyboard.global_auto_repeat);
+		for (i = 0, j = 0; i < 32; i++, j += 2)
+			snprintf(buf + j, sizeof(buf) - j, "%02X", state.Keyboard.auto_repeats[i]);
+		g_key_file_set_value(file, KFG_Keyboard, KFK_Keyboard_AutoRepeats, buf);
+	}
+	if (support.Pointer) {
+		g_key_file_set_integer(file, KFG_Pointer,
+				       KFK_Pointer_AccelerationDenominator, state.Pointer.accel_denominator);
+		g_key_file_set_integer(file, KFG_Pointer,
+				       KFK_Pointer_AccelerationNumerator, state.Pointer.accel_numerator);
+		g_key_file_set_integer(file, KFG_Pointer, KFK_Pointer_Threshold, state.Pointer.threshold);
+	}
+	if (support.ScreenSaver) {
+		if ((val = putXrmExposures(state.ScreenSaver.allow_exposures))) {
+			g_key_file_set_value(file, KFG_ScreenSaver, KFK_ScreenSaver_AllowExposures, val);
+			g_free(val);
+		}
+		g_key_file_set_integer(file, KFG_ScreenSaver,
+				       KFK_ScreenSaver_Interval, state.ScreenSaver.interval);
+		if ((val = putXrmBlanking(state.ScreenSaver.prefer_blanking))) {
+			g_key_file_set_value(file, KFG_ScreenSaver, KFK_ScreenSaver_PreferBlanking, val);
+			g_free(val);
+		}
+		g_key_file_set_integer(file, KFG_ScreenSaver, KFK_ScreenSaver_Timeout, state.ScreenSaver.timeout);
+	}
+	if (support.DPMS) {
+		if ((val = putXrmPowerLevel(state.DPMS.power_level))) {
+			g_key_file_set_value(file, KFG_DPMS, KFK_DPMS_PowerLevel, val);
+			g_free(val);
+		}
+		g_key_file_set_boolean(file, KFG_DPMS, KFK_DPMS_State, state.DPMS.state ? TRUE : FALSE);
+		g_key_file_set_integer(file, KFG_DPMS, KFK_DPMS_StandbyTimeout, state.DPMS.standby);
+		g_key_file_set_integer(file, KFG_DPMS, KFK_DPMS_SuspendTimeout, state.DPMS.suspend);
+		g_key_file_set_integer(file, KFG_DPMS, KFK_DPMS_OffTimeout, state.DPMS.off);
+	}
+	if (support.XKeyboard) {
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysDfltBtn, state.XKeyboard.desc->ctrls->mk_dflt_btn);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_RepeatKeysEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbRepeatKeysMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_SlowKeysEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbSlowKeysMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_BounceKeysEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbBounceKeysMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_StickyKeysEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbStickyKeysMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbMouseKeysMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysAccelEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbMouseKeysAccelMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_AccessXKeysEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbAccessXKeysMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_AccessXTimeoutMaskEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbAccessXTimeoutMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_AccessXFeedbackMaskEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbAccessXFeedbackMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_AudibleBellMaskEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbAudibleBellMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_Overlay1MaskEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbOverlay1Mask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_Overlay2MaskEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbOverlay2Mask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_IgnoreGroupLockModsEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbIgnoreGroupLockMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_GroupsWrapEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbGroupsWrapMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_InternalModsEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbInternalModsMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_IgnoreLockModsEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbIgnoreLockModsMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_PerKeyRepeatEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbPerKeyRepeatMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_ControlsEnabledEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbControlsEnabledMask ? TRUE : FALSE);
+		g_key_file_set_boolean(file, KFG_XKeyboard,
+				       KFK_XKeyboard_AccessXOptionsEnabled,
+				       state.XKeyboard.desc->ctrls->enabled_ctrls &
+				       XkbAccessXOptionsMask ? TRUE : FALSE);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_RepeatDelay, state.XKeyboard.desc->ctrls->repeat_delay);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_RepeatInterval, state.XKeyboard.desc->ctrls->repeat_interval);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_SlowKeysDelay, state.XKeyboard.desc->ctrls->slow_keys_delay);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_DebounceDelay, state.XKeyboard.desc->ctrls->debounce_delay);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysDelay, state.XKeyboard.desc->ctrls->mk_delay);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysInterval, state.XKeyboard.desc->ctrls->mk_interval);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysTimeToMax,
+				       state.XKeyboard.desc->ctrls->mk_time_to_max);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysMaxSpeed, state.XKeyboard.desc->ctrls->mk_max_speed);
+		g_key_file_set_integer(file, KFG_XKeyboard,
+				       KFK_XKeyboard_MouseKeysCurve, state.XKeyboard.desc->ctrls->mk_curve);
+	}
+#endif
 }
 
 /** @} */
@@ -5053,14 +5738,22 @@ get_resources(void)
 		getXrmInt(val, &options.debug);
 	if ((val = get_resource(rdb, "verbose", "1")))
 		getXrmInt(val, &options.output);
-	if ((val = get_resource(rdb, "which", NULL)))
+	/* get a bunch of resources */
+	if ((val = get_resource(rdb, "timeout", "1000")))
+		getXrmTime(val, &options.timeout);
+	if ((val = get_resource(rdb, "iconSize", "48")))
+		getXrmUint(val, &options.iconsize);
+	if ((val = get_resource(rdb, "fontSize", "12.0")))
+		getXrmDouble(val, &options.fontsize);
+	if ((val = get_resource(rdb, "border", "3")))
+		getXrmInt(val, &options.border);
+
+	if ((val = get_resource(rdb, "which", "default")))
 		getXrmWhich(val, &options.which, &options.screen);
 	if ((val = get_resource(rdb, "where", "default")))
 		getXrmWhere(val, &options.where, &options.geom);
 	if ((val = get_resource(rdb, "rootmenu", NULL)))
 		getXrmString(val, &options.rootmenu);
-	if ((val = get_resource(rdb, "dieonerr", NULL)))
-		getXrmBool(val, &options.dieonerr);
 	if ((val = get_resource(rdb, "fileout", NULL)))
 		getXrmBool(val, &options.fileout);
 	if ((val = get_resource(rdb, "menufile", NULL)))
@@ -5155,11 +5848,20 @@ get_resources(void)
 
 /** @} */
 
+/** @section Getting Key File
+  * @{ */
+
+void
+get_keyfile(void)
+{
+}
+
 /** @} */
 
 /** @section System Tray Icon
   * @{ */
 
+#if 1
 static gboolean
 button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 {
@@ -5199,6 +5901,22 @@ button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 	}
 	gtk_menu_popup(ctx->menu, NULL, NULL, gtk_status_icon_position_menu, icon, ev->button, ev->time);
 	return GTK_EVENT_STOP;
+}
+
+static void popup_show(XdeScreen *xscr);
+
+static void
+edit_selected(GtkMenuItem *item, gpointer user_data)
+{
+	popup_show(user_data);
+}
+
+static void
+save_selected(GtkMenuItem *item, gpointer user_data)
+{
+#if 0
+	edit_sav_values();
+#endif
 }
 
 static void
@@ -5246,17 +5964,17 @@ about_selected(GtkMenuItem *item, gpointer user_data)
 	return;
 }
 
-/** @brief restart the menu
+/** @brief restart
   *
-  * We restart the menu by executing ourselves with the same arguments that were
-  * provided in the command that started us.  However, if we are running under
-  * session management with restart hint SmRestartImmediately, the session
-  * manager will restart us if we simply exit.
+  * We restart by executing ourselves with the same arguments that were provided
+  * in the command that started us.  However, if we are running under session
+  * management with restart hint SmRestartImmediately, the session manager will
+  * restart us if we simply exit.
   */
 static void
 popup_restart(void)
 {
-	/* asked to restart the menu (as though we were re-executed) */
+	/* asked to restart (as though we were re-executed) */
 	char **argv;
 	int i;
 
@@ -5270,12 +5988,11 @@ popup_restart(void)
 	for (i = 0; i < saveArgc; i++)
 		argv[i] = saveArgv[i];
 
-	DPRINTF(1, "restarting the menus\n");
+	DPRINTF(1, "restarting\n");
 	if (execvp(argv[0], argv) == -1)
 		EPRINTF("%s: %s\n", argv[0], strerror(errno));
 	return;
 }
-
 
 void
 redo_selected(GtkMenuItem *item, gpointer user_data)
@@ -5296,6 +6013,17 @@ popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	GtkWidget *menu, *item;
 
 	menu = gtk_menu_new();
+
+	item = gtk_image_menu_item_new_from_stock("gtk-edit", NULL);
+	g_signal_connect(item, "activate", G_CALLBACK(edit_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	item = gtk_image_menu_item_new_from_stock("gtk-save", NULL);
+	g_signal_connect(item, "activate", G_CALLBACK(save_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
 	item = gtk_image_menu_item_new_from_stock("gtk-refresh", NULL);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(refresh_selected), xscr);
 	gtk_widget_show(item);
@@ -5324,17 +6052,144 @@ popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	return;
 }
 
+#if 0
+void
+present_popup(XdeScreen *xscr)
+{
+	if (!gtk_widget_get_mapped(xscr->ttwindow)) {
+#if 0
+		GdkEventMask mask =
+		    GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
+		    GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+		    GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
+#endif
+		gtk_window_set_position(GTK_WINDOW(xscr->ttwindow), GTK_WIN_POS_MOUSE);
+		gtk_window_present(GTK_WINDOW(xscr->ttwindow));
+		gtk_widget_show_now(GTK_WIDGET(xscr->ttwindow));
+		gdk_window_focus(xscr->ttwindow->window, GDK_CURRENT_TIME);
+
+#if 0
+		gdk_keyboard_grab(xscr->ttwindow->window, TRUE, GDK_CURRENT_TIME);
+		gdk_pointer_grab(xscr->ttwindow->window, FALSE, mask, NULL, NULL, GDK_CURRENT_TIME);
+#endif
+		stop_popup_timer(xscr);
+		inside = TRUE;
+	}
+}
+#endif
+
+gboolean
+query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_mode,
+		 GtkTooltip *tooltip, gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+
+	(void) xscr;
+#if 0
+	if (xscr->ttwindow) {
+		present_popup(xscr);
+		start_popup_timer(xscr);
+		return FALSE;
+	}
+#endif
+	return TRUE;		/* show it now */
+}
+
+#if 0
+static void
+popup_widget_realize(GtkWidget *popup, gpointer user)
+{
+	gdk_window_add_filter(popup->window, popup_handler, user);
+	gdk_window_set_override_redirect(popup->window, TRUE);
+	// gdk_window_set_accept_focus(popup->window, TRUE);
+	// gdk_window_set_focus_on_map(popup->window, TRUE);
+}
+#endif
+
+#if 0
+static gboolean
+popup_grab_broken_event(GtkWidget *widget, GdkEvent *event, gpointer user)
+{
+	XdeScreen *xscr = (typeof(xscr)) user;
+	GdkEventGrabBroken *ev = (typeof(ev)) event;
+
+	if (ev->keyboard) {
+		start_popup_timer(xscr);
+	} else {
+		drop_popup(xscr);
+	}
+	return GTK_EVENT_STOP;	/* event handled */
+}
+#endif
+
+void
+systray_tooltip(XdeScreen *xscr)
+{
+#if 0
+	GtkWidget *w, *h, *f, *s;
+
+	if (xscr->ttwindow)
+		return;
+
+	w = gtk_window_new(GTK_WINDOW_POPUP);
+	gtk_widget_add_events(w, GDK_ALL_EVENTS_MASK);
+	gtk_window_set_accept_focus(GTK_WINDOW(w), TRUE);
+	gtk_window_set_focus_on_map(GTK_WINDOW(w), TRUE);
+	// gtk_window_set_type_hint(GTK_WINDOW(w), GDK_WINDOW_TEMP);
+	gtk_window_stick(GTK_WINDOW(w));
+	gtk_window_set_keep_above(GTK_WINDOW(w), TRUE);
+
+	h = gtk_hbox_new(FALSE, 5);
+	gtk_container_set_border_width(GTK_CONTAINER(h), 3);
+	f = gtk_frame_new("Bell");
+	gtk_container_set_border_width(GTK_CONTAINER(f), 3);
+	gtk_frame_set_label_align(GTK_FRAME(f), 0.5, 0.5);
+	gtk_box_pack_start(GTK_BOX(h), f, FALSE, FALSE, 0);
+	s = gtk_vscale_new_with_range(0.0, 100.0, 1.0);
+	gtk_scale_set_draw_value(GTK_SCALE(s), TRUE);
+	gtk_scale_set_value_pos(GTK_SCALE(s), GTK_POS_TOP);
+	g_signal_connect(G_OBJECT(s), "format-value", G_CALLBACK(format_value_percent), NULL);
+	gtk_container_add(GTK_CONTAINER(f), s);
+	gtk_widget_set_tooltip_markup(s, "\
+Set the bell volume as a percentage of\n\
+maximum volume: from 0% to 100%.");
+#if 0
+	g_signal_connect(G_OBJECT(s), "value-changed", G_CALLBACK(bell_percent_value_changed), NULL);
+#endif
+	controls.Icon.BellPercent = s;
+
+	gtk_container_add(GTK_CONTAINER(w), h);
+	gtk_widget_show_all(h);
+
+	gtk_window_set_position(GTK_WINDOW(w), GTK_WIN_POS_MOUSE);
+	gtk_container_set_border_width(GTK_CONTAINER(w), 3);
+	gtk_window_set_default_size(GTK_WINDOW(w), -1, 200);
+	gtk_widget_set_size_request(w, -1, 200);
+
+#if 0
+	g_signal_connect(G_OBJECT(w), "grab_broken_event", G_CALLBACK(popup_grab_broken_event), xscr);
+#endif
+	g_signal_connect(G_OBJECT(w), "realize", G_CALLBACK(popup_widget_realize), xscr);
+
+	xscr->ttwindow = w;
+#endif
+}
+
 static void
 systray_show(XdeScreen *xscr)
 {
-	GtkStatusIcon *icon;
-
-	icon = gtk_status_icon_new_from_icon_name(LOGO_NAME);
-	gtk_status_icon_set_tooltip_text(icon, "Click for menu...");
-	gtk_status_icon_set_visible(icon, TRUE);
-	g_signal_connect(G_OBJECT(icon), "button_press_event", G_CALLBACK(button_press), xscr);
-	g_signal_connect(G_OBJECT(icon), "popup_menu", G_CALLBACK(popup_menu), xscr);
+	if (!xscr->icon) {
+		xscr->icon = gtk_status_icon_new_from_icon_name(LOGO_NAME);
+		gtk_status_icon_set_tooltip_text(xscr->icon, "Click for menu...");
+		g_signal_connect(G_OBJECT(xscr->icon), "button_press_event", G_CALLBACK(button_press), xscr);
+		g_signal_connect(G_OBJECT(xscr->icon), "popup_menu", G_CALLBACK(popup_menu), xscr);
+		// g_signal_connect(xscr->icon, "query_tooltip", G_CALLBACK(query_tooltip), xscr);
+		systray_tooltip(xscr);
+	}
+	gtk_status_icon_set_visible(xscr->icon, TRUE);
 }
+
+#endif
 
 /** @} */
 
@@ -5347,6 +6202,7 @@ systray_show(XdeScreen *xscr)
 /** @section Workspace Events
   * @{ */
 
+#if 1
 #if 0
 static Bool
 good_window_manager(XdeScreen *xscr)
@@ -5377,10 +6233,8 @@ good_window_manager(XdeScreen *xscr)
 	/* XXX: When running with bbkeys(1), blackbox(1) has its own window cycling
 	   feedback.  When running under blackbox(1), xde-cycle does nothing. Otherwise,
 	   blackbox(1) is largely supported and works well. */
-	if (!strcasecmp(xscr->wmname, "blackbox")) {
-		xscr->cycle = False;
+	if (!strcasecmp(xscr->wmname, "blackbox"))
 		return True;
-	}
 	/* XXX: bspwm(1) is supported and works well. */
 	if (!strcasecmp(xscr->wmname, "bspwm"))
 		return True;
@@ -5414,11 +6268,8 @@ good_window_manager(XdeScreen *xscr)
 	/* XXX: fluxbox(1) provides its own window cycling feedback.  When running under
 	   fluxbox(1), xde-cycle does nothing. Otherwise, fluxbox(1) is supported and
 	   works well. */
-	if (!strcasecmp(xscr->wmname, "fluxbox")) {
-		xscr->tasks = False;
-		xscr->cycle = False;
+	if (!strcasecmp(xscr->wmname, "fluxbox"))
 		return True;
-	}
 	/* XXX: flwm(1) supports GNOME/WinWM but not EWMH/NetWM and is not currently
 	   supported by libwnck+.  xde-pager mitigates this to some extent. */
 	if (!strcasecmp(xscr->wmname, "flwm"))
@@ -5447,22 +6298,16 @@ good_window_manager(XdeScreen *xscr)
 	   _NET_DESKTOP_LAYOUT, and key bindings are confused.  When xde-pager detects
 	   that it is running under jwm(1) it will simply do nothing.  Otherwise, jwm(1)
 	   is supported and works well. */
-	if (!strcasecmp(xscr->wmname, "jwm")) {
-		xscr->pager = False;
+	if (!strcasecmp(xscr->wmname, "jwm"))
 		return True;
-	}
 	/* XXX: matwm2(1) is supported and works well. */
 	if (!strcasecmp(xscr->wmname, "matwm2"))
 		return True;
 	/* XXX: metacity(1) provides its own competent desktop switching feedback pop-up.
 	   When xde-pager detects that it is running under metacity(1), it will simply do
 	   nothing. */
-	if (!strcasecmp(xscr->wmname, "metacity")) {
-		xscr->pager = False;
-		xscr->tasks = False;
-		xscr->cycle = False;
+	if (!strcasecmp(xscr->wmname, "metacity"))
 		return True;
-	}
 	/* XXX: mwm(1) only supports OSF/Motif and does not support multiple desktops. It
 	   is not supported. */
 	if (!strcasecmp(xscr->wmname, "mwm"))
@@ -5474,22 +6319,14 @@ good_window_manager(XdeScreen *xscr)
 	   does respect _NET_DESKTOP_LAYOUT but does not provide any of the contents of
 	   the desktop. When both are running it is a little confusing, so when xde-pager
 	   detects that it is running under openbox(1), it will simply do nothing. */
-	if (!strcasecmp(xscr->wmname, "openbox")) {
-		xscr->pager = False;
-		xscr->cycle = False;
-		xscr->tasks = False;
+	if (!strcasecmp(xscr->wmname, "openbox"))
 		return True;
-	}
 	/* XXX: pekwm(1) provides its own broken desktop switching feedback pop-up;
 	   however, it does not respect _NET_DESKTOP_LAYOUT and key bindings are
 	   confused.  When xde-pager detects that it is running under pekwm(1), it will
 	   simply do nothing. */
-	if (!strcasecmp(xscr->wmname, "pekwm")) {
-		xscr->pager = False;
-		xscr->cycle = False;
-		xscr->tasks = False;
+	if (!strcasecmp(xscr->wmname, "pekwm"))
 		return True;
-	}
 	/* XXX: spectrwm(1) is supported, but it doesn't work that well because, like
 	   cwm(1), spectrwm(1) is not placing _NET_WM_STATE on client windows, so
 	   libwnck+ cannot locate them and will not provide contents in the pager. */
@@ -5518,11 +6355,8 @@ good_window_manager(XdeScreen *xscr)
 		return True;
 	/* XXX: wmaker(1) is supported and works well.  wmaker(1) has its own background
 	   switcher and window cycling. */
-	if (!strcasecmp(xscr->wmname, "wmaker")) {
-		xscr->setbg = False;
-		xscr->cycle = False;
+	if (!strcasecmp(xscr->wmname, "wmaker"))
 		return True;
-	}
 	/* XXX: wmii(1) is supported and works well.  wmii(1) was stealing the focus back
 	   from the pop-up, but this was fixed. */
 	if (!strcasecmp(xscr->wmname, "wmii"))
@@ -5620,6 +6454,7 @@ active_workspace_changed(WnckScreen *wnck, WnckWorkspace *prev, gpointer data)
 {
 	/* XXX: should be handled by update_current_desktop */
 }
+#endif
 
 /** @} */
 
@@ -5656,6 +6491,7 @@ static void
 workspace_changed(WnckWindow *window, gpointer xscr)
 {
 }
+#endif
 
 /** @} */
 
@@ -6001,6 +6837,7 @@ refresh_desktop(XdeScreen *xscr)
 static void
 refresh_monitor(XdeMonitor *xmon)
 {
+	PTRACE(5);
 	/* for now */
 	refresh_desktop(xmon->xscr);
 }
@@ -6124,7 +6961,6 @@ update_client_list(XdeScreen *xscr, Atom prop)
 	}
 #endif
 }
-#endif
 
 static void
 update_screen_active_window(XdeScreen *xscr)
@@ -6826,7 +7662,8 @@ event_handler_ClientMessage(XEvent *xev)
 {
 	XdeScreen *xscr = NULL;
 	int s, nscr = ScreenCount(dpy);
-	Atom type;
+	Atom type = xev->xclient.message_type;
+	char *name = NULL;
 
 	PTRACE(5);
 	for (s = 0; s < nscr; s++)
@@ -6835,13 +7672,17 @@ event_handler_ClientMessage(XEvent *xev)
 			break;
 		}
 	if (!xscr) {
-		EPRINTF("could not find screen for client message with window 0%08lx\n", xev->xclient.window);
+#if 0
+		if (type != _XA_NET_STARTUP_INFO && type != _XA_NET_STARTUP_INFO_BEGIN)
+#endif
+			EPRINTF("could not find screen for client message %s with window 0%08lx\n",
+				name ? : (name = XGetAtomName(dpy, type)), xev->xclient.window);
 		xscr = screens;
 	}
 	if (options.debug > 1) {
 		fprintf(stderr, "==> ClientMessage: %p\n", xscr);
 		fprintf(stderr, "    --> window = 0x%08lx\n", xev->xclient.window);
-		fprintf(stderr, "    --> message_type = %s\n", XGetAtomName(dpy, xev->xclient.message_type));
+		fprintf(stderr, "    --> message_type = %s\n", name ? : (name = XGetAtomName(dpy, type)));
 		fprintf(stderr, "    --> format = %d\n", xev->xclient.format);
 		switch (xev->xclient.format) {
 			int i;
@@ -6867,7 +7708,10 @@ event_handler_ClientMessage(XEvent *xev)
 		}
 		fprintf(stderr, "<== ClientMessage: %p\n", xscr);
 	}
-	type = xev->xclient.message_type;
+	if (name) {
+		XFree(name);
+		name = NULL;
+	}
 	if (type == _XA_GTK_READ_RCFILES) {
 		update_theme(xscr, type);
 		update_icon_theme(xscr, type);
@@ -6887,6 +7731,13 @@ event_handler_ClientMessage(XEvent *xev)
 		popup_restart();
 		return GDK_FILTER_REMOVE;
 	} else if (type == _XA_PREFIX_POPMENU) {
+		set_scmon(xev->xclient.data.l[1]);
+		set_flags(xev->xclient.data.l[2]);
+		set_word1(xev->xclient.data.l[3]);
+		set_word2(xev->xclient.data.l[4]);
+		menu_show(xscr);
+		return GDK_FILTER_REMOVE;
+	} else if (type == _XA_PREFIX_EDITOR) {
 		set_scmon(xev->xclient.data.l[1]);
 		set_flags(xev->xclient.data.l[2]);
 		set_word1(xev->xclient.data.l[3]);
@@ -6933,6 +7784,7 @@ event_handler_SelectionClear(XEvent *xev, XdeScreen *xscr)
 	if (xscr && xev->xselectionclear.window == xscr->selwin) {
 		XDestroyWindow(dpy, xscr->selwin);
 		EPRINTF("selection cleared, exiting\n");
+#if 1
 		if (smcConn) {
 			/* Care must be taken where if we are running under a session
 			   manager. We set the restart hint to SmRestartImmediately which
@@ -6942,6 +7794,9 @@ event_handler_SelectionClear(XEvent *xev, XdeScreen *xscr)
 			return GDK_FILTER_CONTINUE;
 		}
 		exit(EXIT_SUCCESS);
+#endif
+		mainloop_quit();
+		return GDK_FILTER_REMOVE;
 	}
 	if (xscr && xev->xselectionclear.window == xscr->laywin) {
 		XDestroyWindow(dpy, xscr->laywin);
@@ -7031,17 +7886,17 @@ event_handler_PropertyNotify(XEvent *xev, XdeScreen *xscr)
 #endif
 		} else if (atom == _XA_NET_ACTIVE_WINDOW) {
 			update_active_window(xscr, atom);
-#if 1
+#if 0
 		} else if (atom == _XA_NET_CLIENT_LIST) {
-			// update_client_list(xscr, atom);
+			update_client_list(xscr, atom);
 		} else if (atom == _XA_NET_CLIENT_LIST_STACKING) {
-			// update_client_list(xscr, atom);
+			update_client_list(xscr, atom);
 #endif
 		} else if (atom == _XA_WIN_FOCUS) {
 			update_active_window(xscr, atom);
-#if 1
+#if 0
 		} else if (atom == _XA_WIN_CLIENT_LIST) {
-			// update_client_list(xscr, atom);
+			update_client_list(xscr, atom);
 #endif
 		}
 	}
@@ -7412,6 +8267,10 @@ startup(int argc, char *argv[])
 	_XA_PREFIX_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
 	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
 
+	atom = gdk_atom_intern_static_string(XA_PREFIX "_EDITOR");
+	_XA_PREFIX_EDITOR = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
+
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
 	mask = gdk_window_get_events(root);
@@ -7460,10 +8319,12 @@ init_screens(Window selwin)
 		init_wnck(xscr);
 		init_monitors(xscr);
 #if 0
+#if 0
 		if (options.proxy)
 			setup_button_proxy(xscr);
 		if (options.show.setbg)
 			update_root_pixmap(xscr, None);
+#endif
 		update_layout(xscr, None);
 		update_current_desktop(xscr, None);
 #endif
@@ -7677,6 +8538,23 @@ do_run(int argc, char *argv[])
 				XSendEvent(dpy, broadcast, False, mask, &ev);
 				XSync(dpy, False);
 				break;
+			case CommandEditor:
+				DPRINTF(1, "instance running: asking it to launch popmenu\n");
+				ev.xclient.type = ClientMessage;
+				ev.xclient.serial = 0;
+				ev.xclient.send_event = False;
+				ev.xclient.display = dpy;
+				ev.xclient.window = broadcast;
+				ev.xclient.message_type = _XA_PREFIX_EDITOR;
+				ev.xclient.format = 32;
+				ev.xclient.data.l[0] = options.timestamp;
+				ev.xclient.data.l[1] = get_scmon();
+				ev.xclient.data.l[2] = get_flags();
+				ev.xclient.data.l[3] = get_word1();
+				ev.xclient.data.l[4] = get_word2();
+				XSendEvent(dpy, broadcast, False, mask, &ev);
+				XSync(dpy, False);
+				break;
 			}
 			exit(EXIT_SUCCESS);
 		}
@@ -7705,6 +8583,7 @@ do_run(int argc, char *argv[])
 		case CommandRestart:
 		case CommandRefresh:
 		case CommandPopMenu:
+		case CommandEditor:
 			/* not expecting to run these ourselves */
 			fork_and_exit();
 			break;
@@ -7984,7 +8863,7 @@ Command options:\n\
         generate a menu in foreground only\n\
     -P, --popmenu\n\
         pop the menu (on running or new instance)\n\
-    -m, --monitor\n\
+    -g, --monitor\n\
         generate a menu and monitor for changes and requests\n\
     -R, --replace\n\
         replace a running instance\n\
@@ -8005,62 +8884,58 @@ Format options:\n\
         specify the window manager name [default: %2$s]\n\
     -f, --format FORMAT\n\
         specify the menu format [default: %3$s]\n\
-    -F, --fullmenu, -N, --nofullmenu\n\
+    -F, --fullmenu, -l, --nofullmenu\n\
         full menu or applications menu [default: %4$s]\n\
     -d, --desktop DESKTOP\n\
         desktop environment [default: %5$s]\n\
-    -c, --charset CHARSET\n\
-        character set for menu [default: %6$s]\n\
-    -l, --language LANGUAGE\n\
-        language for menu [default: %7$s]\n\
     -r, --root-menu MENU\n\
-        root menu file [default: %8$s]\n\
+        root menu file [default: %6$s]\n\
     -o, --output [OUTPUT]\n\
-        output file [default: %9$s]\n\
-    -n, --noicons\n\
-        do not place icons in menu [default: %10$s]\n\
+        output file [default: %7$s]\n\
+    -I, --noicons\n\
+        do not place icons in menu [default: %8$s]\n\
     -t, --theme THEME\n\
-        icon theme name to use [default: %11$s]\n\
+        icon theme name to use [default: %9$s]\n\
     -L, --launch, --nolaunch\n\
-        use xde-launch to launch programs [default: %12$s]\n\
+        use xde-launch to launch programs [default: %10$s]\n\
     -s, --style STYLE\n\
-        fullmenu, appmenu, submenu or entries [default: %13$s]\n\
+        fullmenu, appmenu, submenu or entries [default: %11$s]\n\
     -M, --menu MENU\n\
-        filename stem of root menu filename [default: %14$s]\n\
+        filename stem of root menu filename [default: %12$s]\n\
     --excluded\n\
-        include otherwise excluded applications [default: %15$s]\n\
+        include otherwise excluded applications [default: %13$s]\n\
     --nodisplay\n\
-        include applications marked as no-dipslay [default: %16$s]\n\
+        include applications marked as no-dipslay [default: %14$s]\n\
     --unallocated\n\
-        include applications already placed in menu [default: %17$s]\n\
+        include applications already placed in menu [default: %15$s]\n\
     --empty\n\
-        include empty submenus [default: %18$s]\n\
+        include empty submenus [default: %16$s]\n\
     --separators\n\
-        include all (even extraneous) separators [default: %19$s]\n\
+        include all (even extraneous) separators [default: %17$s]\n\
     --sort\n\
-        sort entries by display name instead of name [default: %20$s]\n\
+        sort entries by display name instead of name [default: %18$s]\n\
     --actions\n\
-        provide submenu for actions [default: %21$s]\n\
+        provide submenu for actions [default: %19$s]\n\
 Pop up menu options:\n\
     --screen SCREEN\n\
-        specify the X11 screen for the menu [default: %29$s]\n\
+        specify the X11 screen for the menu [default: %27$s]\n\
     --monitor MONITOR\n\
-        specify the X11 monitor for the menu [default: %36$s]\n\
+        specify the X11 monitor for the menu [default: %33$s]\n\
     -T, --timestamp TIMESTAMP\n\
-        specify the button/keypress event timestamp [default: %24$lu]\n\
+        specify the button/keypress event timestamp [default: %22$lu]\n\
     -b, --button [BUTTON] | --pointer\n\
-        specify the button pressed when popping menu [default: %22$u]\n\
+        specify the button pressed when popping menu [default: %20$u]\n\
     -k, --keypress [KEYSPEC] | --keyboard\n\
-        specify the key sequence active when popping menu [default: %23$s]\n\
+        specify the key sequence active when popping menu [default: %21$s]\n\
     -i, --which {default|active|focused|pointer|SCREEN}\n\
-        specify on which screen to display the menu: [default: %25$s]\n\
+        specify on which screen to display the menu: [default: %23$s]\n\
         default - specify default selection algorithm\n\
         active  - the screen with the active window\n\
         focused - the screen with the window with the keyboard focus\n\
         pointer - the screen containing (or nearest) the pointer\n\
         SCREEN  - a specific screen number\n\
     -w, --where {default|pointer|center|topleft|bottomright|WHERE}\n\
-        where to put menu: [default: %26$s]\n\
+        where to put menu: [default: %24$s]\n\
         default - specify default position algorithm\n\
         pointer - position the menu at the pointer\n\
         center  - center the menu in the current monitor\n\
@@ -8068,32 +8943,28 @@ Pop up menu options:\n\
         bottom  - position menu at bottom right of work area\n\
         WHERE   - beside or at a specific screen geometry\n\
     --tooltips\n\
-        include verbose tooltips for application menu items [default: %27$s]\n\
+        include verbose tooltips for application menu items [default: %25$s]\n\
 General options:\n\
     --display DISPLAY\n\
-        specify the X11 display [default: %28$s]\n\
-    --filename FILENAME\n\
-        use a different configuration file [default: %37$s]\n\
-    -e, --die-on-error\n\
-        abort on error [default: %30$s]\n\
+        specify the X11 display [default: %26$s]\n\
+    -c, --filename FILENAME\n\
+        use a different configuration file [default: %34$s]\n\
     --notray\n\
-        do not install a system tray icon [default: %31$s]\n\
+        do not install a system tray icon [default: %28$s]\n\
     --nogenerate\n\
-        do not generate window manager root menu [default: %32$s]\n\
+        do not generate window manager root menu [default: %29$s]\n\
     -x, --exit\n\
-        exit main process after generating menu [default: %33$s]\n\
+        exit main process after generating menu [default: %30$s]\n\
     -D, --debug [LEVEL]\n\
-        increment or set debug LEVEL [default: %34$d]\n\
+        increment or set debug LEVEL [default: %31$d]\n\
     -v, --verbose [LEVEL]\n\
-        increment or set output verbosity LEVEL [default: %35$d]\n\
+        increment or set output verbosity LEVEL [default: %32$d]\n\
         this option may be repeated.\n\
 ", argv[0]
 	, options.wmname
 	, options.format
 	, show_style(options.style)
 	, options.desktop
-	, options.charset
-	, options.language
 	, options.rootmenu
 	, options.menufile
 	, show_bool(options.noicons)
@@ -8116,7 +8987,6 @@ General options:\n\
 	, show_bool(options.tooltips)
 	, options.display
 	, show_screen(options.screen)
-	, show_bool(options.dieonerr)
 	, show_bool(!options.systray)
 	, show_bool(!options.generate)
 	, show_bool(options.exit)
@@ -8274,38 +9144,6 @@ set_defaults(void)
 	g_free(file);
 	set_default_paths();
 	set_default_files();
-}
-
-static void
-get_default_locale(void)
-{
-	char *val, *loc;
-	int len, set;
-
-	set = (options.charset || options.language);
-
-	if (!options.charset && (val = nl_langinfo(CODESET)))
-		options.charset = strdup(val);
-	if (!options.language && options.locale) {
-		options.language = strdup(options.locale);
-		*strchrnul(options.language, '.') = '\0';
-	}
-	if (set && options.language && options.charset) {
-		len = strlen(options.language) + 1 + strlen(options.charset);
-		val = calloc(len, sizeof(*val));
-		strcpy(val, options.language);
-		strcat(val, ".");
-		strcat(val, options.charset);
-		DPRINTF(1, "setting locale to: '%s'\n", val);
-		if (!(loc = setlocale(LC_ALL, val)))
-			EPRINTF("cannot set locale to '%s'\n", val);
-		else
-			options.locale = strdup(loc);
-		free(val);
-	}
-	DPRINTF(1, "locale is '%s'\n", options.locale);
-	DPRINTF(1, "charset is '%s'\n", options.charset);
-	DPRINTF(1, "language is '%s'\n", options.language);
 }
 
 static Bool
@@ -8694,12 +9532,13 @@ get_defaults(void)
 	const char *p;
 	int n;
 
+	if (options.command == CommandDefault)
+		options.command = CommandMenugen;
 	if (options.display) {
 		if (options.screen < 0 && (p = strrchr(options.display, '.'))
 		    && (n = strspn(++p, "0123456789")) && *(p + n) == '\0')
 			options.screen = atoi(p);
 	}
-	get_default_locale();
 	get_default_root();
 	get_default_wmname();
 	get_default_format();
@@ -8712,15 +9551,12 @@ int
 main(int argc, char *argv[])
 {
 	Command command = CommandDefault;
-	char *loc, *p;
+	char *p;
 
 	saveArgc = argc;
 	saveArgv = g_strdupv(argv);
 
-	if ((loc = setlocale(LC_ALL, ""))) {
-		free(options.locale);
-		options.locale = strdup(loc);
-	}
+	setlocale(LC_ALL, "");
 
 	set_defaults();
 
@@ -8750,6 +9586,11 @@ main(int argc, char *argv[])
 			{"display",		required_argument,	NULL,	 1 },
 			{"screen",		required_argument,	NULL,	 4 },
 
+			{"timeout",		required_argument,	NULL,	'u'},
+			{"iconsize",		required_argument,	NULL,	'z'},
+			{"fontsize",		required_argument,	NULL,	'Z'},
+			{"border",		required_argument,	NULL,	'B'},
+			{"filename",		required_argument,	NULL,	'c'},
 			{"timestamp",		required_argument,	NULL,	'T'},
 			{"pointer",		no_argument,		NULL,	'p'},
 			{"keyboard",		no_argument,		NULL,	'K'},
@@ -8760,17 +9601,23 @@ main(int argc, char *argv[])
 
 			{"wmname",		required_argument,	NULL,	'w'},
 			{"desktop",		required_argument,	NULL,	'd'},
-			{"charset",		required_argument,	NULL,	'c'},
-			{"language",		required_argument,	NULL,	'l'},
 			{"theme",		required_argument,	NULL,	't'},
 
+			{"order",		required_argument,	NULL,	'O'},
+			{"normal",		no_argument,		NULL,	'n'},
+			{"hidden",		no_argument,		NULL,	'H'},
+			{"minimized",		no_argument,		NULL,	'm'},
+			{"all-monitors",	no_argument,		NULL,	'a'},
+			{"all-workspaces",	no_argument,		NULL,	'A'},
+			{"noactivate",		no_argument,		NULL,	'N'},
+			{"raise",		no_argument,		NULL,	'U'},
 
 			{"format",		required_argument,	NULL,	'f'},
 			{"fullmenu",		no_argument,		NULL,	'F'},
-			{"nofullmenu",		no_argument,		NULL,	'N'},
+			{"nofullmenu",		no_argument,		NULL,	'l'},
 			{"root-menu",		required_argument,	NULL,	'r'},
 			{"output",		optional_argument,	NULL,	'o'},
-			{"noicons",		no_argument,		NULL,	'n'},
+			{"noicons",		no_argument,		NULL,	'I'},
 			{"launch",		no_argument,		NULL,	'L'},
 			{"nolaunch",		no_argument,		NULL,	'0'},
 			{"style",		required_argument,	NULL,	's'},
@@ -8781,7 +9628,7 @@ main(int argc, char *argv[])
 			{"nogenerate",		no_argument,		NULL,	 3 },
 
 			{"menugen",		no_argument,		NULL,	'G'},
-			{"monitor",		no_argument,		NULL,	'm'},
+			{"monitor",		no_argument,		NULL,	'g'},
 			{"popmenu",		no_argument,		NULL,	'P'},
 			{"refresh",		no_argument,		NULL,	'E'},
 			{"restart",		no_argument,		NULL,	'S'},
@@ -8825,6 +9672,51 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
+		case 1:	/* --display DISPLAY */
+			setenv("DISPLAY", optarg, TRUE);
+			free(options.display);
+			options.display = strdup(optarg);
+			break;
+		case 4:	/* --screen SCREEN */
+			val = strtol(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			options.screen = val;
+			break;
+
+		case 'u':	/* -u, --timeout MILLISECONDS */
+			val = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			options.timeout = val;
+			break;
+		case 'z':	/* -z, --iconsize SIZE */
+			val = strtoul(optarg, &endptr, 10);
+			if (endptr && *endptr)
+				goto bad_option;
+			if (val < 12)
+				val = 12;
+			if (val > 64)
+				val = 64;
+			break;
+		case 'Z':	/* -Z, --fontsize POINTS */
+			options.fontsize = strtod(optarg, &endptr);
+			if (endptr && *endptr)
+				goto bad_option;
+			break;
+		case 'B':	/* -B, --border PIXELS */
+			val = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			if (val < 0 || val > 20)
+				goto bad_option;
+			options.border = val;
+			break;
+		case 'c':	/* -c, --filename FILENAME */
+			free(options.filename);
+			options.filename = strdup(optarg);
+			break;
+
 		case 'w':	/* --wmname, -w WMNAME */
 			free(options.wmname);
 			options.wmname = strdup(optarg);
@@ -8836,20 +9728,12 @@ main(int argc, char *argv[])
 		case 'F':	/* -F, --fullmenu */
 			options.style = StyleFullmenu;
 			break;
-		case 'N':	/* -N, --nofullmenu */
+		case 'l':	/* -l, --nofullmenu */
 			options.style = StyleAppmenu;
 			break;
 		case 'd':	/* -d, --desktop DESKTOP */
 			free(options.desktop);
 			options.desktop = strdup(optarg);
-			break;
-		case 'c':	/* -c, --charset CHARSET */
-			free(options.charset);
-			options.charset = strdup(optarg);
-			break;
-		case 'l':	/* -l, --language LANGUAGE */
-			free(options.language);
-			options.language = strdup(optarg);
 			break;
 		case 'r':	/* -r, --root-menu MENU */
 			free(options.rootmenu);
@@ -8862,7 +9746,7 @@ main(int argc, char *argv[])
 				options.menufile = strdup(optarg);
 			}
 			break;
-		case 'n':	/* -n, --noicons */
+		case 'I':	/* -I, --noicons */
 			options.noicons = True;
 			break;
 		case 't':	/* -t, --theme THEME */
@@ -8911,8 +9795,6 @@ main(int argc, char *argv[])
 			break;
 
 		case 'b':	/* -b, --button [BUTTON] */
-			if (options.command != CommandPopMenu)
-				goto bad_option;
 			if (optarg) {
 				val = strtoul(optarg, &endptr, 0);
 				if (endptr && *endptr)
@@ -8939,15 +9821,6 @@ main(int argc, char *argv[])
 			free(options.keypress);
 			options.keypress = strdup(optarg);
 			break;
-		case 'T':	/* -T, --timestamp TIMESTAMP */
-			if (options.command != CommandPopMenu)
-				goto bad_option;
-			if (!optarg)
-				break;
-			options.timestamp = strtoul(optarg, &endptr, 0);
-			if (endptr && *endptr)
-				goto bad_option;
-			break;
 		case 'i':	/* -i, --which WHICH */
 			if (options.which != UseScreenDefault)
 				goto bad_option;
@@ -8969,8 +9842,6 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'W':	/* -W, --where WHERE */
-			if (options.command != CommandPopMenu)
-				goto bad_option;
 			if (options.where != PositionDefault)
 				goto bad_option;
 			if (!(len = strlen(optarg)))
@@ -9000,14 +9871,47 @@ main(int argc, char *argv[])
 				options.geom.h = h;
 			}
 			break;
+		case 'O':	/* -O, --order ORDERTYPE */
+			if (options.order != WindowOrderDefault)
+				goto bad_option;
+			if (!(len = strlen(optarg)))
+				goto bad_option;
+			if (!strncasecmp("client", optarg, len))
+				options.order = WindowOrderClient;
+			else if (!strncasecmp("stacking", optarg, len))
+				options.order = WindowOrderStacking;
+			else
+				goto bad_option;
+			break;
 
-		case 1:	/* --display DISPLAY */
-			free(options.display);
-			options.display = strdup(optarg);
+		case 'T':	/* -T, --timestamp TIMESTAMP */
+			options.timestamp = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
 			break;
-		case 4:	/* --screen SCREEN */
-			options.screen = atoi(optarg);
+
+		case 'n':	/* -n, --normal */
+			options.normal = True;
 			break;
+		case 'H':	/* -H, --hidden */
+			options.hidden = True;
+			break;
+		case 'm':	/* -m, --minimized */
+			options.minimized = True;
+			break;
+		case 'a':	/* -a, --all-monitors */
+			options.monitors = True;
+			break;
+		case 'A':	/* -A, --all-workspaces */
+			options.workspaces = True;
+			break;
+		case 'N':	/* -N, --noactivate */
+			options.activate = False;
+			break;
+		case 'U':	/* -U, --raise */
+			options.raise = True;
+			break;
+
 		case 2:	/* --notray */
 			options.systray = False;
 			break;
@@ -9053,7 +9957,7 @@ main(int argc, char *argv[])
 				command = CommandPopMenu;
 			options.command = CommandPopMenu;
 			break;
-		case 'm':	/* -m, --monitor */
+		case 'g':	/* -g, --monitor */
 			if (options.command != CommandDefault)
 				goto bad_command;
 			if (command == CommandDefault)
@@ -9097,9 +10001,6 @@ main(int argc, char *argv[])
 		case 16:	/* --tooltips */
 			options.tooltips = True;
 			break;
-		case 'e':	/* -e, --die-on-error */
-			options.dieonerr = True;
-			break;
 		case 'x':	/* -x, --exit */
 			options.exit = True;
 			break;
@@ -9128,8 +10029,7 @@ main(int argc, char *argv[])
 				goto bad_option;
 			options.output = val;
 			break;
-		case 'h':	/* -h, --help */
-		case 'H':	/* -H, --? */
+		case 'h':	/* -h, --help, -?, --? */
 			DPRINTF(1, "Setting command to CommandHelp\n");
 			command = CommandHelp;
 			break;
