@@ -152,7 +152,7 @@
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define EPRINTF(_args...) do { \
-		fprintf(stderr, NAME ": E: %12s +%4d : %s() : ", __FILE__, __LINE__, __func__); \
+		fprintf(stderr, NAME ": E: %12s: +%4d : %s() : ", __FILE__, __LINE__, __func__); \
 		fprintf(stderr, _args); fflush(stderr); } while (0)
 
 #define OPRINTF(_num, _args...) do { if (options.debug >= _num || options.output > _num) { \
@@ -160,7 +160,7 @@
 		fprintf(stdout, _args); fflush(stdout); } } while (0)
 
 #define PTRACE(_num) do { if (options.debug >= _num || options.output >= _num) { \
-		fprintf(stderr, NAME ": T: %12s +%4d : %s()\n", __FILE__, __LINE__, __func__); \
+		fprintf(stderr, NAME ": T: %12s: +%4d : %s()\n", __FILE__, __LINE__, __func__); \
 		fflush(stderr); } } while (0)
 
 extern void dumpstack(const char *file, const int line, const char *func);
@@ -362,9 +362,9 @@ typedef struct {
 	Style style;
 	char *desktop;
 	char *rootmenu;
-	Bool dieonerr;
 	char *menufile;
 	char *theme;
+	char *itheme;
 	char *runhist;
 	char *recapps;
 	char *recently;

@@ -59,7 +59,7 @@ sequence of a particular window manager or panel.  The B<--wmname>,
 B<--format>, B<--output> and B<--die-on-error> options are normally
 specified in this case.
 
-=item B<--monitor>, B<-m>
+=item B<--monitor>, B<-g>
 
 Specifies that B<xde-menu> is not to exit after successfully generating
 the menu, but to monitor pertinent directories for changes, and
@@ -153,7 +153,7 @@ Ask a currently running instance (that was invoked with the B<--monitor>
 option) to quit.  It is not an error if no other instance is running.
 This is the default when B<xde-menu> is invoked as L<xde-menu-quit(1)>.
 
-=item B<--help>, B<-h>
+=item B<--help>, B<-h>, B<-?>, B<--?>
 
 Print usage information, including the current values of option
 defaults, and exit.
@@ -178,17 +178,22 @@ Specify the display to use (overriding the C<DISPLAY> environment
 variable).  The default is the value of the C<DISPLAY> environment
 variable.
 
-=item B<--die-on-error>, B<-e>
+=item B<--filename>, B<-c> I<FILENAME>
 
-Abort execution on any error.
-Useful in conjunction with the B<--menugen> option.
+Use a different configuration file from the default.  The default is the
+file F<$XDG_CONFIG_HOME/xde-menu/rc>.  Any resources not present in the
+configuration file will be taken from from the
+F</usr/share/X11/app-defaults/XDE-Menu> resource file.  Resources
+present in the display's B<RESOURCE_MANAGER> property will take
+precedence over any setting in these files.
 
 =item B<--notray>
 
-Run without installing the menu in the system tray.
-This is the default when the program in invoked as
-L<xde-menu-generate(1)>
-or when the B<--menugen> option is specified.
+Run without installing the menu in the system tray.  This is the default
+when the program in invoked as L<xde-menu-generate(1)> or when the
+B<--menugen> option is specified.
+
+This option can be set with the resource I<xde-menu.sysTray>.
 
 =item B<--nogenerate>
 
@@ -222,7 +227,7 @@ may be repeated.
 
 =back
 
-=head3 MENU FORMAT OPTIONS
+=head2 MENU FORMAT OPTIONS
 
 The following options affect the formatting and output of the window
 manager root window menu, system tray menu and pop-up menu.  Not all
@@ -368,7 +373,7 @@ which entries to place in the perl panel output and the B<--desktop>
 option is used to determine which application or system entries to
 include.
 
-=item B<--fullmenu>, B<-F>, B<--nofullmenu>, B<-N>
+=item B<--fullmenu>, B<-F>, B<--nofullmenu>, B<-l>
 
 When specified, output a full menu and not only the application
 sub-menu, or not.  The default is to output a full menu.  This also
@@ -381,17 +386,6 @@ The default is the all uppercase string corresponding to the window
 manager name, (or the desktop name explicitly specified for the window
 manager and format), unless the C<XDG_CURRENT_DESKTOP> environment
 variable is defined.
-
-=item B<--charset>, B<-c> I<CHARSET>
-
-Specify the character set with which to output the window manager root
-menu.  Defaults to the character set in use by the current locale.  This
-does not affect system tray and pop-up menus (which are both UTF-8).
-
-=item B<--language>, B<-l> I<LANGUAGE>
-
-Specify the output language for the window manager root menu.  Defaults
-to the language in the current locale.  This option affects all menus.
 
 =item B<--root-menu>, B<-r> I<MENU>
 
@@ -417,7 +411,7 @@ Note also that at startup, B<xde-menu> will wait several seconds for a
 window manager to appear if one is not present at initialization and
 neither the B<--wmname> nor B<--format> options are specified.
 
-=item B<--icons>, B<--noicons>, B<-n>
+=item B<--icons>, B<--noicons>, B<-I>
 
 Include or do not include icons in the generated menu files.  This
 option has no effect when it is not possible to generate icons for the
@@ -438,6 +432,15 @@ be added to the menu.
 Specify the icon theme name to use when generating icons.  The default
 is to obtain the icon theme name from the default locations (such as the
 F<$HOME/.gtkrc-2.0> file).
+
+=item B<--launch>, B<-L>, B<--nolaunch>, B<-0>
+
+Specifies whether to use L<xde-launch(1)> to launch the desktop files
+directly or not.  This option will only be honoured when the
+L<xde-launch(1)> program is available and accessible.
+Also, some window managers (e.g. L<openbox(1)>) provide their own
+desktop startup launching and some don't.  So, the default setting may
+depend on the active window manager.
 
 =item B<--style>, B<-s> I<STYLE>
 
@@ -465,15 +468,6 @@ this is useful for some pipe menu commands.
 =back
 
 This option does not affect the system tray nor pop-up menus.
-
-=item B<--launch>, B<-L>, B<--nolaunch>
-
-Specifies whether to use L<xde-launch(1)> to launch the desktop files
-directly or not.  This option will only be honoured when the
-L<xde-launch(1)> program is available and accessible.
-Also, some window managers (e.g. L<openbox(1)>) provide their own
-desktop startup launching and some don't.  So, the default setting may
-depend on the active window manager.
 
 =item B<--menu>, B<-M> I<MENUNAME>
 
@@ -531,9 +525,13 @@ Sort the entries by display name instead of name.
 Provide a sub-menu for selecting actions for an application in those
 applications that have actions.
 
+=item B<--tooltips>
+
+Include verbose tool-tips for application menu items.
+
 =back
 
-=head3 POP-UP MENU OPTIONS
+=head2 POP-UP MENU OPTIONS
 
 The following options are only valid when the B<--popmenu> command
 option has been specified or implied.  These options only affect the
@@ -548,6 +546,11 @@ The default is either specified by the C<DISPLAY> environment variable
 (when that variable specifies a screen); otherwise, all screens will be
 considered, and the screen containing the selected monitor will be used.
 
+=item B<--Monitor> I<MONITOR>
+
+Specify the monitor number, I<MONITOR>, to use when positioning the
+menu.
+
 =item B<--timestamp>, B<-T> I<TIMESTAMP>
 
 Provides the X11 server time stamp of the event that caused the pop-up.
@@ -555,23 +558,6 @@ This is the X11 server time stamp of the button or key press that
 invoked the pop-up.  When the program is launched with startup
 notification, the time stamp will be take from the B<DESKTOP_STARTUP_ID>
 environment variable.
-
-=item B<--pointer>, B<-p>
-
-An alternate way of specifying B<--button=1>.
-
-=item B<--keyboard>, B<-K>
-
-An alternate way of specifying B<--keypress> with no option argument.
-
-=item B<--keypress>, B<-k> [I<KEYSPEC>]
-
-Specifies the key specification that was used to invoke the pop-up.
-Defaults to none.  This should be the key that was used to pop the menu.
-A window manager that invokes this command in response to a key press
-should release its passive grab on the key before invoking the pop-up
-menu so that the popped up menu can grab the keyboard.  A I<KEYSPEC> of
-none means that the program was invoked with an unknown key press.
 
 =item B<--button>, B<-b> [I<BUTTON>]
 
@@ -582,6 +568,23 @@ button press should release its passive grab on the button before
 invoking the pop-up menu so that the popped up menu can grab the button.
 A I<BUTTON> of zero (0) means that the program was invoked with a
 key press instead of a button.
+
+=item B<--keypress>, B<-k> [I<KEYSPEC>]
+
+Specifies the key specification that was used to invoke the pop-up.
+Defaults to none.  This should be the key that was used to pop the menu.
+A window manager that invokes this command in response to a key press
+should release its passive grab on the key before invoking the pop-up
+menu so that the popped up menu can grab the keyboard.  A I<KEYSPEC> of
+none means that the program was invoked with an unknown key press.
+
+=item B<--pointer>, B<-p>
+
+An alternate way of specifying B<--button=1>.
+
+=item B<--keyboard>, B<-K>
+
+An alternate way of specifying B<--keypress> with no option argument.
 
 =item B<--which>, B<-i> {B<active>|B<focused>|B<pointer>|I<MONITOR>}
 
@@ -713,13 +716,136 @@ at which the menu should be placed.
 
 =back
 
-=item B<--tooltips>
+=back
 
-Include verbose tool-tips for application menu items.
+=head2 WORKSPACE OPTIONS
+
+Often, light-weight window managers will have a workspace and window
+menu as part of their root menus (e.g. L<blackbox(1)>, L<fluxbox(1)>,
+L<openbox(1)>).  This provides the same mechanism for the GTK2 menu for
+window managers that do not support a root menu, or for those that would
+simply like a consistent look and feel in the root menu.  The following
+options affect how work spaces and clients are shown in such a menu:
+
+=over
+
+=item B<--order>, B<-O> I<ORDER>
+
+Specifies the order, I<ORDER>, in which clients are shown, as follows:
+
+=over
+
+=item C<client>
+
+Clients are listed in client order.  This is the same order that it
+presented in the C<_NET_CLIENT_LIST> property on the root window of EWMH
+compliant window managers.
+
+=item C<stacking>
+
+Clients are listed in stacking order.  This is the same order that is
+presented in the C<_NET_CLIENT_LIST_STACKING> property on the root
+window of EWMH compliant window managers.
 
 =back
 
-=head1 SUPPORTED WINDOW MANAGERS
+When unspecified, the default is client order (or whichever order is
+supported when the window manager does not support both).
+
+This option can be set with the resource I<xde-menu.order>.
+
+=item B<--normal>, B<-n>
+
+This option can be set with the resource I<xde-menu.normal>.
+
+=item B<--hidden>, B<-H>
+
+When listing clients, also list hidden clients.  The default is to skip
+hidden clients or clients that have the skip-window-list attribute.
+
+This option can be set with the resource I<xde-menu.hidden>.
+
+=item B<--minimized>, B<-m>
+
+When listing clients, also list minimized clients.  The default is to
+skip minimized clients or clients that have the skip-window-list
+attribute.
+
+This option can be set with the resource I<xde-menu.minimized>.
+
+=item B<--all-monitors>, B<-a>
+
+When listing clients, also list clients displayed on monitors other than
+the current one.  This includes clients on workspaces that are currently
+visible on a monitor.
+
+This option can be set with the resource I<xde-menu.allMonitors>.
+
+=item B<--all-workspaces>, B<-A>
+
+When list clients, also list clients displayed on workspaces other than
+the current one.  As clients are listed, the current workspace may
+change as clients from other workspaces are listed.
+
+This option can be set with the resource I<xde-menu.allWorkspaces>.
+
+=item B<--noactivate>, B<-N>
+
+When selecting clients, do not activate them.  The default is to
+activate the selected client.  When neither B<--raise> nor B<--focus>
+are specified, this results in linly highlighting the menu selection.
+Activation of the window will still occur; however, when the window is
+selected (e.g. a modifier key is released).
+
+This option can be set with the resource I<xde-menu.activate>.
+
+=item B<--raise>, B<-U>
+
+When selecting clients, raise the window.  The default is to only
+activate the selected client and not to explicitly raise it.  Some
+window managers raise windows when activated (others do not).  This
+provides a modicum of control.
+
+This option can be set with the resource I<xde-menu.raise>.
+
+=back
+
+=head2 SESSION MANAGEMENT OPTIONS
+
+X session management options are not used by another user other than the
+X11 Session Manager.  The following options are used by X session
+management:
+
+=over
+
+=item B<-clientId> I<CLIENTID>
+
+Specifies the X Session Management client identifier, I<CLIENTID>, of
+the previously running session of B<xde-menu>.
+
+=item B<-restore> I<SAVEFILE>
+
+Specifies the X Session Management file name of a file, I<SAVEFILE>, to
+which to session information was saved for restoration.
+
+=back
+
+=head1 USAGE
+
+B<xde-menu> currently uses F<libwnck+> or F<libwnck> both to identify
+the window manager and to provide the window manager actions menu.  The
+range and format of window manager actions provided by F<libwnck+> is
+superior to F<libwnck>.  This use means that B<xde-menu> does not
+currently provide any support for window managers that do not have a
+modicum of compliance to the EWMH/NetWM specifications.  That may change
+in the future.
+
+To locate the menu under a button that was pressed in, for example, an
+external panel, where the button has geometry "55x20+30+0", specify the
+C<--where='55x20+30+0'> option.  This will properly position the menu
+under the button.
+
+=head2 WINDOW MANAGERS
 
 The following window managers and menu environments are supported by
 B<xde-menu>:
@@ -1027,6 +1153,227 @@ are intercepted by the window manager.  Support is unlikely.
 
 =back
 
+=head1 X RESOURCES
+
+Most values that affect the look and feel of B<xde-menu> may also be
+specified as X resources in the B<RESOURCE_MANAGER> database associated
+with the X server.  All of these resources can have the specific
+resource name and class (B<xde-menu>, B<XDE-Menu>).
+B<xde-menu> specific resource defaults are contained in the
+F</usr/share/X11/app-defautls/XDE-Menu> file, in accordance with the
+convention for naming applications defaults files after their resource
+class.  See also L</FILES>.
+
+
+B<xde-menu> uses a standard X11 resource file for runtime configuration.
+B<xde-menu> uses the following X11 Resource Manager resources (note that
+the window manager name, I<WMNAME>, can optionally be specified before
+the resource, where indicated, to alter behaviour for only a given
+window manager):
+
+=over
+
+=item B<xde-menu>[.I<WMNAME>]B<.debug>: I<INTEGER>
+
+Same values as B<--debug> option: an integer between zero (0) and
+six(6), inclusive.
+
+=item B<xde-menu>[.I<WMNAME>]B<.verbose>: I<INTEGER>
+
+Same values as B<--verbose> option: an integer between zero (0) and six
+(6), inclusive.
+
+=item B<xde-menu>[.I<WMNAME>]B<.rootMenu>: I<PATH>
+
+Same values as B<--root-menu> option: path to the root menu file.
+
+=item B<xde-menu>[.I<WMNAME>]B<.fileout>: {B<true>|B<false>}
+
+Truth value specifying whether to output the window manager root menu.
+
+=item B<xde-menu>[.I<WMNAME>]B<.menufile>: I<PATH>
+
+Same values as B<--output> option: path to the window manager root menu
+file.
+
+=item B<xde-menu>[.I<WMNAME>]B<.filename>: I<PATH>
+
+Same values as B<--filename> option: path to the configuration file to
+use.
+
+=item B<xde-menu>[.I<WMNAME>]B<.noicons>: {B<true>|B<false>}
+
+Truth value specifying whether to include icons in the applications
+and window list menus.
+
+=item B<xde-menu>[.I<WMNAME>]B<.theme>: I<NAME>
+
+Same values as B<--theme> option: name of the XDE (GTK2+) theme name.
+This resource should not be specified in a resource file and will not be
+written by a save operation.
+
+=item B<-xde-menu>[.I<WMNAME>]B<.iconTheme>: I<NAME>
+
+Same values as B<--icon-theme> option: name of the XDE (GTK2+) icon
+theme name.  This resource should not be specified in a resource file
+and will not be written by a save operation.
+
+=item B<xde-menu>[.I<WMNAME>]B<.launch>: {B<true>|B<false>}
+
+Truth value specifying whether to use L<xdg-launch(1)>, if available.
+Same as the B<--launch> and B<--nolaunch> options.
+
+=item B<xde-menu>[.I<WMNAME>]B<.runhist>: I<PATH>
+
+Specifies the location of the run history file.  The default is
+F<$XDG_CONFIG_HOME/run-history>.
+
+=item B<xde-menu>[.I<WMNAME>]B<.recapps>: I<PATH>
+
+Specifies the location of the recent applications file.  The default is
+F<$XDG_CONFIG_HOME/recent-applications>.
+
+=item B<xde-menu>[.I<WMNAME>]B<.recently>: I<PATH>
+
+Specifies the location of the recently used files list.  The default is
+F<$XDG_DATA_HOME/recently-used>, and if that file does not exist,
+F<$HOME/.recently-used>.
+
+=item B<xde-menu>[.I<WMNAME>]B<.recent>: I<PATH>
+
+Specifies the location of the recently used applications list.  The
+default is F<$XDG_DATA_HOME/recent-applications>, and if that file does
+not exist, F<$HOME/.recent-applications>.
+
+=item B<xde-menu>[.I<WMNAME>]B<.keep>: I<INTEGER>
+
+Same as the B<--keep> option to L<xdg-launch(1)>: specifies the maximum
+number of commands or application invocations that are kept in the
+recent history file.  The minimum value is one, and the maximum is 100.
+The default value when unspecified is 10.  Specified as zero (0) when
+the number should not be changed.
+
+=item B<xde-menu>[.I<WMNAME>]B<.menu>: I<FILESTEM>
+
+Specifies the stem name of the menu used when determining the root menu
+file for which to build the menu.  The default is C<applications>.  This
+resource should typically not be used in the resource file and will not
+be written by a save operation.
+
+=item B<xde-menu>[.I<WMNAME>]B<.button>: I<UNSIGNED INTEGER>
+
+Same as the B<--button> and B<--pointer> options: specifies the button
+that was pressed to launch the menu (or zero (0) when no button was
+pressed to launch the menu).  This resource should not be used in a
+resource file and will not be written by a save operation.
+
+=item B<xde-menu>[.I<WMNAME>]B<.keypress>: I<KEYSPEC>
+
+Same as the B<--keypress> and B<--keyboard> options: specifies that the
+menu was launched as a result of a key press instead of a button click.
+This resource should not be used in a resource file and will not be
+written by a save operation.
+
+=item B<xde-menu>[.I<WMNAME>]B<.which>: {B<default>|B<active>|B<focused>|B<pointer>|I<SCREEN>}
+
+Same as the B<--which> option: specifies which screen to use when
+posting the menu.
+This resource should not be used in a resource file and will not be
+written by a save operation.
+
+=item B<xde-menu>[.I<WMNAME>]B<.where>: {B<default>|B<pointer>|B<center>|B<topleft>|B<bottomright>|I<GEOMETRY>}
+
+Same as the B<--where> option: specifies where on the screen to post the
+menu.
+This resource should not be used in a resource file and will not be
+written by a save operation.
+
+=item B<xde-menu>[.I<WMNAME>]B<.normal>: {B<true>|B<false>}
+
+Truth value specifying whether to include normal windows in client lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.hidden>: {B<true>|B<false>}
+
+Truth value specifying whether to include hidden windows in client
+lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.minimized>: {B<true>|B<false>}
+
+Truth value specifying whether to include minimized windows in client
+lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.allMonitors>: {B<true>|B<false>}
+
+Truth value indicating whether to include windows from all monitors in
+client lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.allWorkspaces>: {B<true>|B<false>}
+
+Truth value indicating whether to include windows from all work spaces
+in client lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.activate>: {B<true>|B<false>}
+
+Truth value specifying whether to activate selected windows from client
+lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.raise>: {B<true>|B<false>}
+
+Truth value specifying whether to raise selected windows from client
+lists.
+
+=item B<xde-menu>[.I<WMNAME>]B<.sysTray>: {B<true>|B<false>}
+
+Truth value specifying whether to install a status icon in the system
+tray.
+
+=item B<xde-menu>[.I<WMNAME>]B<.generate>: {B<true>|B<false>}
+
+Truth value specifying whether to generate window manager root menus
+when supported.
+
+=item B<xde-menu>[.I<WMNAME>]B<.excluded>: {B<true>|B<false>}
+
+Truth value specifying whether to include excluded applications in the
+applications menu.
+
+=item B<xde-menu>[.I<WMNAME>]B<.nodisplay>: {B<true>|B<false>}
+
+Truth value specifying whether to include no-display applications in the
+applications menu.
+
+=item B<xde-menu>[.I<WMNAME>]B<.unallocated>: {B<true>|B<false>}
+
+Truth value specifying whether to include unallocated applications in
+the applications menu.
+
+=item B<xde-menu>[.I<WMNAME>]B<.separators>: {B<true>|B<false>}
+
+Truth value specifying whether to include all separators in the
+applications menus.
+
+=item B<xde-menu>[.I<WMNAME>]B<.sort>: {B<true>|B<false>}
+
+Truth value specifying whether to sort applications by display name in
+the applications menu.
+
+=item B<xde-menu>[.I<WMNAME>]B<.toolTips>: {B<true>|B<false>}
+
+Truth value specifying whether to include verbose tooltips for
+applications in the applications menu.
+
+=item B<xde-menu>[.I<WMNAME>]B<.actions>: {B<true>|B<false>}
+
+Truth value specifying whether to offer desktop actions in the
+applications menu for applications that provide actions.
+
+=item B<xde-menu>[.I<WMNAME>]B<.exit>: {B<true>|B<false>}
+
+Truth value specifying whether to exit once the window manager root
+window has been generated.
+
+=back
+
 =head1 ENVIRONMENT
 
 The following environment variables are significant to the operation of
@@ -1158,15 +1505,79 @@ file to use for the theme set for XDE.
 
 =back
 
-=head1 USAGE
+=head1 FILES
 
-B<xde-menu> currently uses F<libwnck+> or F<libwnck> both to identify
-the window manager and to provide the window manager actions menu.  The
-range and format of window manager actions provided by F<libwnck+> is
-superior to F<libwnck>.  This use means that B<xde-menu> does not
-currently provide any support for window managers that do not have a
-modicum of compliance to the EWMH/NetWM specifications.  That may change
-in the future.
+Resources for configuration and tweaking the run-time operation of
+B<xde-menu> are looked up in the order, below.  Resources that are read
+later only have an effect if the resource was not already set by some
+previous file.  The locations are as follows:
+
+=over
+
+=item B<RESOURCE_MANAGER>
+
+The first place that resource configuration is examined is from the
+B<RESOURCE_MANAGER> property on the root window of the screen on which
+the menu is to be displayed.
+
+=item F<$XDG_CONFIG_HOME/xde-menu/>B<WMNAME>I</rc>
+
+The location of the window-manager specific user configuration file.
+The window manager name component, B<WMNAME>, in the path, above, is the
+all uppercase window manager name.  This location is used when there is
+no user file specified.
+
+=item F<$XDG_CONFIG_HOME/xde-menu/rc>
+
+The default location of the generic user configuration file.  This is
+used when there is no user file specified.
+
+=item F</usr/share/X11/app-defaults/XDE-Menu>
+
+The default location of the generic system configuration file.  This is
+used when there is no user file available or to provide defaults when
+one is available.
+
+=back
+
+The following file locations are scanned for recent files and
+applications:
+
+=over
+
+=item F<$XDG_CONFIG_HOME/xde/recent-applications>
+
+This is the location of a simple recent applications file maintained by
+the L<xde-app(1)> launcher application.
+
+=item F<$XDG_DATA_HOME/recently-used>
+
+=item F<$HOME/.recently-used>
+
+These are the locations (in order of preference) of a simple XML
+formatted recently used files list maintained by legacy applications (as
+well as L<xdg-launch(1)>).
+
+=item F<$XDG_DATA_HOME/recen-applications>
+
+=item F<$HOME/.recent-applications>
+
+These are the locations (in order of preference) of a simple XML
+formatted recently used applications list maintained by legacy
+applications (as well as L<xdg-launch(1)>).
+
+=item F<$XDG_DATA_HOME/recently-used.xbel>
+
+This is the location of the current XBEL formatted recently used files
+list maintained by current applications (as well as L<xdg-launch(1)>).
+
+=item F<$XDG_DATA_HOME/recent-applications.xbel>
+
+This is the location of the current XBEL formatted recently used
+applications lists maintained by current applications (as well as
+L<xdg-launch(1)>).
+
+=back
 
 =head1 HISTORY
 

@@ -5127,7 +5127,7 @@ put_resources(void)
 		put_resource(rdb, "verbose", val);
 	/* put a bunch of resources */
 	if ((val = putXrmString(options.rootmenu)))
-		put_resource(rdb, "rootmenu", val);
+		put_resource(rdb, "rootMenu", val);
 	if ((val = putXrmBool(options.fileout)))
 		put_resource(rdb, "fileout", val);
 	if ((val = putXrmString(options.menufile)))
@@ -5152,8 +5152,6 @@ put_resources(void)
 		put_resource(rdb, "keep", val);
 	if ((val = putXrmString(options.menu)))
 		put_resource(rdb, "menu", val);
-	if ((val = putXrmString(options.display)))
-		put_resource(rdb, "display", val);
 	if ((val = putXrmUint(options.button)))
 		put_resource(rdb, "button", val);
 	if ((val = putXrmString(options.keypress)))
@@ -5385,12 +5383,35 @@ get_nc_resource(XrmDatabase xrdb, const char *res_name, const char *res_class, c
 	snprintf(clas, sizeof(clas), "%s.%s", res_class, resource);
 	if (XrmGetResource(xrdb, name, clas, &type, &value)) {
 		if (value.addr && *(char *) value.addr) {
-			DPRINTF(1, "%s:\t\t%s\n", clas, value.addr);
+			DPRINTF(1, "{%s:%s}:\t\t%s\n", name, clas, value.addr);
 			return (const char *) value.addr;
 		} else
-			DPRINTF(1, "%s:\t\t%s\n", clas, value.addr);
+			DPRINTF(1, "{%s|%s}:\t\t%s\n", name, clas, value.addr);
 	} else
-		DPRINTF(1, "%s:\t\t%s\n", clas, "ERROR!");
+		DPRINTF(1, "{%s|%s}:\t\t\n", name, clas);
+	return (NULL);
+}
+
+const char *
+get_wm_resource(XrmDatabase xrdb, const char *res_name, const char *res_class, const char *resource)
+{
+	char *type;
+	static char name[64];
+	static char clas[64];
+	XrmValue value = { 0, NULL };
+
+	if (!options.wmname)
+		return (NULL);
+	snprintf(name, sizeof(name), "%s.%s.%s", res_name, options.wmname, resource);
+	snprintf(clas, sizeof(clas), "%s.%s.%s", res_class, options.wmname, resource);
+	if (XrmGetResource(xrdb, name, clas, &type, &value)) {
+		if (value.addr && *(char *) value.addr) {
+			DPRINTF(1, "{%s:%s}:\t\t%s\n", name, clas, value.addr);
+			return (const char *) value.addr;
+		} else
+			DPRINTF(1, "{%s|%s}:\t\t%s\n", name, clas, value.addr);
+	} else
+		DPRINTF(1, "{%s|%s}:\t\t\n", name, clas);
 	return (NULL);
 }
 
@@ -5399,8 +5420,9 @@ get_resource(XrmDatabase xrdb, const char *resource, const char *dflt)
 {
 	const char *value;
 
-	if (!(value = get_nc_resource(xrdb, RESNAME, RESCLAS, resource)))
-		value = dflt;
+	if (!(value = get_wm_resource(xrdb, RESNAME, RESCLAS, resource)))
+		if (!(value = get_nc_resource(xrdb, RESNAME, RESCLAS, resource)))
+			value = dflt;
 	return (value);
 }
 
@@ -5720,23 +5742,28 @@ get_resources(void)
 			DPRINTF(1, "no resource manager database allocated\n");
 		XCloseDisplay(dpy);
 	}
-	if (options.filename)
+	if (options.filename) {
+		DPRINTF(1, "merging config from %s\n", options.filename);
 		if (!XrmCombineFileDatabase(options.filename, &rdb, False))
 			DPRINTF(1, "could not open rcfile %s\n", options.filename);
+	}
 	usrdflt = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
-	if (!options.filename || strcmp(options.filename, usrdflt))
+	if (!options.filename || strcmp(options.filename, usrdflt)) {
+		DPRINTF(1, "merging config from %s\n", usrdflt);
 		if (!XrmCombineFileDatabase(usrdflt, &rdb, False))
 			DPRINTF(1, "could not open rcfile %s\n", usrdflt);
+	}
 	g_free(usrdflt);
+	DPRINTF(1, "merging config from %s\n", APPDFLT);
 	if (!XrmCombineFileDatabase(APPDFLT, &rdb, False))
 		DPRINTF(1, "could not open rcfile %s\n", APPDFLT);
 	if (!rdb) {
 		DPRINTF(1, "no resource manager database found\n");
 		rdb = XrmGetStringDatabase("");
 	}
-	if ((val = get_resource(rdb, "debug", "0")))
+	if ((val = get_resource(rdb, "debug", NULL)))
 		getXrmInt(val, &options.debug);
-	if ((val = get_resource(rdb, "verbose", "1")))
+	if ((val = get_resource(rdb, "verbose", NULL)))
 		getXrmInt(val, &options.output);
 	/* get a bunch of resources */
 	if ((val = get_resource(rdb, "timeout", "1000")))
@@ -5752,7 +5779,7 @@ get_resources(void)
 		getXrmWhich(val, &options.which, &options.screen);
 	if ((val = get_resource(rdb, "where", "default")))
 		getXrmWhere(val, &options.where, &options.geom);
-	if ((val = get_resource(rdb, "rootmenu", NULL)))
+	if ((val = get_resource(rdb, "rootMenu", NULL)))
 		getXrmString(val, &options.rootmenu);
 	if ((val = get_resource(rdb, "fileout", NULL)))
 		getXrmBool(val, &options.fileout);
@@ -5778,8 +5805,6 @@ get_resources(void)
 		getXrmString(val, &options.keep);
 	if ((val = get_resource(rdb, "menu", NULL)))
 		getXrmString(val, &options.menu);
-	if ((val = get_resource(rdb, "display", NULL)))
-		getXrmString(val, &options.display);
 	if ((val = get_resource(rdb, "button", NULL)))
 		getXrmInt(val, &options.button);
 	if ((val = get_resource(rdb, "keypress", NULL)))
@@ -8892,11 +8917,11 @@ Format options:\n\
         root menu file [default: %6$s]\n\
     -o, --output [OUTPUT]\n\
         output file [default: %7$s]\n\
-    -I, --noicons\n\
-        do not place icons in menu [default: %8$s]\n\
+    --icons, -I, --noicons\n\
+        place or do not place icons in menu [default: %8$s]\n\
     -t, --theme THEME\n\
         icon theme name to use [default: %9$s]\n\
-    -L, --launch, --nolaunch\n\
+    -L, --launch, -0, --nolaunch\n\
         use xde-launch to launch programs [default: %10$s]\n\
     -s, --style STYLE\n\
         fullmenu, appmenu, submenu or entries [default: %11$s]\n\
@@ -8916,10 +8941,12 @@ Format options:\n\
         sort entries by display name instead of name [default: %18$s]\n\
     --actions\n\
         provide submenu for actions [default: %19$s]\n\
+    --tooltips\n\
+        include verbose tooltips for application menu items [default: %25$s]\n\
 Pop up menu options:\n\
     --screen SCREEN\n\
         specify the X11 screen for the menu [default: %27$s]\n\
-    --monitor MONITOR\n\
+    --Monitor MONITOR\n\
         specify the X11 monitor for the menu [default: %33$s]\n\
     -T, --timestamp TIMESTAMP\n\
         specify the button/keypress event timestamp [default: %22$lu]\n\
@@ -8942,8 +8969,6 @@ Pop up menu options:\n\
         topleft - position menu at top left of work area on monitor\n\
         bottom  - position menu at bottom right of work area\n\
         WHERE   - beside or at a specific screen geometry\n\
-    --tooltips\n\
-        include verbose tooltips for application menu items [default: %25$s]\n\
 General options:\n\
     --display DISPLAY\n\
         specify the X11 display [default: %26$s]\n\
@@ -8955,11 +8980,11 @@ General options:\n\
         do not generate window manager root menu [default: %29$s]\n\
     -x, --exit\n\
         exit main process after generating menu [default: %30$s]\n\
-    -D, --debug [LEVEL]\n\
-        increment or set debug LEVEL [default: %31$d]\n\
     -v, --verbose [LEVEL]\n\
         increment or set output verbosity LEVEL [default: %32$d]\n\
         this option may be repeated.\n\
+    -D, --debug [LEVEL]\n\
+        increment or set debug LEVEL [default: %31$d]\n\
 ", argv[0]
 	, options.wmname
 	, options.format
@@ -8967,7 +8992,7 @@ General options:\n\
 	, options.desktop
 	, options.rootmenu
 	, options.menufile
-	, show_bool(options.noicons)
+	, show_bool(!options.noicons)
 	, options.theme
 	, show_bool(options.launch)
 	, show_style(options.style)
@@ -8996,6 +9021,137 @@ General options:\n\
 	, options.filename
 );
 	/* *INDENT-ON* */
+}
+
+static Bool
+get_text_property(Display *dpy, Window root, Atom prop, char ***listp, int *stringsp)
+{
+	XTextProperty xtp = { NULL, };
+
+	if (XGetTextProperty(dpy, root, &xtp, prop)) {
+		*listp = NULL;
+		*stringsp = 0;
+
+		if (Xutf8TextPropertyToTextList(dpy, &xtp, listp, stringsp) == Success)
+			return True;
+		else
+			DPRINTF(1, "could not get text list for %s property\n", XGetAtomName(dpy, prop));
+	} else
+		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+	return False;
+}
+
+static void
+set_default_wmname(void)
+{
+	if (options.display) {
+		Display *dpy;
+		Window root;
+		Atom prop;
+		char **list = NULL;
+		int strings = 0;
+
+		if (!(dpy = XOpenDisplay(NULL))) {
+			EPRINTF("could not open display %s\n", getenv("DISPLAY"));
+			return;
+		}
+		root = RootWindow(dpy, 0);
+		prop = XInternAtom(dpy, "_XDE_WM_NAME", False);
+		if (get_text_property(dpy, root, prop, &list, &strings) && list) {
+			options.wmname = strdup(list[0]);
+			XFreeStringList(list);
+		} else {
+			char *name = NULL;
+
+			DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+			if (name)
+				XFree(name);
+		}
+		XCloseDisplay(dpy);
+	} else
+		DPRINTF(1, "cannot determine wmname without DISPLAY\n");
+	if (options.wmname)
+		DPRINTF(1, "assigned wmname as '%s'\n", options.wmname);
+}
+
+static void
+set_default_format(void)
+{
+	if (options.display) {
+		Display *dpy;
+		Window root;
+		Atom prop;
+		char **list = NULL;
+		int strings = 0;
+
+		if (!(dpy = XOpenDisplay(NULL))) {
+			EPRINTF("could not open display %s\n", getenv("DISPLAY"));
+			return;
+		}
+		root = RootWindow(dpy, 0);
+		prop = XInternAtom(dpy, "_XDE_WM_NAME", False);
+		if (get_text_property(dpy, root, prop, &list, &strings) && list) {
+			options.wmname = strdup(list[0]);
+			XFreeStringList(list);
+		} else {
+			char *name = NULL;
+
+			DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+			if (name)
+				XFree(name);
+		}
+		XCloseDisplay(dpy);
+	} else
+		DPRINTF(1, "cannot determine wmname without DISPLAY\n");
+	if (options.format)
+		DPRINTF(1, "assigned format as '%s'\n", options.format);
+}
+
+static void
+set_default_desktop(void)
+{
+	const char *env;
+	char *p;
+
+	if (!options.desktop || !strcmp(options.desktop, "XDE") || !options.wmname
+	    || strcasecmp(options.wmname, options.desktop)) {
+		if ((env = getenv("XDG_CURRENT_DESKTOP"))) {
+			free(options.desktop);
+			options.desktop = strdup(env);
+		} else if (options.wmname) {
+			free(options.desktop);
+			options.desktop = strdup(options.wmname);
+			for (p = options.desktop; *p; p++)
+				*p = toupper(*p);
+		} else if (!options.desktop) {
+			options.desktop = strdup("XDE");
+		}
+	}
+	if (options.desktop)
+		DPRINTF(1, "assigned desktop as '%s'\n", options.desktop);
+}
+
+static void
+set_default_output(void)
+{
+}
+
+static void
+set_default_theme(void)
+{
+}
+
+static void
+set_default_config(void)
+{
+	char *file;
+
+	if (options.wmname)
+		file = g_build_filename(g_get_user_config_dir(), RESNAME, options.wmname, "rc", NULL);
+	else
+		file = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
+	options.filename = strdup(file);
+	g_free(file);
 }
 
 static void
@@ -9136,32 +9292,29 @@ set_defaults(void)
 				options.monitor = monitor;
 		}
 	}
-	if ((env = getenv("XDE_DEBUG")))
+	if ((env = getenv("XDE_DEBUG"))) {
 		options.debug = atoi(env);
-	file = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
+		options.output = options.debug + 1;
+	}
+#if 0
+	if (options.wmname)
+		file = g_build_filename(g_get_user_config_dir(), RESNAME, options.wmname, "rc", NULL);
+	else
+		file = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
 	free(options.filename);
 	options.filename = strdup(file);
 	g_free(file);
+#else
+	(void) file;
+#endif
+	set_default_wmname();
+	set_default_format();
+	set_default_desktop();
+	set_default_output();
+	set_default_theme();
+	set_default_config();
 	set_default_paths();
 	set_default_files();
-}
-
-static Bool
-get_text_property(Window root, Atom prop, char ***listp, int *stringsp)
-{
-	XTextProperty xtp = { NULL, };
-
-	if (XGetTextProperty(dpy, root, &xtp, prop)) {
-		*listp = NULL;
-		*stringsp = 0;
-
-		if (Xutf8TextPropertyToTextList(dpy, &xtp, listp, stringsp) == Success)
-			return True;
-		else
-			DPRINTF(1, "could not get text list for %s property\n", XGetAtomName(dpy, prop));
-	} else
-		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
-	return False;
 }
 
 static void
@@ -9191,7 +9344,7 @@ get_default_wmname(void)
 		char **list = NULL;
 		int strings = 0;
 
-		if (get_text_property(root, prop, &list, &strings)) {
+		if (get_text_property(dpy, root, prop, &list, &strings)) {
 			if (!options.wmname) {
 				free(options.wmname);
 				options.wmname = strdup(list[0]);
@@ -9233,7 +9386,7 @@ get_default_format(void)
 		char **list = NULL;
 		int strings = 0;
 
-		if (get_text_property(root, prop, &list, &strings)) {
+		if (get_text_property(dpy, root, prop, &list, &strings)) {
 			if (!options.format) {
 				free(options.format);
 				options.format = strdup(list[0]);
@@ -9263,9 +9416,9 @@ get_default_desktop(void)
 		if ((env = getenv("XDG_CURRENT_DESKTOP"))) {
 			free(options.desktop);
 			options.desktop = strdup(env);
-		} else if (options.format) {
+		} else if (options.wmname) {
 			free(options.desktop);
-			options.desktop = strdup(options.format);
+			options.desktop = strdup(options.wmname);
 			for (p = options.desktop; *p; p++)
 				*p = toupper(*p);
 		} else if (xscr && xscr->wmname) {
@@ -9296,7 +9449,7 @@ get_default_output(void)
 		char **list = NULL;
 		int strings = 0;
 
-		if (get_text_property(root, prop, &list, &strings)) {
+		if (get_text_property(dpy, root, prop, &list, &strings)) {
 			if (!options.menufile) {
 				free(options.menufile);
 				options.menufile = strdup(list[0]);
@@ -9527,6 +9680,22 @@ get_default_root(void)
 }
 
 static void
+get_default_config(void)
+{
+	char *file;
+
+	if (options.filename)
+		return;
+	if (options.wmname)
+		file = g_build_filename(g_get_user_config_dir(), RESNAME, options.wmname, "rc", NULL);
+	else
+		file = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
+	free(options.filename);
+	options.filename = strdup(file);
+	g_free(file);
+}
+
+static void
 get_defaults(void)
 {
 	const char *p;
@@ -9545,6 +9714,7 @@ get_defaults(void)
 	get_default_desktop();
 	get_default_output();
 	get_default_theme();
+	get_default_config();
 }
 
 int
@@ -9585,6 +9755,7 @@ main(int argc, char *argv[])
 		static struct option long_options[] = {
 			{"display",		required_argument,	NULL,	 1 },
 			{"screen",		required_argument,	NULL,	 4 },
+			{"Monitor",		required_argument,	NULL,	 5 },
 
 			{"timeout",		required_argument,	NULL,	'u'},
 			{"iconsize",		required_argument,	NULL,	'z'},
@@ -9617,6 +9788,7 @@ main(int argc, char *argv[])
 			{"nofullmenu",		no_argument,		NULL,	'l'},
 			{"root-menu",		required_argument,	NULL,	'r'},
 			{"output",		optional_argument,	NULL,	'o'},
+			{"icons",		no_argument,		NULL,    6 },
 			{"noicons",		no_argument,		NULL,	'I'},
 			{"launch",		no_argument,		NULL,	'L'},
 			{"nolaunch",		no_argument,		NULL,	'0'},
@@ -9654,7 +9826,7 @@ main(int argc, char *argv[])
 			{"help",		no_argument,		NULL,	'h'},
 			{"version",		no_argument,		NULL,	'V'},
 			{"copying",		no_argument,		NULL,	'C'},
-			{"?",			no_argument,		NULL,	'H'},
+			{"?",			no_argument,		NULL,	'h'},
 			{ 0, }
 		};
 		/* *INDENT-ON* */
@@ -9678,10 +9850,16 @@ main(int argc, char *argv[])
 			options.display = strdup(optarg);
 			break;
 		case 4:	/* --screen SCREEN */
-			val = strtol(optarg, &endptr, 0);
+			val = strtoul(optarg, &endptr, 0);
 			if (endptr && *endptr)
 				goto bad_option;
 			options.screen = val;
+			break;
+		case 5: /* --Monitor MONITOR */
+			val = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			options.monitor = val;
 			break;
 
 		case 'u':	/* -u, --timeout MILLISECONDS */
@@ -9745,6 +9923,9 @@ main(int argc, char *argv[])
 				free(options.menufile);
 				options.menufile = strdup(optarg);
 			}
+			break;
+		case 6:		/* --icons */
+			options.noicons = False;
 			break;
 		case 'I':	/* -I, --noicons */
 			options.noicons = True;
