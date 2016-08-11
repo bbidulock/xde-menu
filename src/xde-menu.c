@@ -4001,15 +4001,12 @@ show_popup(XdeScreen *xscr, XdePopup *xpop, gboolean grab_p, gboolean grab_k)
 		if (!xpop->inside)
 			start_popup_timer(xpop);
 }
-#endif
-#endif
 
 /** @section Popup Window GDK Events
   * @{ */
 
 #define PASSED_EVENT_MASK (KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|SubstructureNotifyMask|SubstructureRedirectMask)
 
-#if 0
 static GdkFilterReturn
 event_handler_KeyPress(Display *dpy, XEvent *xev, XdePopup *xpop)
 {
@@ -4325,6 +4322,29 @@ popup_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	}
 	return GDK_FILTER_CONTINUE;
 }
+
+void
+set_current_desktop(XdeScreen *xscr, int index, Time timestamp)
+{
+	Window root = RootWindow(dpy, xscr->index);
+	XEvent ev;
+
+	PTRACE(5);
+	ev.xclient.type = ClientMessage;
+	ev.xclient.serial = 0;
+	ev.xclient.send_event = False;
+	ev.xclient.display = dpy;
+	ev.xclient.window = root;
+	ev.xclient.message_type = _XA_NET_CURRENT_DESKTOP;
+	ev.xclient.format = 32;
+	ev.xclient.data.l[0] = index;
+	ev.xclient.data.l[1] = timestamp;
+	ev.xclient.data.l[2] = 0;
+	ev.xclient.data.l[3] = 0;
+	ev.xclient.data.l[4] = 0;
+
+	XSendEvent(dpy, root, False, SubstructureNotifyMask | SubstructureRedirectMask, &ev);
+}
 #endif
 
 /** @} */
@@ -4332,7 +4352,161 @@ popup_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 /** @section Popup Window GTK Events
   * @{ */
 
+#if 0
+/** @brief grab broken event handler
+  *
+  * Generated when a pointer or keyboard grab is broken.  On X11, this happens
+  * when a grab window becomes unviewable (i.e. it or one of its ancestors is
+  * unmapped), or if the same application grabs the pointer or keyboard again.
+  * Note that implicity grabs (which are initiated by button presses (or
+  * grabbed key presses?)) can also cause GdkEventGrabBroken events.
+  */
+static gboolean
+grab_broken_event(GtkWidget *widget, GdkEvent *event, gpointer user)
+{
+	XdePopup *xpop = user;
+	GdkEventGrabBroken *ev = (typeof(ev)) event;
+
+	PTRACE(5);
+	if (ev->keyboard) {
+		DPRINTF(1, "keyboard grab was broken\n");
+		xpop->keyboard = False;
+		/* IF we lost a keyboard grab, it is because another hot-key was pressed,
+		   either doing something else or moving to another desktop.  Start the
+		   timeout in this case. */
+		start_popup_timer(xpop);
+	} else {
+		DPRINTF(1, "pointer grab was broken\n");
+		xpop->pointer = False;
+		/* If we lost a pointer grab, it is because somebody clicked on another
+		   window.  In this case we want to drop the popup altogether.  This will
+		   break the keyboard grab if any. */
+		drop_popup(xpop);
+	}
+	if (ev->implicit) {
+		DPRINTF(1, "broken grab was implicit\n");
+	} else {
+		DPRINTF(1, "broken grab was explicit\n");
+	}
+	if (ev->grab_window) {
+		DPRINTF(1, "we broke the grab\n");
+	} else {
+		DPRINTF(1, "another application broke the grab\n");
+	}
+	return TRUE;		/* event handled */
+}
+
+static void
+window_realize(GtkWidget *popup, gpointer xpop)
+{
+	gdk_window_add_filter(popup->window, popup_handler, xpop);
+	// gdk_window_set_override_redirect(popup->window, TRUE);
+	// gdk_window_set_accept_focus(popup->window, FALSE);
+	// gdk_window_set_focus_on_map(popup->window, FALSE);
+}
+
+static gboolean
+button_press_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+button_release_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+enter_notify_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+#if 0
+	/* currently done by event handler, but considering grab */
+	stop_popup_timer(xpop);
+	xpop->inside = True;
+#endif
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+focus_in_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+focus_out_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static void
+grab_focus(GtkWidget *widget, gpointer xpop)
+{
+}
+
+static gboolean
+key_press_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+key_release_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	GdkEventKey *ev = (typeof(ev)) event;
+
+	if (ev->is_modifier) {
+		DPRINTF(1, "released key is modifier: dropping popup\n");
+		drop_popup(xpop);
+	}
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+leave_notify_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+#if 0
+	/* currently done by event handler, but considering grab */
+	start_popup_timer(xpop);
+	xpop->inside = False;
+#endif
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+map_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+scroll_event(GtkWidget *widget, GdkEvent *event, gpointer xpop)
+{
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+visibility_notify_event(GtkWidget *popup, GdkEvent *event, gpointer xpop)
+{
+	GdkEventVisibility *ev = (typeof(ev)) event;
+
+	switch (ev->state) {
+	case GDK_VISIBILITY_FULLY_OBSCURED:
+	case GDK_VISIBILITY_PARTIAL:
+		gdk_window_raise(popup->window);
+		break;
+	case GDK_VISIBILITY_UNOBSCURED:
+		/* good */
+		break;
+	}
+	return GTK_EVENT_PROPAGATE;	/* event not fully handled */
+}
+#endif
+
 /** @} */
+
+#endif
 
 /** @} */
 
@@ -5851,17 +6025,17 @@ get_resources(void)
 		getXrmWhere(val, &options.where, &options.geom);
 	if ((val = get_resource(rdb, "normal", "true")))
 		getXrmBool(val, &options.normal);
-	if ((val = get_resource(rdb, "hidden", NULL)))
+	if ((val = get_resource(rdb, "hidden", "false")))
 		getXrmBool(val, &options.hidden);
-	if ((val = get_resource(rdb, "minimized", NULL)))
+	if ((val = get_resource(rdb, "minimized", "false")))
 		getXrmBool(val, &options.minimized);
-	if ((val = get_resource(rdb, "allmonitors", NULL)))
+	if ((val = get_resource(rdb, "allmonitors", "false")))
 		getXrmBool(val, &options.monitors);
-	if ((val = get_resource(rdb, "allworkspaces", NULL)))
+	if ((val = get_resource(rdb, "allworkspaces", "false")))
 		getXrmBool(val, &options.workspaces);
-	if ((val = get_resource(rdb, "activate", NULL)))
+	if ((val = get_resource(rdb, "activate", "true")))
 		getXrmBool(val, &options.activate);
-	if ((val = get_resource(rdb, "raise", NULL)))
+	if ((val = get_resource(rdb, "raise", "false")))
 		getXrmBool(val, &options.raise);
 	if ((val = get_resource(rdb, "systray", NULL)))
 		getXrmBool(val, &options.systray);
@@ -6032,7 +6206,7 @@ about_selected(GtkMenuItem *item, gpointer user_data)
 	gchar *authors[] = { "Brian F. G. Bidulock <bidulock@openss7.org>", NULL };
 	gtk_show_about_dialog(NULL,
 			      "authors", authors,
-			      "comments", "An XDG compliant feedback system.",
+			      "comments", "An XDG compliant menu system.",
 			      "copyright", "Copyright (c) 2013, 2014, 2015, 2016  OpenSS7 Corporation",
 			      "license", "Do what thou wilt shall be the whole of the law.\n\n-- Aleister Crowley",
 			      "logo-icon-name", LOGO_NAME,
@@ -7357,13 +7531,17 @@ proxy_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 		return GDK_FILTER_CONTINUE;
 	case PropertyNotify:
 		if (options.debug > 2) {
+			char *name = NULL;
+
 			fprintf(stderr, "==> PropertyNotify:\n");
 			fprintf(stderr, "    --> window = 0x%08lx\n", xev->xproperty.window);
-			fprintf(stderr, "    --> atom = %s\n", XGetAtomName(dpy, xev->xproperty.atom));
+			fprintf(stderr, "    --> atom = %s\n", (name = XGetAtomName(dpy, xev->xproperty.atom)));
 			fprintf(stderr, "    --> time = %ld\n", xev->xproperty.time);
 			fprintf(stderr, "    --> state = %s\n",
 				(xev->xproperty.state == PropertyNewValue) ? "NewValue" : "Delete");
 			fprintf(stderr, "<== PropertyNotify:\n");
+			if (name)
+				XFree(name);
 		}
 		return GDK_FILTER_CONTINUE;
 	}
@@ -7540,12 +7718,22 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 			}
 			if (list)
 				XFreeStringList(list);
-		} else
-			DPRINTF(1, "could not get text list for property\n");
+		} else {
+			char *name = NULL;
+
+			EPRINTF("could not get text list for %s property\n", (name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
 		if (xtp.value)
 			XFree(xtp.value);
-	} else
-		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+	} else {
+		char *name = NULL;
+
+		DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+		if (name)
+			XFree(name);
+	}
 	if ((set = gtk_settings_get_for_screen(xscr->scrn))) {
 		GValue theme_v = G_VALUE_INIT;
 		const char *itheme;
@@ -7597,12 +7785,22 @@ update_theme(XdeScreen *xscr, Atom prop)
 			}
 			if (list)
 				XFreeStringList(list);
-		} else
-			DPRINTF(1, "could not get text list for property\n");
+		} else {
+			char *name = NULL;
+
+			EPRINTF("could not get text list for %s property\n", (name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
 		if (xtp.value)
 			XFree(xtp.value);
-	} else
-		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+	} else {
+		char *name = NULL;
+
+		DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+		if (name)
+			XFree(name);
+	}
 	if ((set = gtk_settings_get_for_screen(xscr->scrn))) {
 		GValue theme_v = G_VALUE_INIT;
 		const char *theme;
@@ -7853,12 +8051,16 @@ event_handler_SelectionClear(XEvent *xev, XdeScreen *xscr)
 {
 	PTRACE(5);
 	if (options.debug > 1) {
+		char *name = NULL;
+
 		fprintf(stderr, "==> SelectionClear: %p\n", xscr);
 		fprintf(stderr, "    --> send_event = %s\n", xev->xselectionclear.send_event ? "true" : "false");
 		fprintf(stderr, "    --> window = 0x%08lx\n", xev->xselectionclear.window);
-		fprintf(stderr, "    --> selection = %s\n", XGetAtomName(dpy, xev->xselectionclear.selection));
+		fprintf(stderr, "    --> selection = %s\n", (name = XGetAtomName(dpy, xev->xselectionclear.selection)));
 		fprintf(stderr, "    --> time = %lu\n", xev->xselectionclear.time);
 		fprintf(stderr, "<== SelectionClear: %p\n", xscr);
+		if (name)
+			XFree(name);
 	}
 	if (xscr && xev->xselectionclear.window == xscr->selwin) {
 		XDestroyWindow(dpy, xscr->selwin);
@@ -7925,13 +8127,17 @@ event_handler_PropertyNotify(XEvent *xev, XdeScreen *xscr)
 
 	PTRACE(5);
 	if (options.debug > 2) {
+		char *name = NULL;
+
 		fprintf(stderr, "==> PropertyNotify:\n");
 		fprintf(stderr, "    --> window = 0x%08lx\n", xev->xproperty.window);
-		fprintf(stderr, "    --> atom = %s\n", XGetAtomName(dpy, xev->xproperty.atom));
+		fprintf(stderr, "    --> atom = %s\n", (name = XGetAtomName(dpy, xev->xproperty.atom)));
 		fprintf(stderr, "    --> time = %ld\n", xev->xproperty.time);
 		fprintf(stderr, "    --> state = %s\n",
 			(xev->xproperty.state == PropertyNewValue) ? "NewValue" : "Delete");
 		fprintf(stderr, "<== PropertyNotify:\n");
+		if (name)
+			XFree(name);
 	}
 	atom = xev->xproperty.atom;
 	if (xev->xproperty.state == PropertyNewValue) {
@@ -9088,10 +9294,20 @@ get_text_property(Display *dpy, Window root, Atom prop, char ***listp, int *stri
 
 		if (Xutf8TextPropertyToTextList(dpy, &xtp, listp, stringsp) == Success)
 			return True;
-		else
-			DPRINTF(1, "could not get text list for %s property\n", XGetAtomName(dpy, prop));
-	} else
-		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+		else {
+			char *name = NULL;
+
+			DPRINTF(1, "could not get text list for %s property\n", (name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
+	} else {
+		char *name = NULL;
+
+		DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+		if (name)
+			XFree(name);
+	}
 	return False;
 }
 
@@ -9192,6 +9408,11 @@ set_default_output(void)
 
 static void
 set_default_theme(void)
+{
+}
+
+static void
+set_default_icon_theme(void)
 {
 }
 
@@ -9316,7 +9537,7 @@ static void
 set_defaults(void)
 {
 	const char *env, *p, *q;
-	char *file, *endptr = NULL;
+	char *endptr = NULL;
 	int n, monitor;
 	Time timestamp;
 
@@ -9350,22 +9571,12 @@ set_defaults(void)
 		options.debug = atoi(env);
 		options.output = options.debug + 1;
 	}
-#if 0
-	if (options.wmname)
-		file = g_build_filename(g_get_user_config_dir(), RESNAME, options.wmname, "rc", NULL);
-	else
-		file = g_build_filename(g_get_user_config_dir(), RESNAME, "rc", NULL);
-	free(options.filename);
-	options.filename = strdup(file);
-	g_free(file);
-#else
-	(void) file;
-#endif
 	set_default_wmname();
 	set_default_format();
 	set_default_desktop();
 	set_default_output();
 	set_default_theme();
+	set_default_icon_theme();
 	set_default_config();
 	set_default_paths();
 	set_default_files();
@@ -9407,8 +9618,13 @@ get_default_wmname(void)
 					options.wmname, list[0]);
 			if (list)
 				XFreeStringList(list);
-		} else
-			DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+		} else {
+			char *name = NULL;
+
+			DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+			if (name)
+				XFree(name);
+		}
 	} else
 		EPRINTF("cannot determine wmname without DISPLAY\n");
 
@@ -9449,8 +9665,13 @@ get_default_format(void)
 					options.format, list[0]);
 			if (list)
 				XFreeStringList(list);
-		} else
-			DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+		} else {
+			char *name = NULL;
+
+			DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+			if (name)
+				XFree(name);
+		}
 	} else
 		EPRINTF("cannot determine format without DISPLAY\n");
 
@@ -9513,8 +9734,12 @@ get_default_output(void)
 			if (list)
 				XFreeStringList(list);
 		} else {
-			DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+			char *name = NULL;
+
+			DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
 			DPRINTF(1, "chances are window manager does not have a root menu\n");
+			if (name)
+				XFree(name);
 		}
 	} else
 		EPRINTF("cannot determine filename without DISPLAY\n");
@@ -9526,11 +9751,78 @@ get_default_output(void)
 static void
 get_default_theme(void)
 {
-#if 1
 	GdkScreen *scrn = gdk_display_get_default_screen(disp);
 	GdkWindow *wind = gdk_screen_get_root_window(scrn);
 	Window root = GDK_WINDOW_XID(wind);
 	XTextProperty xtp = { NULL, };
+	Bool changed = False;
+	Atom prop = _XA_XDE_THEME_NAME;
+	GtkSettings *set;
+
+	gtk_rc_reparse_all();
+
+	if (XGetTextProperty(dpy, root, &xtp, prop)) {
+		char **list = NULL;
+		int strings = 0;
+
+		if (Xutf8TextPropertyToTextList(dpy, &xtp, &list, &strings) == Success) {
+			if (strings >= 1) {
+				char *rc_string;
+
+				rc_string = g_strdup_printf("gtk-theme-name=\"%s\"", list[0]);
+				gtk_rc_parse_string(rc_string);
+				g_free(rc_string);
+				if (!options.theme || strcmp(options.theme, list[0])) {
+					free(options.theme);
+					options.theme = strdup(list[0]);
+					changed = True;
+				}
+			}
+			if (list)
+				XFreeStringList(list);
+		} else {
+			char *name = NULL;
+
+			EPRINTF("could not get text list for %s property\n", (name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
+		if (xtp.value)
+			XFree(xtp.value);
+	} else {
+		char *name = NULL;
+
+		DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+		if (name)
+			XFree(name);
+	}
+	if ((set = gtk_settings_get_for_screen(scrn))) {
+		GValue theme_v = G_VALUE_INIT;
+		const char *theme;
+
+		g_value_init(&theme_v, G_TYPE_STRING);
+		g_object_get_property(G_OBJECT(set), "gtk-theme-name", &theme_v);
+		theme = g_value_get_string(&theme_v);
+		if (theme && (!options.theme || strcmp(options.theme, theme))) {
+			free(options.theme);
+			options.theme = strdup(theme);
+			changed = True;
+		}
+		g_value_unset(&theme_v);
+	}
+	if (changed) {
+		DPRINTF(1, "New theme is %s\n", options.theme);
+	}
+}
+
+static void
+get_default_icon_theme(void)
+{
+	GdkScreen *scrn = gdk_display_get_default_screen(disp);
+	GdkWindow *wind = gdk_screen_get_root_window(scrn);
+	Window root = GDK_WINDOW_XID(wind);
+	XTextProperty xtp = { NULL, };
+	Bool changed = False;
 	Atom prop = _XA_XDE_ICON_THEME_NAME;
 	GtkSettings *set;
 
@@ -9542,31 +9834,35 @@ get_default_theme(void)
 
 		if (Xutf8TextPropertyToTextList(dpy, &xtp, &list, &strings) == Success) {
 			if (strings >= 1) {
-				static const char *prefix = "gtk-icon-theme-name=\"";
-				static const char *suffix = "\"";
 				char *rc_string;
-				int len;
 
-				len = strlen(prefix) + strlen(list[0]) + strlen(suffix);
-				rc_string = calloc(len + 1, sizeof(*rc_string));
-				strncpy(rc_string, prefix, len);
-				strncat(rc_string, list[0], len);
-				strncat(rc_string, suffix, len);
+				rc_string = g_strdup_printf("gtk-icon-theme-name=\"%s\"", list[0]);
 				gtk_rc_parse_string(rc_string);
-				free(rc_string);
-				if (!options.theme || strcmp(options.theme, list[0])) {
-					free(options.theme);
-					options.theme = strdup(list[0]);
+				g_free(rc_string);
+				if (!options.itheme || strcmp(options.itheme, list[0])) {
+					free(options.itheme);
+					options.itheme = strdup(list[0]);
+					changed = True;
 				}
 			}
 			if (list)
 				XFreeStringList(list);
-		} else
-			EPRINTF("could not get text list for %s property\n", XGetAtomName(dpy, prop));
+		} else {
+			char *name = NULL;
+
+			EPRINTF("could not get text list for %s property\n", (name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
 		if (xtp.value)
 			XFree(xtp.value);
-	} else
-		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+	} else {
+		char *name = NULL;
+
+		DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+		if (name)
+			XFree(name);
+	}
 	if ((set = gtk_settings_get_for_screen(scrn))) {
 		GValue theme_v = G_VALUE_INIT;
 		const char *itheme;
@@ -9574,75 +9870,16 @@ get_default_theme(void)
 		g_value_init(&theme_v, G_TYPE_STRING);
 		g_object_get_property(G_OBJECT(set), "gtk-icon-theme-name", &theme_v);
 		itheme = g_value_get_string(&theme_v);
-		if (itheme && (!options.theme || strcmp(options.theme, itheme))) {
-			free(options.theme);
-			options.theme = strdup(itheme);
+		if (itheme && (!options.itheme || strcmp(options.itheme, itheme))) {
+			free(options.itheme);
+			options.itheme = strdup(itheme);
+			changed = True;
 		}
 		g_value_unset(&theme_v);
 	}
-#else
-
-	static const char *suffix1 = "/etc/gtk-2.0/gtkrc";
-	static const char *suffix2 = "/.gtkrc-2.0";
-	static const char *suffix3 = "/.gtkrc-2.0.xde";
-	static const char *prefix = "gtk-icon-theme-name=\"";
-	char *env;
-	int len;
-
-	if (options.theme)
-		return;
-	if ((env = getenv("XDG_ICON_THEME"))) {
-		free(options.theme);
-		options.theme = strdup(env);
-		return;
-	} else {
-		char *path, *d, *e, *buf;
-
-		/* need to go looking for the theme name */
-
-		if ((env = getenv("GTK_RC_FILES"))) {
-			path = strdup(env);
-		} else {
-			env = getenv("HOME") ? : "~";
-			len = 1 + strlen(suffix1) + 1 + strlen(env) + strlen(suffix2) +
-			    1 + strlen(env) + strlen(suffix3);
-			path = calloc(len, sizeof(*path));
-			strcpy(path, suffix1);
-			strcat(path, ":");
-			strcat(path, env);
-			strcat(path, suffix2);
-			strcat(path, ":");
-			strcat(path, env);
-			strcat(path, suffix3);
-		}
-		buf = calloc(BUFSIZ, sizeof(*buf));
-		d = path;
-		e = d + strlen(d);
-		while ((d = strchrnul(d, ':')) < e)
-			*d++ = '\0';
-		for (d = path; d < e; d += strlen(d) + 1) {
-			FILE *f;
-
-			if (!(f = fopen(d, "r")))
-				continue;
-			while (fgets(buf, BUFSIZ, f)) {
-				if (!strncmp(buf, prefix, strlen(prefix))) {
-					char *p;
-
-					p = buf + strlen(prefix);
-					*strchrnul(p, '"') = '\0';
-					free(options.theme);
-					options.theme = strdup(p);
-				}
-				/* FIXME: this does not traverse "include" statements */
-			}
-			fclose(f);
-		}
-		free(buf);
+	if (changed) {
+		DPRINTF(1, "New icon theme is %s\n", options.itheme);
 	}
-	if (!options.theme)
-		options.theme = strdup("hicolor");
-#endif
 }
 
 static void
@@ -9762,12 +9999,15 @@ get_defaults(void)
 		    && (n = strspn(++p, "0123456789")) && *(p + n) == '\0')
 			options.screen = atoi(p);
 	}
+	if (!options.hidden && !options.minimized)
+		options.normal = True;
 	get_default_root();
 	get_default_wmname();
 	get_default_format();
 	get_default_desktop();
 	get_default_output();
 	get_default_theme();
+	get_default_icon_theme();
 	get_default_config();
 }
 
@@ -9894,11 +10134,11 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "T:pKk::b:i:W:w:d:c:l:t:f:FNr:o::nL0s:M:GmPESRqexD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "u:z:Z:B:c:T:pKk::b:i:W:w:d:t:O:nHmaANUf:Flr:o::IL0sMGgPESRqexD::v::hVCH?",
 				     long_options, &option_index);
-#else
-		c = getopt(argc, argv, "T:pKk:b:i:W:w:d:c:l:t:f:FNr:o:nL0s:M:GmPESRqexDvhVCH?");
-#endif
+#else				/* _GNU_SOURCE */
+		c = getopt(argc, argv, "u:z:Z:B:c:T:pKk:b:i:W:w:d:t:O:nHmaANUf:Flr:o:IL0sMGgPESRqexD:vhVCH?");
+#endif				/* _GNU_SOURCE */
 		if (c == -1) {
 			DPRINTF(1, "%s: done options processing\n", argv[0]);
 			break;
