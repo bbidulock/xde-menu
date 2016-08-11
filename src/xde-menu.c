@@ -157,11 +157,12 @@ Options options = {
 	.rootmenu = NULL,
 	.menufile = NULL,
 	.theme = NULL,
+	.itheme = NULL,
 	.runhist = NULL,
 	.recapps = NULL,
 	.recently = NULL,
 	.recent = NULL,
-	.keep = "10",
+	.maximum = 50,
 	.menu = "applications",
 	.keypress = NULL,
 	.keyboard = False,
@@ -5364,8 +5365,8 @@ put_resources(void)
 		put_resource(rdb, "recently", val);
 	if ((val = putXrmString(options.recent)))
 		put_resource(rdb, "recent", val);
-	if ((val = putXrmString(options.keep)))
-		put_resource(rdb, "keep", val);
+	if ((val = putXrmInt(options.maximum)))
+		put_resource(rdb, "maximum", val);
 	if ((val = putXrmString(options.menu)))
 		put_resource(rdb, "menu", val);
 	if ((val = putXrmUint(options.button)))
@@ -6015,8 +6016,8 @@ get_resources(void)
 		getXrmString(val, &options.recently);
 	if ((val = get_resource(rdb, "recent", NULL)))
 		getXrmString(val, &options.recent);
-	if ((val = get_resource(rdb, "keep", NULL)))
-		getXrmString(val, &options.keep);
+	if ((val = get_resource(rdb, "maximum", "50")))
+		getXrmInt(val, &options.maximum);
 	if ((val = get_resource(rdb, "menu", NULL)))
 		getXrmString(val, &options.menu);
 	if ((val = get_resource(rdb, "button", NULL)))

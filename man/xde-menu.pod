@@ -1269,13 +1269,13 @@ Specifies the location of the recently used applications list.  The
 default is F<$XDG_DATA_HOME/recent-applications>, and if that file does
 not exist, F<$HOME/.recent-applications>.
 
-=item B<xde-menu>[.I<WMNAME>]B<.keep>: I<INTEGER>
+=item B<xde-menu>[.I<WMNAME>]B<.maximum>: I<INTEGER>
 
-Same as the B<--keep> option to L<xdg-launch(1)>: specifies the maximum
-number of commands or application invocations that are kept in the
-recent history file.  The minimum value is one, and the maximum is 100.
-The default value when unspecified is 10.  Specified as zero (0) when
-the number should not be changed.
+Same as the B<--maximum> option to L<xde-recent(1)>: specifies the
+maximum number of recent applications or files to display in the recent
+files and applications menus.  The minimum value is one, and the maximum
+is 100.  The default value when unspecified is 50.  Specified as zero
+(0) when there is no limit on the number to display.
 
 =item B<xde-menu>[.I<WMNAME>]B<.menu>: I<FILESTEM>
 

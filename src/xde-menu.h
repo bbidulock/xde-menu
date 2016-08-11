@@ -369,7 +369,7 @@ typedef struct {
 	char *recapps;
 	char *recently;
 	char *recent;
-	char *keep;
+	int maximum;
 	char *menu;
 	char *keypress;
 	Bool keyboard;
