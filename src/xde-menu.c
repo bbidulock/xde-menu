@@ -338,13 +338,13 @@ position_pointer(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 static gboolean
 position_center_monitor(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
-	GtkRequisition req;
+	GtkAllocation alloc = { 0, };
 
-	PTRACE(5);
-	gtk_widget_get_requisition(widget, &req);
+	gtk_widget_realize(widget);
+	gtk_widget_get_allocation(widget, &alloc);
 
-	*x = xmon->geom.x + (xmon->geom.width - req.width) / 2;
-	*y = xmon->geom.y + (xmon->geom.height - req.height) / 2;
+	*x = xmon->geom.x + (xmon->geom.width - alloc.width) / 2;
+	*y = xmon->geom.y + (xmon->geom.height - alloc.height) / 2;
 
 	return TRUE;
 }
@@ -381,27 +381,29 @@ position_bottomright_workarea(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint
 {
 #if 1
 	WnckWorkspace *wkspc;
-	GtkRequisition req;
+	GtkAllocation alloc = { 0, };
 
 	/* XXX: not sure this is what we want... */
 	wkspc = wnck_screen_get_active_workspace(xmon->xscr->wnck);
-	gtk_widget_get_requisition(widget, &req);
-	*x = wnck_workspace_get_viewport_x(wkspc) + wnck_workspace_get_width(wkspc) - req.width;
-	*y = wnck_workspace_get_viewport_y(wkspc) + wnck_workspace_get_height(wkspc) - req.height;
+	gtk_widget_realize(widget);
+	gtk_widget_get_allocation(widget, &alloc);
+	*x = wnck_workspace_get_viewport_x(wkspc) + wnck_workspace_get_width(wkspc) - alloc.width;
+	*y = wnck_workspace_get_viewport_y(wkspc) + wnck_workspace_get_height(wkspc) - alloc.height;
 #else
 	GdkScreen *scrn;
 	GdkRectangle rect;
 	gint px, py, nmon;
-	GtkRequisition req;
+	GtkAllocation alloc = { 0, };
 
 	PTRACE(5);
 	gdk_display_get_pointer(disp, &scrn, &px, &py, NULL);
 	nmon = gdk_screen_get_monitor_at_point(scrn, px, py);
 	gdk_screen_get_monitor_geometry(scrn, nmon, &rect);
-	gtk_widget_get_requisition(widget, &req);
+	gtk_widget_realize(widget);
+	gtk_widget_get_allocation(widget, &alloc);
 
-	*x = rect.x + rect.width - req.width;
-	*y = rect.y + rect.height - req.height;
+	*x = rect.x + rect.width - alloc.width;
+	*y = rect.y + rect.height - alloc.height;
 #endif
 
 	return TRUE;
