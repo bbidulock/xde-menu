@@ -428,26 +428,27 @@ position_specified(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 		*x = x1;
 		*y = y1;
 	} else {
-		GtkRequisition req;
+		GtkAllocation alloc = { 0, };
 		int x2, y2;
 
-		gtk_widget_size_request(widget, &req);
+		gtk_widget_realize(widget);
+		gtk_widget_get_allocation(widget, &alloc);
 		x2 = x1 + options.geom.w;
 		y2 = y1 + options.geom.h;
 		DPRINTF(1, "geometry x2 = %d\n", x2);
 		DPRINTF(1, "geometry y2 = %d\n", y2);
 
-		if (x1 + req.width < sw)
+		if (x1 + alloc.width < sw)
 			*x = x1;
-		else if (x2 - req.width > 0)
-			*x = x2 - req.width;
+		else if (x2 - alloc.width > 0)
+			*x = x2 - alloc.width;
 		else
 			*x = 0;
 
-		if (y2 + req.height < sh)
+		if (y2 + alloc.height < sh)
 			*y = y2;
-		else if (y1 - req.height > 0)
-			*y = y1 - req.height;
+		else if (y1 - alloc.height > 0)
+			*y = y1 - alloc.height;
 		else
 			*y = 0;
 	}
@@ -503,12 +504,18 @@ position_menu(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_
 /** @section Setting Arguments
   * @{ */
 
+static const char *show_bool(Bool value);
+static const char *show_which(UseScreen which);
+static const char *show_where(MenuPosition where);
+
 #if 1
 static void
 set_scmon(long scmon)
 {
 	options.monitor = (short) ((scmon >> 0) & 0xffff);
 	options.screen = (short) ((scmon >> 16) & 0xffff);
+	DPRINTF(1, "options.monitor = %d\n", options.monitor);
+	DPRINTF(1, "options.screen = %d\n", options.screen);
 }
 
 static void
@@ -516,16 +523,23 @@ set_flags(long flags)
 {
 #if 1
 	options.fileout = (flags & XDE_MENU_FLAG_FILEOUT) ? True : False;
+	DPRINTF(1, "options.fileout = %s\n", show_bool(options.fileout));
 	options.noicons = (flags & XDE_MENU_FLAG_NOICONS) ? True : False;
+	DPRINTF(1, "options.noicons = %s\n", show_bool(options.noicons));
 	options.launch = (flags & XDE_MENU_FLAG_LAUNCH) ? True : False;
+	DPRINTF(1, "options.launch = %s\n", show_bool(options.launch));
 #endif
 	options.systray = (flags & XDE_MENU_FLAG_TRAY) ? True : False;
+	DPRINTF(1, "options.systray = %s\n", show_bool(options.systray));
 #if 1
 	options.generate = (flags & XDE_MENU_FLAG_GENERATE) ? True : False;
+	DPRINTF(1, "options.generate = %s\n", show_bool(options.generate));
 #endif
 	options.tooltips = (flags & XDE_MENU_FLAG_TOOLTIPS) ? True : False;
+	DPRINTF(1, "options.tooltips = %s\n", show_bool(options.tooltips));
 #if 1
 	options.actions = (flags & XDE_MENU_FLAG_ACTIONS) ? True : False;
+	DPRINTF(1, "options.actions = %s\n", show_bool(options.actions));
 #endif
 #if 1
 	if (flags & XDE_MENU_FLAG_EXCLUDED)
@@ -554,8 +568,11 @@ set_flags(long flags)
 		options.treeflags &= ~GMENU_TREE_FLAGS_SORT_DISPLAY_NAME;
 #endif
 	options.button = (flags >> 16) & 0x0f;
+	DPRINTF(1, "options.button = %d\n", options.button);
 	options.which = (flags >> 20) & 0x0f;
+	DPRINTF(1, "options.which = %s\n", show_which(options.which));
 	options.screen = (flags >> 24) & 0x0f;
+	DPRINTF(1, "options.screen = %d\n", options.screen);
 	options.where = (flags >> 28) & 0x0f;
 }
 
@@ -579,6 +596,7 @@ set_word2(long word2)
 	options.geom.y = (word2 >> 16) & 0x03f;
 	options.geom.mask |= ((word2 >> 30) & 0x01) ? YValue : 0;
 	options.geom.mask |= ((word2 >> 31) & 0x01) ? YNegative : 0;
+	DPRINTF(1, "options.where = %s\n", show_where(options.where));
 }
 #endif
 
@@ -9731,6 +9749,15 @@ main(int argc, char *argv[])
 	set_defaults();
 
 	get_resources();
+
+	if (options.debug > 0) {
+		char **arg;
+
+		DPRINTF(1, "Command was:");
+		for (arg = saveArgv; arg && *arg; arg++)
+			fprintf(stderr, " %s", *arg);
+		fprintf(stderr, "\n");
+	}
 
 	if ((p = strstr(argv[0], "-menugen")) && !p[8])
 		options.command = CommandMenugen;
