@@ -4,11 +4,11 @@ This is the todo list for xde-menu:
 
 - [ ] Complete documentation (manual page).
 - [ ] Implement more window-manager-specific submenus.
-- [ ] Include workspaces submenu.
-- [ ] Include windows submenu.
+- [x] Include workspaces submenu.
+- [x] Include windows submenu.
 - [ ] Include desktop configuration submenus.
 - [ ] Include window arrangement submenus.
-- [ ] Provide option to exit main process after window-manager root menu
+- [x] Provide option to exit main process after window-manager root menu
       has been generated.
 - [X] Panel integration.
 - [ ] Provide right-click technique to pop-up action menus, allowing
