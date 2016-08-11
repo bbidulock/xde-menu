@@ -613,6 +613,8 @@ get_scmon(void)
 
 	scmon |= ((long) (options.monitor & 0xffff) << 0);
 	scmon |= ((long) (options.screen & 0xffff) << 16);
+	DPRINTF(1, "options.monitor = %d\n", options.monitor);
+	DPRINTF(1, "options.screen = %d\n", options.screen);
 	return (scmon);
 }
 
@@ -622,22 +624,29 @@ get_flags(void)
 	long flags = 0;
 
 #if 1
+	DPRINTF(1, "options.fileout = %s\n", show_bool(options.fileout));
 	if (options.fileout)
 		flags |= XDE_MENU_FLAG_FILEOUT;
+	DPRINTF(1, "options.noicons = %s\n", show_bool(options.noicons));
 	if (options.noicons)
 		flags |= XDE_MENU_FLAG_NOICONS;
+	DPRINTF(1, "options.launch = %s\n", show_bool(options.launch));
 	if (options.launch)
 		flags |= XDE_MENU_FLAG_LAUNCH;
 #endif
+	DPRINTF(1, "options.systray = %s\n", show_bool(options.systray));
 	if (options.systray)
 		flags |= XDE_MENU_FLAG_TRAY;
 #if 1
+	DPRINTF(1, "options.generate = %s\n", show_bool(options.generate));
 	if (options.generate)
 		flags |= XDE_MENU_FLAG_GENERATE;
 #endif
+	DPRINTF(1, "options.tooltips = %s\n", show_bool(options.tooltips));
 	if (options.tooltips)
 		flags |= XDE_MENU_FLAG_TOOLTIPS;
 #if 1
+	DPRINTF(1, "options.actions = %s\n", show_bool(options.actions));
 	if (options.actions)
 		flags |= XDE_MENU_FLAG_ACTIONS;
 #endif
@@ -655,9 +664,13 @@ get_flags(void)
 	if (options.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME)
 		flags |= XDE_MENU_FLAG_SORT;
 #endif
+	DPRINTF(1, "options.button = %d\n", options.button);
 	flags |= ((long) (options.button & 0x0f) << 16);
+	DPRINTF(1, "options.which = %s\n", show_which(options.which));
 	flags |= ((long) (options.which & 0x0f) << 20);
+	DPRINTF(1, "options.screen = %d\n", options.screen);
 	flags |= ((long) (options.screen & 0x0f) << 24);
+	DPRINTF(1, "options.where = %s\n", show_where(options.where));
 	flags |= ((long) (options.where & 0x0f) << 28);
 	return (flags);
 }
