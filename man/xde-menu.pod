@@ -193,7 +193,7 @@ Run without installing the menu in the system tray.  This is the default
 when the program in invoked as L<xde-menu-generate(1)> or when the
 B<--menugen> option is specified.
 
-This option can be set with the resource I<xde-menu.sysTray>.
+This option can be set with the resource I<xde-menu.systray>.
 
 =item B<--nogenerate>
 
@@ -779,7 +779,7 @@ When listing clients, also list clients displayed on monitors other than
 the current one.  This includes clients on workspaces that are currently
 visible on a monitor.
 
-This option can be set with the resource I<xde-menu.allMonitors>.
+This option can be set with the resource I<xde-menu.allmonitors>.
 
 =item B<--all-workspaces>, B<-A>
 
@@ -787,7 +787,7 @@ When list clients, also list clients displayed on workspaces other than
 the current one.  As clients are listed, the current workspace may
 change as clients from other workspaces are listed.
 
-This option can be set with the resource I<xde-menu.allWorkspaces>.
+This option can be set with the resource I<xde-menu.allworkspaces>.
 
 =item B<--noactivate>, B<-N>
 
@@ -1183,7 +1183,31 @@ six(6), inclusive.
 Same values as B<--verbose> option: an integer between zero (0) and six
 (6), inclusive.
 
-=item B<xde-menu>[.I<WMNAME>]B<.rootMenu>: I<PATH>
+=item B<xde-menu>[.I<WMNAME>]B<.timeout>: I<TIME>
+
+Specifies the amount of time for the pop-up to persist in milliseconds.
+Not used.
+No option equivalent.
+
+=item B<xde-menu>[.I<WMNAME>]B<.iconsize>: I<UNSIGNED INTEGER>
+
+Specifies the size of icons.
+Not used.
+No option equivalent.
+
+=item B<xde-menu>[.I<WMNAME>]B<.fontsize>: I<DOUBLE>
+
+Specifies the point size of fonts.
+Not used.
+No option equivalent.
+
+=item B<xde-menu>[.I<WMNAME>]B<.border>: I<INTEGER>
+
+Specifies the border around the pop-up in pixels.
+Not used.
+No option equivalent.
+
+=item B<xde-menu>[.I<WMNAME>]B<.rootmenu>: I<PATH>
 
 Same values as B<--root-menu> option: path to the root menu file.
 
@@ -1212,7 +1236,7 @@ Same values as B<--theme> option: name of the XDE (GTK2+) theme name.
 This resource should not be specified in a resource file and will not be
 written by a save operation.
 
-=item B<-xde-menu>[.I<WMNAME>]B<.iconTheme>: I<NAME>
+=item B<-xde-menu>[.I<WMNAME>]B<.icontheme>: I<NAME>
 
 Same values as B<--icon-theme> option: name of the XDE (GTK2+) icon
 theme name.  This resource should not be specified in a resource file
@@ -1302,12 +1326,12 @@ lists.
 Truth value specifying whether to include minimized windows in client
 lists.
 
-=item B<xde-menu>[.I<WMNAME>]B<.allMonitors>: {B<true>|B<false>}
+=item B<xde-menu>[.I<WMNAME>]B<.allmonitors>: {B<true>|B<false>}
 
 Truth value indicating whether to include windows from all monitors in
 client lists.
 
-=item B<xde-menu>[.I<WMNAME>]B<.allWorkspaces>: {B<true>|B<false>}
+=item B<xde-menu>[.I<WMNAME>]B<.allworkspaces>: {B<true>|B<false>}
 
 Truth value indicating whether to include windows from all work spaces
 in client lists.
@@ -1322,7 +1346,7 @@ lists.
 Truth value specifying whether to raise selected windows from client
 lists.
 
-=item B<xde-menu>[.I<WMNAME>]B<.sysTray>: {B<true>|B<false>}
+=item B<xde-menu>[.I<WMNAME>]B<.systray>: {B<true>|B<false>}
 
 Truth value specifying whether to install a status icon in the system
 tray.
@@ -1357,7 +1381,7 @@ applications menus.
 Truth value specifying whether to sort applications by display name in
 the applications menu.
 
-=item B<xde-menu>[.I<WMNAME>]B<.toolTips>: {B<true>|B<false>}
+=item B<xde-menu>[.I<WMNAME>]B<.tooltips>: {B<true>|B<false>}
 
 Truth value specifying whether to include verbose tooltips for
 applications in the applications menu.

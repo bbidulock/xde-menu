@@ -5352,6 +5352,8 @@ put_resources(void)
 		put_resource(rdb, "noicons", val);
 	if ((val = putXrmString(options.theme)))
 		put_resource(rdb, "theme", val);
+	if ((val = putXrmString(options.itheme)))
+		put_resource(rdb, "icontheme", val);
 	if ((val = putXrmBool(options.launch)))
 		put_resource(rdb, "launch", val);
 	if ((val = putXrmString(options.runhist)))
@@ -6001,6 +6003,8 @@ get_resources(void)
 		getXrmBool(val, &options.noicons);
 	if ((val = get_resource(rdb, "theme", NULL)))
 		getXrmString(val, &options.theme);
+	if ((val = get_resource(rdb, "icontheme", NULL)))
+		getXrmString(val, &options.itheme);
 	if ((val = get_resource(rdb, "launch", NULL)))
 		getXrmBool(val, &options.launch);
 	if ((val = get_resource(rdb, "runhist", NULL)))
