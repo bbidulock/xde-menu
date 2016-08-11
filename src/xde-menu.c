@@ -5157,8 +5157,17 @@ put_resources(void)
 	if ((val = putXrmInt(options.output)))
 		put_resource(rdb, "verbose", val);
 	/* put a bunch of resources */
+	if ((val = putXrmTime(options.timeout)))
+		put_resource(rdb, "timeout", val);
+	if ((val = putXrmUint(options.iconsize)))
+		put_resource(rdb, "iconsize", val);
+	if ((val = putXrmDouble(options.fontsize)))
+		put_resource(rdb, "fontsize", val);
+	if ((val = putXrmInt(options.border)))
+		put_resource(rdb, "border", val);
+
 	if ((val = putXrmString(options.rootmenu)))
-		put_resource(rdb, "rootMenu", val);
+		put_resource(rdb, "rootmenu", val);
 	if ((val = putXrmBool(options.fileout)))
 		put_resource(rdb, "fileout", val);
 	if ((val = putXrmString(options.menufile)))
@@ -5198,15 +5207,15 @@ put_resources(void)
 	if ((val = putXrmBool(options.minimized)))
 		put_resource(rdb, "minimized", val);
 	if ((val = putXrmBool(options.monitors)))
-		put_resource(rdb, "allMonitors", val);
+		put_resource(rdb, "allmonitors", val);
 	if ((val = putXrmBool(options.workspaces)))
-		put_resource(rdb, "allWorkspaces", val);
+		put_resource(rdb, "allworkspaces", val);
 	if ((val = putXrmBool(options.activate)))
 		put_resource(rdb, "activate", val);
 	if ((val = putXrmBool(options.raise)))
 		put_resource(rdb, "raise", val);
 	if ((val = putXrmBool(options.systray)))
-		put_resource(rdb, "sysTray", val);
+		put_resource(rdb, "systray", val);
 	if ((val = putXrmBool(options.generate)))
 		put_resource(rdb, "generate", val);
 	if ((val = putXrmBool(options.treeflags & GMENU_TREE_FLAGS_INCLUDE_EXCLUDED)))
@@ -5222,7 +5231,7 @@ put_resources(void)
 	if ((val = putXrmBool(options.treeflags & GMENU_TREE_FLAGS_SORT_DISPLAY_NAME)))
 		put_resource(rdb, "sort", val);
 	if ((val = putXrmBool(options.tooltips)))
-		put_resource(rdb, "toolTips", val);
+		put_resource(rdb, "tooltips", val);
 	if ((val = putXrmBool(options.actions)))
 		put_resource(rdb, "actions", val);
 	if ((val = putXrmBool(options.exit)))
@@ -5799,18 +5808,14 @@ get_resources(void)
 	/* get a bunch of resources */
 	if ((val = get_resource(rdb, "timeout", "1000")))
 		getXrmTime(val, &options.timeout);
-	if ((val = get_resource(rdb, "iconSize", "48")))
+	if ((val = get_resource(rdb, "iconsize", "48")))
 		getXrmUint(val, &options.iconsize);
-	if ((val = get_resource(rdb, "fontSize", "12.0")))
+	if ((val = get_resource(rdb, "fontsize", "12.0")))
 		getXrmDouble(val, &options.fontsize);
 	if ((val = get_resource(rdb, "border", "3")))
 		getXrmInt(val, &options.border);
 
-	if ((val = get_resource(rdb, "which", "default")))
-		getXrmWhich(val, &options.which, &options.screen);
-	if ((val = get_resource(rdb, "where", "default")))
-		getXrmWhere(val, &options.where, &options.geom);
-	if ((val = get_resource(rdb, "rootMenu", NULL)))
+	if ((val = get_resource(rdb, "rootmenu", NULL)))
 		getXrmString(val, &options.rootmenu);
 	if ((val = get_resource(rdb, "fileout", NULL)))
 		getXrmBool(val, &options.fileout);
@@ -5840,6 +5845,24 @@ get_resources(void)
 		getXrmInt(val, &options.button);
 	if ((val = get_resource(rdb, "keypress", NULL)))
 		getXrmString(val, &options.keypress);
+	if ((val = get_resource(rdb, "which", "default")))
+		getXrmWhich(val, &options.which, &options.screen);
+	if ((val = get_resource(rdb, "where", "default")))
+		getXrmWhere(val, &options.where, &options.geom);
+	if ((val = get_resource(rdb, "normal", "true")))
+		getXrmBool(val, &options.normal);
+	if ((val = get_resource(rdb, "hidden", NULL)))
+		getXrmBool(val, &options.hidden);
+	if ((val = get_resource(rdb, "minimized", NULL)))
+		getXrmBool(val, &options.minimized);
+	if ((val = get_resource(rdb, "allmonitors", NULL)))
+		getXrmBool(val, &options.monitors);
+	if ((val = get_resource(rdb, "allworkspaces", NULL)))
+		getXrmBool(val, &options.workspaces);
+	if ((val = get_resource(rdb, "activate", NULL)))
+		getXrmBool(val, &options.activate);
+	if ((val = get_resource(rdb, "raise", NULL)))
+		getXrmBool(val, &options.raise);
 	if ((val = get_resource(rdb, "systray", NULL)))
 		getXrmBool(val, &options.systray);
 	if ((val = get_resource(rdb, "generate", NULL)))
