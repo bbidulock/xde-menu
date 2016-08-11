@@ -580,9 +580,9 @@ static void
 set_word1(long word1)
 {
 	options.geom.mask &= ~(WidthValue|HeightValue);
-	options.geom.w = (word1 >> 0) & 0x07f;
+	options.geom.w = (word1 >> 0) & 0x07fff;
 	options.geom.mask |= ((word1 >> 15) & 0x01) ? WidthValue : 0;
-	options.geom.h = (word1 >> 16) & 0x07f;
+	options.geom.h = (word1 >> 16) & 0x07fff;
 	options.geom.mask |= ((word1 >> 31) & 0x01) ? HeightValue : 0;
 }
 
@@ -590,10 +590,10 @@ static void
 set_word2(long word2)
 {
 	options.geom.mask &= ~(XValue|YValue|XNegative|YNegative);
-	options.geom.x = (word2 >> 0) & 0x03f;
+	options.geom.x = (word2 >> 0) & 0x03fff;
 	options.geom.mask |= ((word2 >> 14) & 0x01) ? XValue : 0;
 	options.geom.mask |= ((word2 >> 15) & 0x01) ? XNegative : 0;
-	options.geom.y = (word2 >> 16) & 0x03f;
+	options.geom.y = (word2 >> 16) & 0x03fff;
 	options.geom.mask |= ((word2 >> 30) & 0x01) ? YValue : 0;
 	options.geom.mask |= ((word2 >> 31) & 0x01) ? YNegative : 0;
 	DPRINTF(1, "options.where = %s\n", show_where(options.where));
@@ -680,9 +680,9 @@ get_word1(void)
 {
 	long word1 = 0;
 
-	word1 |= ((long) (options.geom.w & 0x07f) << 0);
+	word1 |= ((long) (options.geom.w & 0x07fff) << 0);
 	word1 |= ((long) ((options.geom.mask & WidthValue) ? 1 : 0) << 15);
-	word1 |= ((long) (options.geom.h & 0x07f) << 16);
+	word1 |= ((long) (options.geom.h & 0x07fff) << 16);
 	word1 |= ((long) ((options.geom.mask & HeightValue) ? 1 : 0) << 31);
 	return (word1);
 }
@@ -692,10 +692,10 @@ get_word2(void)
 {
 	long word2 = 0;
 
-	word2 |= ((long) (options.geom.x & 0x03f) << 0);
+	word2 |= ((long) (options.geom.x & 0x03fff) << 0);
 	word2 |= ((long) ((options.geom.mask & XValue) ? 1 : 0) << 14);
 	word2 |= ((long) ((options.geom.mask & XNegative) ? 1 : 0) << 15);
-	word2 |= ((long) (options.geom.y & 0x03f) << 16);
+	word2 |= ((long) (options.geom.y & 0x03fff) << 16);
 	word2 |= ((long) ((options.geom.mask & YValue) ? 1 : 0) << 30);
 	word2 |= ((long) ((options.geom.mask & YNegative) ? 1 : 0) << 31);
 	return (word2);
