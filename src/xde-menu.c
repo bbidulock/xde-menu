@@ -681,9 +681,9 @@ get_word1(void)
 	long word1 = 0;
 
 	word1 |= ((long) (options.geom.w & 0x07f) << 0);
-	word1 |= ((long) (options.geom.mask & WidthValue ? 1 : 0) << 15);
+	word1 |= ((long) ((options.geom.mask & WidthValue) ? 1 : 0) << 15);
 	word1 |= ((long) (options.geom.h & 0x07f) << 16);
-	word1 |= ((long) (options.geom.mask & HeightValue ? 1 : 0) << 31);
+	word1 |= ((long) ((options.geom.mask & HeightValue) ? 1 : 0) << 31);
 	return (word1);
 }
 
@@ -693,11 +693,11 @@ get_word2(void)
 	long word2 = 0;
 
 	word2 |= ((long) (options.geom.x & 0x03f) << 0);
-	word2 |= ((long) (options.geom.mask & XValue ? 1 : 0) << 14);
-	word2 |= ((long) (options.geom.mask & XNegative ? 1 : 0) << 15);
+	word2 |= ((long) ((options.geom.mask & XValue) ? 1 : 0) << 14);
+	word2 |= ((long) ((options.geom.mask & XNegative) ? 1 : 0) << 15);
 	word2 |= ((long) (options.geom.y & 0x03f) << 16);
-	word2 |= ((long) (options.geom.mask & YValue ? 1 : 0) << 30);
-	word2 |= ((long) (options.geom.mask & YNegative ? 1 : 0) << 31);
+	word2 |= ((long) ((options.geom.mask & YValue) ? 1 : 0) << 30);
+	word2 |= ((long) ((options.geom.mask & YNegative) ? 1 : 0) << 31);
 	return (word2);
 }
 #endif
