@@ -1,4 +1,8 @@
+! (xde-menu,XDE-Menu) X defaults file
+!
 xde-menu.tooltips: true
 xde-menu.actions: true
 xde-menu.launch: true
+!
+! vim: set sw=8 tw=100 ft=xdefaults fo+=tcqlorn:
 

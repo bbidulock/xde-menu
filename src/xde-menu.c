@@ -2330,9 +2330,11 @@ xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data)
 
 	if ((cmd = user_data)) {
 		exec = g_strdup_printf("%s &", cmd);
+		DPRINTF(1, "executing: system(\"%s\")\n", exec);
 		if ((result = system(cmd)) == -1) ;
 		free(exec);
-	}
+	} else
+		EPRINTF("no command to execute!\n");
 }
 
 void
