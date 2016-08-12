@@ -1,15 +1,57 @@
-xde-menu -- history of user-visible changes.  2016-07-09
+xde-menu -- history of user-visible changes.  2016-08-11
+
+Release xde-menu-0.4 released 2016-08-11
+----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.3...0.4
+
+Brian Bidulock <bidulock@openss7.org> (33):
+      cosmetics
+      git hates trailing space
+      better formatting
+      limit changelog
+      better debugging and track monitors
+      track and pop by monitor
+      show monitor option in help
+      commit missing file
+      remove old libunique method
+      no longer need libuique
+      compiles
+      fix locale free error
+      fix non-popping menus
+      rationalize a bit
+      some loop in update_client_list
+      more common file updates
+      split menufile from config file filename
+      update documentation and help message
+      compiles
+      updates
+      install configuration defaults
+      more debugging
+      even more debugs
+      careful with logic
+      correct masks
+      get more resources
+      some corrects and remove debug memory leaks
+      match documentation
+      get rid of keep parameter
+      minor updates
+      build workspace menu on the fly
+      update todo items
+      use allocation not requisition
+
 
 Release xde-menu-0.3 released 2016-07-09
 ----------------------------------------
 
 git shortlog -e -n -w80,6,8 0.2...0.3
 
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (6):
       read X resources from files
       simplify distribution
       try to get click on submenu working
       do no generate errors on --help or --version
+      update release files
       update release files
 
 

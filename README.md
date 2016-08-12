@@ -3,7 +3,7 @@
 xde-menu
 ===============
 
-Package `xde-menu-0.3` was released under GPLv3 license 2016-07-09.
+Package `xde-menu-0.4` was released under GPLv3 license 2016-08-11.
 
 This package provides a number of "C"-language tools for working with
 the _X Desktop Environment_.  Most of these tools were previously written
@@ -15,7 +15,7 @@ available from `perl(1)`.
 Release
 -------
 
-This is the `xde-menu-0.3` package, released 2016-07-09.  This
+This is the `xde-menu-0.4` package, released 2016-08-11.  This
 release, and the latest version, can be obtained from the [GitHub
 repository][1], using a command such as:
 

@@ -1,4 +1,352 @@
-# created with git log --stat=76 -M -C|fmt -sct -w80
+# created with git log --stat=76 -M -C -300|fmt -sct -w80
+
+commit 13747ced17b5d4fb7ff3953dd23630e16619e0d1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 17:53:57 2016 -0600
+
+    use allocation not requisition
+
+ src/xde-menu.c | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
+
+commit a0e73cb774705495e74089137585f7d80654f593
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 17:02:37 2016 -0600
+
+    update todo items
+
+ TODO | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit b256ab40ba99312cfbf2d313b395be682e56a8cb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 16:59:46 2016 -0600
+
+    build workspace menu on the fly
+
+    - also, build workspace menu same way that xde-wkspmenu does
+
+ src/xde-menu.c | 527 +++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 431 insertions(+), 96 deletions(-)
+
+commit c05c45f34e1a9e2acab582d38aa8cc08215d2265
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 14:11:47 2016 -0600
+
+    minor updates
+
+ data/XDE-Menu  | 4 ++++
+ src/xde-menu.c | 4 +++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+commit ee670a2e48c0c363e5c3d177a9b62a9f6afd6fb0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 06:24:39 2016 -0600
+
+    get rid of keep parameter
+
+ man/xde-menu.pod | 12 ++++++------
+ src/xde-menu.c   | 11 ++++++-----
+ src/xde-menu.h   |  2 +-
+ 3 files changed, 13 insertions(+), 12 deletions(-)
+
+commit 6e157be51c76c5d78133c28a2ae062efa9338c90
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 01:39:46 2016 -0600
+
+    match documentation
+
+ man/xde-menu.pod | 42 +++++++++++++++++++++++++++++++++---------
+ src/xde-menu.c   |  4 ++++
+ 2 files changed, 37 insertions(+), 9 deletions(-)
+
+commit bffc4bde300ab7dc9355252d33a613c0c21c9487
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 01:31:37 2016 -0600
+
+    some corrects and remove debug memory leaks
+
+ src/xde-menu.c | 480 +++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 360 insertions(+), 120 deletions(-)
+
+commit 24a3b78ccdfaab442e49ed2f4bf85a526a323182
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Aug 11 00:09:40 2016 -0600
+
+    get more resources
+
+ src/xde-menu.c | 47 +++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 35 insertions(+), 12 deletions(-)
+
+commit d6961258d9aae1719f3e57904eccd90df1b55ce6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 10 23:55:45 2016 -0600
+
+    correct masks
+
+ src/xde-menu.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+commit 940ce07173d4585ea078c140bc6ee08bd3762e60
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 10 23:36:19 2016 -0600
+
+    careful with logic
+
+ src/xde-menu.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit f25cca543da5a86e2afbb79928ca8fee67227491
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 10 23:24:05 2016 -0600
+
+    even more debugs
+
+ src/xde-menu.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+commit 971967d5563ae8dddee9436a43d54fb95586336b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 10 23:20:30 2016 -0600
+
+    more debugging
+
+ src/xde-menu.c | 43 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 8 deletions(-)
+
+commit d0cc65575ad5c2c3e426c944e10b5c82e85cfd6a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 10 07:14:47 2016 -0600
+
+    install configuration defaults
+
+ configure.ac     | 9 ++++++---
+ data/Makefile.am | 3 +++
+ data/XDE-Menu    | 4 ++++
+ 3 files changed, 13 insertions(+), 3 deletions(-)
+
+commit ff53410d5b674cf4ccb808f9aa3ded989371ffa7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 10 07:04:07 2016 -0600
+
+    updates
+
+ man/xde-menu.pod | 527 +++++++++++++++++++++++++++++++++++++++++++++------
+ src/xde-menu.c   | 283 ++++++++++++++++++++++-----
+ src/xde-menu.h   |   6 +-
+ 3 files changed, 704 insertions(+), 112 deletions(-)
+
+commit e00393adc59b66d2e0fb3cf44f1155551fb62f09
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Aug 9 00:57:09 2016 -0600
+
+    compiles
+
+ src/xde-menu.c | 1376 +++++++++++++++++++++++++++++++++++++++++++---------
+ src/xde-menu.h |   57 ++-
+ 2 files changed, 1182 insertions(+), 251 deletions(-)
+
+commit a1102a10d5e809404307edfb4ed32f0cb738817f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Aug 1 02:00:29 2016 -0600
+
+    update documentation and help message
+
+ man/xde-menu.pod | 93 ++++++++++++++++++++++++++--------------------------
+ src/xde-menu.c   | 32 +++++++++++-------
+ 2 files changed, 67 insertions(+), 58 deletions(-)
+
+commit 7ecf41a263e0df902ab50d67f730a772a7471f51
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 31 15:54:33 2016 -0600
+
+    split menufile from config file filename
+
+ man/xde-menu.pod     | 210 ++++++++++++++++++++++++++++++++++-------------
+ src/xde-menu.c       | 105 ++++++++++++++++--------
+ src/xde-menu.h       |  37 +++++++--
+ src/xde_blackbox.c   |   4 +-
+ src/xde_ctwm.c       |   2 +-
+ src/xde_dtwm.c       |   2 +-
+ src/xde_etwm.c       |   2 +-
+ src/xde_fluxbox.c    |   4 +-
+ src/xde_fvwm.c       |   4 +-
+ src/xde_icewm.c      |   4 +-
+ src/xde_mwm.c        |   2 +-
+ src/xde_openbox.c    |   4 +-
+ src/xde_openboxold.c |   4 +-
+ src/xde_pekwm.c      |   4 +-
+ src/xde_perlpanel.c  |   4 +-
+ src/xde_twm.c        |   2 +-
+ src/xde_uwm.c        |   4 +-
+ src/xde_vtwm.c       |   2 +-
+ src/xde_waimea.c     |   4 +-
+ src/xde_wmaker.c     |   4 +-
+ src/xde_wmakerold.c  |   4 +-
+ 21 files changed, 282 insertions(+), 130 deletions(-)
+
+commit 969bbbe0fe3d07b92a74d0e73b89f31347271f96
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 31 08:18:53 2016 -0600
+
+    more common file updates
+
+ src/xde-menu.c | 581 +++++++++++++++++++++++++++++++++++++++++++++--------
+ src/xde-menu.h |  47 ++++-
+ 2 files changed, 536 insertions(+), 92 deletions(-)
+
+commit 15679c1615bde18e59ac65c24ca77d4f8b6251bd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 18:21:03 2016 -0600
+
+    some loop in update_client_list
+
+ src/xde-menu.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+commit 4bec70062d328ce2f0ec812a5185e2de074d4982
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 17:35:19 2016 -0600
+
+    rationalize a bit
+
+ src/xde-menu.c | 23 +++++++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
+
+commit 80f82d59e93b6985e50a845d6e544d63cf1a8500
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 16:14:50 2016 -0600
+
+    fix non-popping menus
+
+ src/xde-menu.c | 90 +++++++++++++++++++++++++-----------------------------
+ 1 file changed, 42 insertions(+), 48 deletions(-)
+
+commit 52356c2b196033302d8623e61ab21adaedcdb442
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 04:18:42 2016 -0600
+
+    fix locale free error
+
+ src/xde-menu.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+commit 6964a2610ef6b30f3ce5bae5a764cbb75998f776
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 03:57:47 2016 -0600
+
+    compiles
+
+ src/xde-menu.c | 12283 +++++++++++++++++++++++++++++----------------------
+ src/xde-menu.h |    64 +-
+ 2 files changed, 6936 insertions(+), 5411 deletions(-)
+
+commit ace85efba06747bed759fde8305ea71297a5d7f7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 18:58:17 2016 -0600
+
+    no longer need libuique
+
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 55c2bad610c56414d4cf9cdcb8293b2a77cec751
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 18:57:27 2016 -0600
+
+    remove old libunique method
+
+ src/xde-menu.c | 653 +----------------------------------------------------
+ src/xde-menu.h |   3 -
+ 2 files changed, 3 insertions(+), 653 deletions(-)
+
+commit 3cba4ade592562888105aa71a1acec1cdad5af2e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 14:04:25 2016 -0600
+
+    commit missing file
+
+ .gitignore  | 1 -
+ xde-menugen | 3 +++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+commit 0de7545b25cf93ebe17496d4ad4219c349181d95
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 13:50:07 2016 -0600
+
+    show monitor option in help
+
+ src/xde-menu.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+commit abaf960b4ea0a540c7e6ea2470a364c8e897bf26
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 13:47:38 2016 -0600
+
+    track and pop by monitor
+
+ src/xde-menu.c | 271 ++++++++++++++++++++++++++++++++---------------------
+ src/xde-menu.h |   1 +
+ 2 files changed, 163 insertions(+), 109 deletions(-)
+
+commit 998859361ac1e046ccf059d3b272db212918699f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 13:08:49 2016 -0600
+
+    better debugging and track monitors
+
+ .indent.pro     |  38 ++-
+ src/xde-menu.c  | 915 ++++++++++++++++++++++++++++------------------------
+ src/xde-menu.h  | 170 ++++++----
+ src/xde_icewm.c |   4 +-
+ 4 files changed, 632 insertions(+), 495 deletions(-)
+
+commit 51c6aa210c235b2fe13518fcd88260ad4b4c3dba
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:47:01 2016 -0600
+
+    limit changelog
+
+ Makefile.am | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 3307bf4ed0094199fbdb866a2ac6514fbc9ab45b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:36:01 2016 -0600
+
+    better formatting
+
+ README.md    | 83 ++++++++++++++++++++++++++++++++------------------------
+ README.md.in | 83 ++++++++++++++++++++++++++++++++------------------------
+ 2 files changed, 96 insertions(+), 70 deletions(-)
+
+commit a5809d2b87b1c14add5560454bd3a1f672c7fac7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:35:54 2016 -0600
+
+    git hates trailing space
+
+ gennews.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 07486da56f6290951cd19fc4e6993ac5632a63d5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 18:48:58 2016 -0600
+
+    cosmetics
+
+ src/xde-menu.c | 72 +++++++++++++++++++-----------------------------------
+ 1 file changed, 25 insertions(+), 47 deletions(-)
+
+commit 0e6fc2d108a9e8a77ce71cabf6481050a51fb87c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 18:32:38 2016 -0600
+
+    update release files
+
+ ChangeLog | 22 ++++++++++++++++++++++
+ NEWS      |  4 +++-
+ 2 files changed, 25 insertions(+), 1 deletion(-)
 
 commit a7392e2ad736abf18f3ffbc14cca5617c2a29464
 Author: Brian Bidulock <bidulock@openss7.org>
