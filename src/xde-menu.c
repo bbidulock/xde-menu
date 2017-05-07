@@ -2331,7 +2331,7 @@ xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data)
 	int result;
 
 	if ((cmd = user_data)) {
-		exec = g_strdup_printf("%s &", cmd);
+		exec = g_strdup_printf("exec %s &", cmd);
 		DPRINTF(1, "executing: system(\"%s\")\n", exec);
 		if ((result = system(cmd)) == -1) ;
 		free(exec);
@@ -2373,10 +2373,15 @@ xde_gtk_common_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 				GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 				GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 	gicon = g_app_info_get_icon(G_APP_INFO(info));
-	if (options.launch)
-		cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
-	else
+	if (options.launch) {
+		if (options.debug > 0) {
+			cmd = g_strdup_printf("xdg-launch --debug=%d --pointer %s", options.debug, appid);
+		} else {
+			cmd = g_strdup_printf("xdg-launch --pointer %s", appid);
+		}
+	} else {
 		cmd = xde_get_command(info, appid, icon);
+	}
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
@@ -2525,10 +2530,15 @@ xde_gtk_common_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *in
 	} else
 		icon = xde_get_icon2(ctx, "exec", "unknown");
 	gicon = g_app_info_get_icon(G_APP_INFO(info));
-	if (options.launch)
-		cmd = g_strdup_printf("xdg-launch --pointer --action='%s' %s", action, appid);
-	else
+	if (options.launch) {
+		if (options.debug > 0) {
+			cmd = g_strdup_printf("xdg-launch --debug=%d --pointer --action='%s' %s", options.debug, action, appid);
+		} else {
+			cmd = g_strdup_printf("xdg-launch --pointer --action='%s' %s", action, appid);
+		}
+	} else {
 		cmd = xde_get_action(info, appid, icon, action);
+	}
 	if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL)) &&
 	    (image = gtk_image_new_from_pixbuf(pixbuf)))
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
@@ -2643,10 +2653,15 @@ xde_gtk_common_wmmenu(MenuContext *ctx)
 					  GET_ENTRY_ICON_FLAG_XPM | GET_ENTRY_ICON_FLAG_PNG |
 					  GET_ENTRY_ICON_FLAG_JPG | GET_ENTRY_ICON_FLAG_SVG);
 		gicon = g_app_info_get_icon(G_APP_INFO(xsess->info));
-		if (options.launch)
-			cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
-		else
+		if (options.launch) {
+			if (options.debug > 0) {
+				cmd = g_strdup_printf("xdg-launch --debug=%d --pointer -X %s", options.debug, xsess->key);
+			} else {
+				cmd = g_strdup_printf("xdg-launch --pointer -X %s", xsess->key);
+			}
+		} else {
 			cmd = xde_get_command(xsess->info, xsess->key, icon);
+		}
 		if (icon && (pixbuf = gdk_pixbuf_new_from_file_at_size(icon, 16, 16, NULL))
 		    && (image = gtk_image_new_from_pixbuf(pixbuf)))
 			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
