@@ -1,5 +1,5 @@
 
-xde_man_files = \
+xde_man1_files = \
 	xde-menu.man
 
 alias_man_files = \
@@ -11,8 +11,8 @@ alias_man_files = \
 	xde-menu-replace.man \
 	xde-menu-restart.man
 
-nodist_man1_MANS = $(xde_man_files) $(alias_man_files)
-CLEANFILES = $(xde_man_files) $(alias_man_files)
+nodist_man1_MANS = $(xde_man1_files) $(alias_man_files)
+CLEANFILES = $(xde_man1_files) $(alias_man_files)
 noinst_man1_MANS = mwm.man
 noinst_man4_MANS = dtwmrc.man mwmrc.man
 
@@ -25,10 +25,8 @@ EXTRA_DIST = \
 	mwm.man \
 	mwmrc.man
 
-SUFFIXES = .man .pod
-
-.pod.man:
-	pod2man --center="User Commands" \
+$(xde_man1_files): %.man: %.pod
+	$(AM_V_GEN)pod2man --center="User Commands" \
 		--date="$(DATE)" \
 		--errors="none" \
 		--fixed="CW" \
@@ -39,4 +37,17 @@ SUFFIXES = .man .pod
 		--release="$(PACKAGE) $(VERSION)" \
 		--section="1" \
 		$< >$@
+
+#$(xde_man5_files): %.man: %.pod
+#	$(AM_V_GEN)pod2man --center="Standards, Environments and Macros" \
+#		--date="$(DATE)" \
+#		--errors="none" \
+#		--fixed="CW" \
+#		--fixedbold="CB" \
+#		--fixeditalic="CI" \
+#		--fixedbolditalic="CX" \
+#		--nourls \
+#		--release="$(PACKAGE) $(VERSION)" \
+#		--section="5" \
+#		$< >$@
 
