@@ -162,7 +162,6 @@ AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
 
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
-
 sharedir="$datadir"
 eval "sharedir=\"$sharedir\""
 eval "sharedir=\"$sharedir\""
