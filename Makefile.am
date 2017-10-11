@@ -67,10 +67,10 @@ README.html: README.md
 README.txt: README.html
 	$(AM_V_GEN)$(LINKS) -dump -width 80 $< >$@
 
-MENUS.html: MENUS.asciidoc
+MENUS.html: MENUS.adoc
 	$(AM_V_GEN)$(ASCIIDOC) -o - $< >$@
 
-EXTRA_DIST += MENUS.html MENUS.asciidoc
+EXTRA_DIST += MENUS.html MENUS.adoc
 
 scripts = \
 	xde-menugen \
