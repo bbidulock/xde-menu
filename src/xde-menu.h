@@ -107,7 +107,9 @@
 #endif
 #if 0
 #include <X11/extensions/scrnsaver.h>
+#endif
 #include <X11/extensions/dpms.h>
+#if 0
 #include <X11/extensions/xf86misc.h>
 #endif
 #include <X11/XKBlib.h>
