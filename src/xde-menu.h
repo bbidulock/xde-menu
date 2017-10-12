@@ -107,9 +107,9 @@
 #endif
 #if 0
 #include <X11/extensions/scrnsaver.h>
-#endif
 #include <X11/extensions/dpms.h>
 #include <X11/extensions/xf86misc.h>
+#endif
 #include <X11/XKBlib.h>
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
