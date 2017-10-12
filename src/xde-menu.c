@@ -4133,6 +4133,44 @@ wm_menu_context(const char *name)
 	return ops;
 }
 
+static int
+have_button(int button)
+{
+	if (button) {
+		GdkWindow *root = gdk_get_default_root_window();
+		GdkDevice *device = gdk_device_get_core_pointer();
+		GdkModifierType mask = 0;
+
+		gdk_device_get_state(device, root, NULL, &mask);
+
+		switch(button) {
+		case 1:
+			if ((mask & GDK_BUTTON1_MASK))
+				return (button);
+			break;
+		case 2:
+			if ((mask & GDK_BUTTON2_MASK))
+				return (button);
+			break;
+		case 3:
+			if ((mask & GDK_BUTTON3_MASK))
+				return (button);
+			break;
+		case 4:
+			if ((mask & GDK_BUTTON4_MASK))
+				return (button);
+			break;
+		case 5:
+			if ((mask & GDK_BUTTON5_MASK))
+				return (button);
+			break;
+		default:
+			break;
+		}
+	}
+	return (0);
+}
+
 static void
 menu_pop(XdeScreen *xscr)
 {
@@ -4162,7 +4200,7 @@ menu_pop(XdeScreen *xscr)
 	DPRINTF(1, "done create!\n");
 	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, find_monitor(),
-		       options.button, options.timestamp);
+		       have_button(options.button), options.timestamp);
 }
 
 static void
@@ -4194,7 +4232,7 @@ menu_show(XdeScreen *xscr)
 		DPRINTF(1, "done create!\n");
 	}
 	gtk_menu_popup(GTK_MENU(ctx->menu), NULL, NULL, position_menu, find_monitor(),
-		       options.button, options.timestamp);
+		       have_button(options.button), options.timestamp);
 	return;
 }
 
