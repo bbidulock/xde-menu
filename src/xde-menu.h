@@ -105,7 +105,9 @@
 #ifdef VNC_SUPPORTED
 #include <X11/extensions/Xvnc.h>
 #endif
+#if 0
 #include <X11/extensions/scrnsaver.h>
+#endif
 #include <X11/extensions/dpms.h>
 #include <X11/extensions/xf86misc.h>
 #include <X11/XKBlib.h>
@@ -113,8 +115,12 @@
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
 #endif
+#if 0
 #include <X11/Xdmcp.h>
+#endif
+#if 0
 #include <X11/Xauth.h>
+#endif
 #include <X11/SM/SMlib.h>
 #include <gio/gio.h>
 #include <gio/gdesktopappinfo.h>
