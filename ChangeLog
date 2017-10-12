@@ -1,4 +1,176 @@
-# created with git log --stat=76 -M -C -300|fmt -sct -w80
+# created with git log --stat=76 -M -C -500|fmt -sct -w80
+
+commit 06d6112baebc51f692bc739904c030690707680a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 20:32:41 2017 -0600
+
+    one too many
+
+ src/xde-menu.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit d60c079d25deacf142dcd077530c446cfbbf7879
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 20:31:10 2017 -0600
+
+    more unneeded headers
+
+ src/xde-menu.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit b295b8514e1e59dada785e5fd203fff1116f30cf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 20:26:31 2017 -0600
+
+    do not include unneeded header files
+
+ src/xde-menu.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+commit 11c6675d81ff1f2f985aaba1aa362085071e8020
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 12 01:03:09 2017 +0000
+
+    make sure buttons are still down before popping menu
+
+ src/xde-menu.c | 42 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 40 insertions(+), 2 deletions(-)
+
+commit 1e8f6d2967de170e2aa05d6333bdd3a9c0c914c8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 14:40:02 2017 -0600
+
+    keep cscope from scanning xde-menu.h repeatedly
+
+ src/Makefile.am | 92 ++++++++++++++++++++++++++---------------------------
+ 1 file changed, 46 insertions(+), 46 deletions(-)
+
+commit 2522b5726b3ef1d6badda0ecf383cecf6f3ec2d5
+Merge: f10f1f7 8ed4847
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 14:28:31 2017 -0600
+
+    Merge branch 'master' of github.com:bbidulock/xde-menu
+
+commit f10f1f7a247684a6c8edacdd928f7457b331bc95
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 14:26:15 2017 -0600
+
+    update build environment
+
+ Makefile.am  | 32 ++++++++++++++++----------------
+ configure.ac |  1 -
+ configure.sh |  1 +
+ dist.sh      |  2 +-
+ rebuild.sh   |  2 +-
+ 5 files changed, 19 insertions(+), 19 deletions(-)
+
+commit 8ed4847dfed629bce95ca30a89d1904739a874cc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 02:34:45 2017 -0600
+
+    update readmes
+
+ README.md    | 41 ++++++++++++++++++++++-------------------
+ README.md.in | 41 ++++++++++++++++++++++-------------------
+ 2 files changed, 44 insertions(+), 38 deletions(-)
+
+commit 7388f895bc85a99aea1e1409a6fdbc90093fa6c0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 03:48:48 2017 +0000
+
+    update readmes
+
+ README.md    | 68 ++++++++++++++++++++++++++++++--------------------------
+ README.md.in | 66 ++++++++++++++++++++++++++++--------------------------
+ 2 files changed, 71 insertions(+), 63 deletions(-)
+
+commit b7f68ce79e14189815ddb309413c24acc2b1ff1c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 03:47:16 2017 +0000
+
+    makefile corrections
+
+ MENUS.asciidoc => MENUS.adoc |  0
+ Makefile.am                  | 22 +++++++++++-----------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+commit 6282b5714e3b64fe6526177d0064d35819b67e8d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 03:42:17 2017 +0000
+
+    create m4 directory
+
+ m4/.gitignore | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit c2272b3f271932c6229f726e1365872ff6aa4f1b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:17:29 2017 -0600
+
+    better manpage rules
+
+ man/Makefile.am | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+commit 824560aeeadae298ffd4bfad84e1f162cc3feef4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:17:16 2017 -0600
+
+    silent now default
+
+ rebuild.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit e1adbc2e0d4c8003e74e740a346342dcac7149ea
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:16:56 2017 -0600
+
+    update build flags
+
+ configure.sh | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+commit c1dea7cec5dc7af2653e406b4d15da3359f3ce74
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:16:29 2017 -0600
+
+    add more checks
+
+ configure.ac | 50 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+commit a7324178aac336213b51a4bbe35f73b3c85c77d5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:16:11 2017 -0600
+
+    add branch to substitution
+
+ autogen.sh | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+commit 1ca54d09fd68b082631d3e0ab9ec0ea992132509
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun May 7 08:46:21 2017 -0600
+
+    try to debug launch issues
+
+ configure.ac   |  2 +-
+ src/xde-menu.c | 35 +++++++++++++++++++++++++----------
+ 2 files changed, 26 insertions(+), 11 deletions(-)
+
+commit e883506c7abd9661d21fb43edd7feada74f5a04c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 12 00:27:13 2016 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 350 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ NEWS         |  46 +++++++-
+ README.md    |   4 +-
+ configure.ac |   6 +-
+ 5 files changed, 399 insertions(+), 9 deletions(-)
 
 commit 13747ced17b5d4fb7ff3953dd23630e16619e0d1
 Author: Brian Bidulock <bidulock@openss7.org>

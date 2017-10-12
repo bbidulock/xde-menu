@@ -1,11 +1,36 @@
-xde-menu -- history of user-visible changes.  2016-08-11
+xde-menu -- history of user-visible changes.  2017-10-11
 
-Release xde-menu-0.4 released 2016-08-11
+Release xde-menu-0.5 released 2017-10-11
+----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.4...0.5
+
+Brian Bidulock <bidulock@openss7.org> (17):
+      try to debug launch issues
+      add branch to substitution
+      add more checks
+      update build flags
+      silent now default
+      better manpage rules
+      create m4 directory
+      makefile corrections
+      update readmes
+      update readmes
+      update build environment
+      Merge branch 'master' of github.com:bbidulock/xde-menu
+      keep cscope from scanning xde-menu.h repeatedly
+      make sure buttons are still down before popping menu
+      do not include unneeded header files
+      more unneeded headers
+      one too many
+
+
+Release xde-menu-0.4 released 2016-08-12
 ----------------------------------------
 
 git shortlog -e -n -w80,6,8 0.3...0.4
 
-Brian Bidulock <bidulock@openss7.org> (33):
+Brian Bidulock <bidulock@openss7.org> (34):
       cosmetics
       git hates trailing space
       better formatting
@@ -39,6 +64,7 @@ Brian Bidulock <bidulock@openss7.org> (33):
       build workspace menu on the fly
       update todo items
       use allocation not requisition
+      update release files
 
 
 Release xde-menu-0.3 released 2016-07-09
