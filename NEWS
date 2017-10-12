@@ -5,7 +5,7 @@ Release xde-menu-0.5 released 2017-10-11
 
 git shortlog -e -n -w80,6,8 0.4...0.5
 
-Brian Bidulock <bidulock@openss7.org> (18):
+Brian Bidulock <bidulock@openss7.org> (19):
       try to debug launch issues
       add branch to substitution
       add more checks
@@ -24,6 +24,7 @@ Brian Bidulock <bidulock@openss7.org> (18):
       more unneeded headers
       one too many
       update release files
+      final release tweaks
 
 
 Release xde-menu-0.4 released 2016-08-12

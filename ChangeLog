@@ -1,5 +1,16 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 141d4fa94f8db2adfd984dfe0702f75af003b075
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 23:07:46 2017 -0600
+
+    final release tweaks
+
+ ChangeLog  | 14 ++++++++++++++
+ NEWS       |  3 ++-
+ gennews.sh |  9 +++++----
+ 3 files changed, 21 insertions(+), 5 deletions(-)
+
 commit 980a73eddc95690712a222973473f69df58af72a
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Oct 11 23:03:22 2017 -0600
