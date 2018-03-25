@@ -1,11 +1,20 @@
-xde-menu -- history of user-visible changes.  2017-10-11
+xde-menu -- history of user-visible changes.  2017-11-03
+
+Release xde-menu-0.6 released 2017-11-03
+----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.5...0.6
+
+Brian Bidulock <bidulock@openss7.org> (1):
+      do startup notification completion
+
 
 Release xde-menu-0.5 released 2017-10-11
 ----------------------------------------
 
 git shortlog -e -n -w80,6,8 0.4...0.5
 
-Brian Bidulock <bidulock@openss7.org> (19):
+Brian Bidulock <bidulock@openss7.org> (20):
       try to debug launch issues
       add branch to substitution
       add more checks
@@ -25,6 +34,7 @@ Brian Bidulock <bidulock@openss7.org> (19):
       one too many
       update release files
       final release tweaks
+      update release files
 
 
 Release xde-menu-0.4 released 2016-08-12

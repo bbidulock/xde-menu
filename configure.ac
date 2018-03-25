@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
-AC_INIT([xde-menu],[0.5],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
-AC_REVISION([0.5])
+AC_INIT([xde-menu],[0.6],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
+AC_REVISION([0.6])
 
 AC_CONFIG_SRCDIR([src/xde-menu.c])
 AC_CONFIG_HEADERS([autoconf.h])
@@ -12,10 +12,10 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2017-10-11'
+DATE='2017-11-03'
 AC_SUBST([DATE])
 
-BRANCH='0.5'
+BRANCH='0.6'
 AC_SUBST([BRANCH])
 
 # Initialize Automake

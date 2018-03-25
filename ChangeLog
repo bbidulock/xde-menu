@@ -1,5 +1,24 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit c6f909489337ce4879b2ac062d7fa62b776fb0c8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 07:45:47 2017 -0600
+
+    do startup notification completion
+
+ src/xde-menu.c | 135 ++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 91 insertions(+), 44 deletions(-)
+
+commit bb8d5f30535e63397aedba5e1174b0d4c7957350
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 23:16:12 2017 -0600
+
+    update release files
+
+ ChangeLog | 11 +++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
+
 commit 141d4fa94f8db2adfd984dfe0702f75af003b075
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Oct 11 23:07:46 2017 -0600
