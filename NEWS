@@ -1,14 +1,47 @@
-xde-menu -- history of user-visible changes.  2018-03-25
+xde-menu -- history of user-visible changes.  2018-06-18
+
+Release xde-menu-0.7 released 2018-06-18
+----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6...0.7
+
+Brian Bidulock <bidulock@openss7.org> (24):
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      handle glibc broken optional arguments processing
+      document optional arguments better
+      unbroken glibc compatability
+      adjust optional arg for -b and -k
+      use symbolic links instead of scripts
+      use symbolic links instead of scripts
+      use symbolic links instead of scripts
+      use hard links
+
 
 Release xde-menu-0.6 released 2018-03-25
 ----------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5...0.6
 
-Brian Bidulock <bidulock@openss7.org> (3):
+Brian Bidulock <bidulock@openss7.org> (4):
       do startup notification completion
       update release files
       final update release files
+      post-release files
 
 
 Release xde-menu-0.5 released 2017-10-11

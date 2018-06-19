@@ -1,5 +1,240 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit c2b8c0f6b72db58a985dd5b195059802a5133cbc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 23:26:01 2018 -0600
+
+    use hard links
+
+ src/Makefile.am | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+commit 962810b78753f2ead175bf8228a99e433c1d0ed6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 23:13:08 2018 -0600
+
+    use symbolic links instead of scripts
+
+ src/xde-menu.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+commit d1d7e11c405f86775819565d5eb5e9351dc232dc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 23:12:46 2018 -0600
+
+    use symbolic links instead of scripts
+
+ src/Makefile.am | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+commit 10a864f751bb6497ef224742bea01f1aa689a0e4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 23:12:22 2018 -0600
+
+    use symbolic links instead of scripts
+
+ Makefile.am      | 12 ------------
+ xde-menu-monitor |  3 ---
+ xde-menu-popmenu |  3 ---
+ xde-menu-quit    |  3 ---
+ xde-menu-refresh |  3 ---
+ xde-menu-replace |  3 ---
+ xde-menu-restart |  3 ---
+ xde-menugen      |  3 ---
+ 8 files changed, 33 deletions(-)
+
+commit 6f66052d72405f5b47087f93d6dce8ffbd70a8c1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:43:53 2018 -0600
+
+    adjust optional arg for -b and -k
+
+ man/xde-menu.pod |  4 ++--
+ src/xde-menu.c   | 27 ++++++++++++---------------
+ 2 files changed, 14 insertions(+), 17 deletions(-)
+
+commit 6044fb1afe8c613374a0cd5fd5d9c7fc8c33abba
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:31:19 2018 -0600
+
+    unbroken glibc compatability
+
+ man/xde-menu.pod | 2 +-
+ src/xde-menu.c   | 6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+commit 26e55558c7f9d816f1b3cca09d46dd1016f5343e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:23:37 2018 -0600
+
+    document optional arguments better
+
+ man/xde-menu.pod | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 41bf48a8ee9d6524e227feb3abe31b535dae9ffb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:43 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_wmakerold.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 6ce33a03ff1404554fa0e7c50af28d045c4b9157
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:38 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_wmaker.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 5c4f50cc32276e601acd67c4dad8fbb2cbcadc2b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:33 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_waimea.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 5963d771b1d4a00777083c564521e61176e205b8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:28 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_vtwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 77063eca90b3cc2001ae97e287b315d8abb8b7db
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:24 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_uwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 6fd3f1e5da47c9bd343f6a667e44873f4bbe97c3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:19 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_twm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 5c83951ded480a530369a538efde492720e338dc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:13 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_perlpanel.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 9c8d129d0c690920cba91ef45c5128c53ae9ea34
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:01:09 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_pekwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 173cc51ae031decd16665d53e462701238061d60
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:58 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_openboxold.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit d10dcb3b794e1361d0f615bf05ad103f32fa1076
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:54 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_openbox.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit d17edf413ae2da37fbb403b28802227c3487e902
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:45 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_mwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 0dd991d623c5cce3b076fee2344a9b396ca8f7b1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:33 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_icewm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 99bda836c307ade801986e2f3d2629fc54e30418
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:28 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_fluxbox.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 3912303fde43ed59466a631b9c7665565fe7383c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:22 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_etwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit a3900a400f2da4b66d29080d1071485469ca175c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 22:00:01 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_dtwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 808cd836526d8085f5fc2da6c362802ae2ae0669
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 21:59:56 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_ctwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit e8eb97908e0e6c6a134582aae1d8ff91217a7c09
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 18 21:59:48 2018 -0600
+
+    handle glibc broken optional arguments processing
+
+ src/xde_blackbox.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 87b3493eaaf206db3e6e4828232ab8e6af04d06e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Mar 25 09:23:59 2018 -0600
+
+    post-release files
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
 commit f4c109a13f40fc24f7135cbd5ad4d5faf6832385
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sun Mar 25 08:38:25 2018 -0600
