@@ -158,7 +158,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	text = g_list_append(text, s);
 
 	if (options.menufile) {
-		s = g_strdup_printf("  \"Refresh Menu\" SHEXEC xdg-menugen -format wmakerold -desktop WMAKER -launch -o %s\n", options.menufile);
+		s = g_strdup_printf("  \"Refresh Menu\" SHEXEC xdg-menugen -format wmakerold -desktop WMAKER -launch -o%s\n", options.menufile);
 		text = g_list_append(text, s);
 	}
 
