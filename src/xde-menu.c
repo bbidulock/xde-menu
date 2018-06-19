@@ -11005,7 +11005,11 @@ main(int argc, char *argv[])
 	}
 	DPRINTF(1, "%s: option index = %d\n", argv[0], optind);
 	DPRINTF(1, "%s: option count = %d\n", argv[0], argc);
-	if (optind < argc) {
+	if (optind == argc - 1 && options.fileout && !options.menufile) {
+		/* handle broken glibc optional_argument behaviour */
+		free(options.menufile);
+		options.menufile = strdup(argv[optind++]);
+	} else if (optind < argc) {
 		EPRINTF("excess non-option arguments near '");
 		while (optind < argc) {
 			fprintf(stderr, "%s", argv[optind++]);

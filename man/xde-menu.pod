@@ -396,7 +396,7 @@ F<$XDG_CONFIG_HOME:$XDG_CONFIG_DIRS> search path.  Note, however, that
 B<xde-menu> supports both C<applications> and C<system> menus using the
 B<--menu> option.
 
-=item B<--output>[B<=>I<FILENAME>], B<-o>[I<FILENAME>]
+=item B<--output>, B<-o> [I<FILENAME>]
 
 Write the window manager root menu output to the file, I<FILENAME>.
 This is particularly useful with option B<--die-on-error> as the output
