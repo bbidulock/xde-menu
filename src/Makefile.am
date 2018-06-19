@@ -341,13 +341,13 @@ xde_menu_yeahwm_la_LIBADD = $(module_libadd)
 xde_menu_yeahwm_la_LDFLAGS = $(module_ldflags)
 
 install-exec-hook:
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menugen$(EXEEXT)
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menu-monitor$(EXEEXT)
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menu-popmenu$(EXEEXT)
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menu-quit$(EXEEXT)
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menu-refresh$(EXEEXT)
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menu-replace$(EXEEXT)
-	$(LN_S) xde-menu $(DESTDIR)$(bindir)/xde-menu-restart$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menugen$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menu-monitor$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menu-popmenu$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menu-quit$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menu-refresh$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menu-replace$(EXEEXT)
+	ln $(DESTDIR)$(bindir)/xde-menu $(DESTDIR)$(bindir)/xde-menu-restart$(EXEEXT)
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(bindir)/xde-menugen$(EXEEXT)
