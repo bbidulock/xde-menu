@@ -3,9 +3,17 @@ xde-menu -- history of user-visible changes.  2018-06-18
 Release xde-menu-0.7 released 2018-06-18
 ----------------------------------------
 
+git shortlog -e -n -w80,6,8 0.7...HEAD
+
+
+
+
+Release xde-menu-0.7 released 2018-06-18
+----------------------------------------
+
 git shortlog -e -n -w80,6,8 0.6...0.7
 
-Brian Bidulock <bidulock@openss7.org> (24):
+Brian Bidulock <bidulock@openss7.org> (25):
       handle glibc broken optional arguments processing
       handle glibc broken optional arguments processing
       handle glibc broken optional arguments processing
@@ -30,6 +38,7 @@ Brian Bidulock <bidulock@openss7.org> (24):
       use symbolic links instead of scripts
       use symbolic links instead of scripts
       use hard links
+      update release files
 
 
 Release xde-menu-0.6 released 2018-03-25
