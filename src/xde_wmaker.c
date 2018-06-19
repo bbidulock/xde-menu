@@ -181,7 +181,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	s = strdup("    (\"Preferences\", EXEC, /usr/lib/GNUstep/Applications/WPrefs.app/WPrefs),\n");
 	text = g_list_append(text, s);
 	if (options.menufile) {
-		s = g_strdup_printf("    (\"Refresh Menu\", EXEC, xde-menugen -format wmaker -desktop WMAKER -launch -o %s),\n)", options.menufile);
+		s = g_strdup_printf("    (\"Refresh Menu\", EXEC, xde-menugen -format wmaker -desktop WMAKER -launch -o%s),\n)", options.menufile);
 		text = g_list_append(text, s);
 	}
 	s = strdup("    (\"Refresh Screen\", REFRESH),\n");
