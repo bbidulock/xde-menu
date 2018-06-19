@@ -559,7 +559,7 @@ invoked the pop-up.  When the program is launched with startup
 notification, the time stamp will be take from the B<DESKTOP_STARTUP_ID>
 environment variable.
 
-=item B<--button>[B<=>I<BUTTON>], B<-b>[I<BUTTON>]
+=item B<--button>, B<-b> I<BUTTON>
 
 Specifies the button that was used to invoke the pop-up.  Defaults to
 C<Button3> (3).  This should be the button that was used to pop the
@@ -569,7 +569,7 @@ invoking the pop-up menu so that the popped up menu can grab the button.
 A I<BUTTON> of zero (0) means that the program was invoked with a
 key press instead of a button.
 
-=item B<--keypress>[B<=>I<KEYSPEC>], B<-k>[I<KEYSPEC>]
+=item B<--keypress>, B<-k> I<KEYSPEC>
 
 Specifies the key specification that was used to invoke the pop-up.
 Defaults to none.  This should be the key that was used to pop the menu.

@@ -9662,9 +9662,9 @@ Pop up menu options:\n\
         specify the X11 monitor for the menu [default: %33$s]\n\
     -T, --timestamp TIMESTAMP\n\
         specify the button/keypress event timestamp [default: %22$lu]\n\
-    -b, --button [BUTTON] | --pointer\n\
+    -b, --button BUTTON | --pointer\n\
         specify the button pressed when popping menu [default: %20$u]\n\
-    -k, --keypress [KEYSPEC] | --keyboard\n\
+    -k, --keypress KEYSPEC | --keyboard\n\
         specify the key sequence active when popping menu [default: %21$s]\n\
     -i, --which {default|active|focused|pointer|SCREEN}\n\
         specify on which screen to display the menu: [default: %23$s]\n\
@@ -10512,7 +10512,7 @@ main(int argc, char *argv[])
 			{"timestamp",		required_argument,	NULL,	'T'},
 			{"pointer",		no_argument,		NULL,	'p'},
 			{"keyboard",		no_argument,		NULL,	'K'},
-			{"keypress",		optional_argument,	NULL,	'k'},
+			{"keypress",		required_argument,	NULL,	'k'},
 			{"button",		required_argument,	NULL,	'b'},
 			{"which",		required_argument,	NULL,	'i'},
 			{"where",		required_argument,	NULL,	'W'},
@@ -10722,15 +10722,12 @@ main(int argc, char *argv[])
 				options.button = 1;
 			break;
 
-		case 'b':	/* -b, --button [BUTTON] */
-			if (optarg) {
-				val = strtoul(optarg, &endptr, 0);
-				if (endptr && *endptr)
-					goto bad_option;
-				if (val < 0 || val > 8)
-					goto bad_option;
-			} else
-				val = 1;
+		case 'b':	/* -b, --button BUTTON */
+			val = strtoul(optarg, &endptr, 0);
+			if (endptr && *endptr)
+				goto bad_option;
+			if (val < 0 || val > 8)
+				goto bad_option;
 			if (val) {
 				options.keyboard = False;
 				options.pointer = True;
@@ -10740,12 +10737,12 @@ main(int argc, char *argv[])
 			}
 			options.button = val;
 			break;
-		case 'k':	/* -k, --keypress [KEYSPEC] */
+		case 'k':	/* -k, --keypress KEYSPEC */
 			if (options.command != CommandPopMenu)
 				goto bad_option;
 			options.button = 0;
-			if (!optarg)
-				break;
+			options.pointer = False;
+			options.keyboard = True;
 			free(options.keypress);
 			options.keypress = strdup(optarg);
 			break;
