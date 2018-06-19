@@ -72,15 +72,3 @@ MENUS.html: MENUS.adoc
 
 EXTRA_DIST += MENUS.html MENUS.adoc
 
-scripts = \
-	xde-menugen \
-	xde-menu-monitor \
-	xde-menu-popmenu \
-	xde-menu-quit \
-	xde-menu-refresh \
-	xde-menu-replace \
-	xde-menu-restart
-
-dist_bin_SCRIPTS = $(scripts)
-AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = $(scripts)
-
