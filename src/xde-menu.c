@@ -10481,16 +10481,18 @@ main(int argc, char *argv[])
 
 	if ((p = strstr(argv[0], "-menugen")) && !p[8])
 		options.command = CommandMenugen;
-	else if ((p = strstr(argv[0], "-popmenu")) && !p[6])
-		options.command = CommandPopMenu;
 	else if ((p = strstr(argv[0], "-monitor")) && !p[8])
 		options.command = CommandMonitor;
-	else if ((p = strstr(argv[0], "-refresh")) && !p[8])
-		options.command = CommandRefresh;
-	else if ((p = strstr(argv[0], "-restart")) && !p[8])
-		options.command = CommandRestart;
+	else if ((p = strstr(argv[0], "-popmenu")) && !p[6])
+		options.command = CommandPopMenu;
 	else if ((p = strstr(argv[0], "-quit")) && !p[5])
 		options.command = CommandQuit;
+	else if ((p = strstr(argv[0], "-refresh")) && !p[8])
+		options.command = CommandRefresh;
+	else if ((p = strstr(argv[0], "-replace")) && !p[8])
+		options.replace = True;
+	else if ((p = strstr(argv[0], "-restart")) && !p[8])
+		options.command = CommandRestart;
 
 	while (1) {
 		int c, val, len;
