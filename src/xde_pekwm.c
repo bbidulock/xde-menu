@@ -203,7 +203,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf("%sEntry = \"%s\" { %sActions = \"%s%s\" }\n",
 				    ctx->indent, "Refresh Menu", icon,
-				    "Exec xdg-menugen -format pekwm -desktop PEKWM -launch -o ",
+				    "Exec xdg-menugen -format pekwm -desktop PEKWM -launch -o",
 				    options.menufile);
 		text = g_list_append(text, s);
 		free(icon);
