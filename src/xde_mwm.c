@@ -662,7 +662,7 @@ xde_wmspec(MenuContext *ctx)
 	text = g_list_append(text, s);
 	s = g_strdup_printf("    %-32s  %s\n", "\"Restart\"", "f.restart");
 	text = g_list_append(text, s);
-	s = g_strdup_printf("    %-32s  f.exec \"exec xde-menugen -format %s -desktop %s -o %s\"\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.menufile);
+	s = g_strdup_printf("    %-32s  f.exec \"exec xde-menugen -format %s -desktop %s -o%s\"\n", "\"Refresh Menu\"", ctx->name, ctx->desktop, options.menufile);
 	text = g_list_append(text, s);
 	s = g_strdup_printf("}\n");
 	text = g_list_append(text, s);
