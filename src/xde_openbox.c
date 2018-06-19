@@ -174,7 +174,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 		s = g_strdup_printf("%s  <action name=\"Execute\">\n", ctx->indent);
 		text = g_list_append(text, s);
 
-		s = g_strdup_printf("%s    <command>%s %s</command>\n", ctx->indent,
+		s = g_strdup_printf("%s    <command>%s%s</command>\n", ctx->indent,
 				    "xde-menugen -format openbox3 -desktop OPENBOX -launch -o",
 				    options.menufile);
 		text = g_list_append(text, s);
