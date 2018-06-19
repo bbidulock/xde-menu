@@ -118,7 +118,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 		xde_increase_indent(ctx);
 		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
 		s = g_strdup_printf
-		    ("%sprog \"%s\" %s xde-menugen -format icewm -desktop ICEWM -launch -o %s\n",
+		    ("%sprog \"%s\" %s xde-menugen -format icewm -desktop ICEWM -launch -o%s\n",
 		     ctx->indent, "Refresh Menu", icon, options.menufile);
 		text = g_list_append(text, s);
 		free(icon);
