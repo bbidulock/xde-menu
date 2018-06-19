@@ -162,7 +162,7 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 	}
 	if (options.menufile) {
 		icon = ctx->wmm.wrap(ctx, xde_get_icon(ctx, "gtk-refresh"));
-		s = g_strdup_printf("%s%s%s%s%s%s%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format", ctx->format, " -desktop ", ctx->desktop, " -launch -o ", options.menufile, "}", icon);
+		s = g_strdup_printf("%s%s%s%s%s%s%s%s%s\n", ctx->indent, "[exec] (Refresh Menu) {xde-menugen -format", ctx->format, " -desktop ", ctx->desktop, " -launch -o", options.menufile, "}", icon);
 		text = g_list_append(text, s);
 		free(icon);
 	}
