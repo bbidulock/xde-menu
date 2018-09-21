@@ -10580,10 +10580,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "u:z:Z:B:c:T:pKk::b:i:W:w:d:t:O:nHmaANUf:Flr:o::IL0sMGgPESRqexD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "u:z:Z:B:c:T:pKk::b:i:W:w:d:t:O:nHmaANUf:Flr:o::IL0s:M:GgPESRqexD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* _GNU_SOURCE */
-		c = getopt(argc, argv, "u:z:Z:B:c:T:pKk:b:i:W:w:d:t:O:nHmaANUf:Flr:o:IL0sMGgPESRqexD:vhVCH?");
+		c = getopt(argc, argv, "u:z:Z:B:c:T:pKk:b:i:W:w:d:t:O:nHmaANUf:Flr:o:IL0s:M:GgPESRqexD:vhVCH?");
 #endif				/* _GNU_SOURCE */
 		if (c == -1) {
 			DPRINTF(1, "%s: done options processing\n", argv[0]);
