@@ -859,6 +859,22 @@ xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
 	return FALSE;
 }
 
+char *
+xde_normalize_icon(char *icon)
+{
+	char *p, *base = icon;
+
+	*strchrnul(base, ' ') = '\0';
+	if ((p = strrchr(base, '/')))
+		base = p + 1;
+	if ((p = strrchr(base, '.'))
+	    && (!strcasecmp(p, ".xpm") || !strcasecmp(p, ".png") || !strcasecmp(p, ".svg")
+		|| !strcasecmp(p, ".jpg") || !strcasecmp(p, ".jpeg") || !strcasecmp(p, ".gif")
+		|| !strcasecmp(p, ".tif") || !strcasecmp(p, ".tiff")))
+		*p = '\0';
+	return (base);
+}
+
 /**
  * Basically get the icon for a given entry, whether application or directory, with specified
  * defaults or fallbacks.  If the desktop entry specification contains an absolute file name, then
@@ -878,8 +894,6 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *
 	inames = calloc(16, sizeof(*inames));
 
 	if ((icon = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP, G_KEY_FILE_DESKTOP_KEY_ICON, NULL))) {
-		char *base, *p;
-
 		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
 			DPRINTF(1, "going with full icon path %s\n", icon);
 			file = strdup(icon);
@@ -887,12 +901,7 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *
 			g_free(inames);
 			return (file);
 		}
-		base = icon;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
+		char *base = xde_normalize_icon(icon);
 		inames[i++] = strdup(base);
 		DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 		g_free(icon);
@@ -904,27 +913,13 @@ xde_get_entry_icon(MenuContext *ctx, GKeyFile *entry, GIcon *gicon, const char *
 		}
 		if ((tryx = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
 						  G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
-			char *base, *p;
-
-			base = tryx;
-			*strchrnul(base, ' ') = '\0';
-			if ((p = strrchr(base, '/')))
-				base = p + 1;
-			if ((p = strrchr(base, '.')))
-				*p = '\0';
+			char *base = xde_normalize_icon(tryx);
 			inames[i++] = strdup(base);
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 			g_free(tryx);
 		} else if ((exec = g_key_file_get_string(entry, G_KEY_FILE_DESKTOP_GROUP,
 							 G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
-			char *base, *p;
-
-			base = exec;
-			*strchrnul(base, ' ') = '\0';
-			if ((p = strrchr(base, '/')))
-				base = p + 1;
-			if ((p = strrchr(base, '.')))
-				*p = '\0';
+			char *base = xde_normalize_icon(exec);
 			inames[i++] = strdup(base);
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 			g_free(exec);
@@ -966,8 +961,6 @@ xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon
 	inames = calloc(16, sizeof(*inames));
 	group = g_strdup_printf("Desktop Action %s", action);
 	if ((icon = g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_ICON, NULL))) {
-		char *base, *p;
-
 		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
 			DPRINTF(1, "going with full icon path %s\n", icon);
 			file = strdup(icon);
@@ -977,12 +970,7 @@ xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon
 			g_free(aicon);
 			return (file);
 		}
-		base = icon;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
+		char *base = xde_normalize_icon(icon);
 		inames[i++] = strdup(base);
 		DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 		g_free(icon);
@@ -992,40 +980,19 @@ xde_get_action_icon(MenuContext *ctx, GKeyFile *entry, const char *action, GIcon
 			DPRINTF(1, "Choice %d for icon name; %s\n", i, wmcl);
 		}
 		if ((tryx = g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_TRY_EXEC, NULL))) {
-			char *base, *p;
-
-			base = tryx;
-			*strchrnul(base, ' ') = '\0';
-			if ((p = strrchr(base, '/')))
-				base = p + 1;
-			if ((p = strrchr(base, '.')))
-				*p = '\0';
+			char *base = xde_normalize_icon(tryx);
 			inames[i++] = strdup(base);
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 			g_free(tryx);
 		} else if ((exec = g_key_file_get_string(entry, group, G_KEY_FILE_DESKTOP_KEY_EXEC, NULL))) {
-			char *base, *p;
-
-			base = exec;
-			*strchrnul(base, ' ') = '\0';
-			if ((p = strrchr(base, '/')))
-				base = p + 1;
-			if ((p = strrchr(base, '.')))
-				*p = '\0';
+			char *base = xde_normalize_icon(exec);
 			inames[i++] = strdup(base);
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 			g_free(exec);
 		}
 	}
 	if (aicon) {
-		char *base, *p;
-
-		base = aicon;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
+		char *base = xde_normalize_icon(aicon);
 		inames[i++] = strdup(base);
 		DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 		g_free(aicon);
@@ -1063,8 +1030,6 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const cha
 	inames = calloc(16, sizeof(*inames));
 
 	if ((icon = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_ICON))) {
-		char *base, *p;
-
 		if (icon[0] == '/' && !access(icon, R_OK) && xde_test_icon_ext(ctx, icon, flags)) {
 			DPRINTF(1, "going with full icon path %s\n", icon);
 			file = strdup(icon);
@@ -1072,12 +1037,7 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const cha
 			g_free(inames);
 			return (file);
 		}
-		base = icon;
-		*strchrnul(base, ' ') = '\0';
-		if ((p = strrchr(base, '/')))
-			base = p + 1;
-		if ((p = strrchr(base, '.')))
-			*p = '\0';
+		char *base = xde_normalize_icon(icon);
 		inames[i++] = strdup(base);
 		DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 		g_free(icon);
@@ -1087,26 +1047,12 @@ xde_get_app_icon(MenuContext *ctx, GDesktopAppInfo *app, GIcon *gicon, const cha
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, wmcl);
 		}
 		if ((tryx = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_TRY_EXEC))) {
-			char *base, *p;
-
-			base = tryx;
-			*strchrnul(base, ' ') = '\0';
-			if ((p = strrchr(base, '/')))
-				base = p + 1;
-			if ((p = strrchr(base, '.')))
-				*p = '\0';
+			char *base = xde_normalize_icon(tryx);
 			inames[i++] = strdup(base);
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 			g_free(tryx);
 		} else if ((exec = g_desktop_app_info_get_string(app, G_KEY_FILE_DESKTOP_KEY_EXEC))) {
-			char *base, *p;
-
-			base = exec;
-			*strchrnul(base, ' ') = '\0';
-			if ((p = strrchr(base, '/')))
-				base = p + 1;
-			if ((p = strrchr(base, '.')))
-				*p = '\0';
+			char *base = xde_normalize_icon(exec);
 			inames[i++] = strdup(base);
 			DPRINTF(1, "Choice %d for icon name: %s\n", i, base);
 			g_free(exec);
