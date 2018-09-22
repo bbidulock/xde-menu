@@ -9577,50 +9577,52 @@ Format options:\n\
         output file [default: %7$s]\n\
     --icons, -I, --noicons\n\
         place or do not place icons in menu [default: %8$s]\n\
-    -t, --theme THEME\n\
-        icon theme name to use [default: %9$s]\n\
+    --theme THEME\n\
+        theme name to use [default: %9$s]\n\
+    -t, --icon-theme\n\
+        icon theme name to use [default: %10$s]\n\
     -L, --launch, -0, --nolaunch\n\
-        use xde-launch to launch programs [default: %10$s]\n\
+        use xde-launch to launch programs [default: %11$s]\n\
     -s, --style STYLE\n\
-        fullmenu, appmenu, submenu or entries [default: %11$s]\n\
+        fullmenu, appmenu, submenu or entries [default: %12$s]\n\
     -M, --menu MENU\n\
-        filename stem of root menu filename [default: %12$s]\n\
+        filename stem of root menu filename [default: %13$s]\n\
     --excluded\n\
-        include otherwise excluded applications [default: %13$s]\n\
+        include otherwise excluded applications [default: %14$s]\n\
     --nodisplay\n\
-        include applications marked as no-dipslay [default: %14$s]\n\
+        include applications marked as no-dipslay [default: %15$s]\n\
     --unallocated\n\
-        include applications already placed in menu [default: %15$s]\n\
+        include applications already placed in menu [default: %16$s]\n\
     --empty\n\
-        include empty submenus [default: %16$s]\n\
+        include empty submenus [default: %17$s]\n\
     --separators\n\
-        include all (even extraneous) separators [default: %17$s]\n\
+        include all (even extraneous) separators [default: %18$s]\n\
     --sort\n\
-        sort entries by display name instead of name [default: %18$s]\n\
+        sort entries by display name instead of name [default: %19$s]\n\
     --actions\n\
-        provide submenu for actions [default: %19$s]\n\
+        provide submenu for actions [default: %20$s]\n\
     --tooltips\n\
-        include verbose tooltips for application menu items [default: %25$s]\n\
+        include verbose tooltips for application menu items [default: %26$s]\n\
 Pop up menu options:\n\
     --screen SCREEN\n\
-        specify the X11 screen for the menu [default: %27$s]\n\
+        specify the X11 screen for the menu [default: %28$s]\n\
     --Monitor MONITOR\n\
-        specify the X11 monitor for the menu [default: %33$s]\n\
+        specify the X11 monitor for the menu [default: %34$s]\n\
     -T, --timestamp TIMESTAMP\n\
-        specify the button/keypress event timestamp [default: %22$lu]\n\
+        specify the button/keypress event timestamp [default: %23$lu]\n\
     -b, --button BUTTON | --pointer\n\
-        specify the button pressed when popping menu [default: %20$u]\n\
+        specify the button pressed when popping menu [default: %21$u]\n\
     -k, --keypress KEYSPEC | --keyboard\n\
-        specify the key sequence active when popping menu [default: %21$s]\n\
+        specify the key sequence active when popping menu [default: %22$s]\n\
     -i, --which {default|active|focused|pointer|SCREEN}\n\
-        specify on which screen to display the menu: [default: %23$s]\n\
+        specify on which screen to display the menu: [default: %24$s]\n\
         default - specify default selection algorithm\n\
         active  - the screen with the active window\n\
         focused - the screen with the window with the keyboard focus\n\
         pointer - the screen containing (or nearest) the pointer\n\
         SCREEN  - a specific screen number\n\
     -w, --where {default|pointer|center|topleft|bottomright|WHERE}\n\
-        where to put menu: [default: %24$s]\n\
+        where to put menu: [default: %25$s]\n\
         default - specify default position algorithm\n\
         pointer - position the menu at the pointer\n\
         center  - center the menu in the current monitor\n\
@@ -9629,20 +9631,20 @@ Pop up menu options:\n\
         WHERE   - beside or at a specific screen geometry\n\
 General options:\n\
     --display DISPLAY\n\
-        specify the X11 display [default: %26$s]\n\
+        specify the X11 display [default: %27$s]\n\
     -c, --filename FILENAME\n\
-        use a different configuration file [default: %34$s]\n\
+        use a different configuration file [default: %35$s]\n\
     --notray\n\
-        do not install a system tray icon [default: %28$s]\n\
+        do not install a system tray icon [default: %29$s]\n\
     --nogenerate\n\
-        do not generate window manager root menu [default: %29$s]\n\
+        do not generate window manager root menu [default: %30$s]\n\
     -x, --exit\n\
-        exit main process after generating menu [default: %30$s]\n\
+        exit main process after generating menu [default: %31$s]\n\
     -v, --verbose [LEVEL]\n\
-        increment or set output verbosity LEVEL [default: %32$d]\n\
+        increment or set output verbosity LEVEL [default: %33$d]\n\
         this option may be repeated.\n\
     -D, --debug [LEVEL]\n\
-        increment or set debug LEVEL [default: %31$d]\n\
+        increment or set debug LEVEL [default: %32$d]\n\
 ", argv[0]
 	, options.wmname
 	, options.format
@@ -9652,6 +9654,7 @@ General options:\n\
 	, options.menufile
 	, show_bool(!options.noicons)
 	, options.theme
+	, options.itheme
 	, show_bool(options.launch)
 	, show_style(options.style)
 	, options.menu
@@ -10152,7 +10155,14 @@ get_default_theme(void)
 
 	gtk_rc_reparse_all();
 
-	if (XGetTextProperty(dpy, root, &xtp, prop)) {
+	if (options.theme) {
+		char *rc_string = g_strdup_printf("gtk-theme-name=\"%s\"", options.theme);
+
+		gtk_rc_parse_string(rc_string);
+		g_free(rc_string);
+		changed = True;
+
+	} else if (XGetTextProperty(dpy, root, &xtp, prop)) {
 		char **list = NULL;
 		int strings = 0;
 
@@ -10218,7 +10228,14 @@ get_default_icon_theme(void)
 
 	gtk_rc_reparse_all();
 
-	if (XGetTextProperty(dpy, root, &xtp, prop)) {
+	if (options.itheme) {
+		char *rc_string = g_strdup_printf("gtk-icon-theme-name=\"%s\"", options.itheme);
+
+		gtk_rc_parse_string(rc_string);
+		g_free(rc_string);
+		changed = True;
+
+	} else if (XGetTextProperty(dpy, root, &xtp, prop)) {
 		char **list = NULL;
 		int strings = 0;
 
@@ -10467,7 +10484,8 @@ main(int argc, char *argv[])
 
 			{"wmname",		required_argument,	NULL,	'w'},
 			{"desktop",		required_argument,	NULL,	'd'},
-			{"theme",		required_argument,	NULL,	't'},
+			{"theme",		required_argument,	NULL,	 18},
+			{"icon-theme",		required_argument,	NULL,	't'},
 
 			{"order",		required_argument,	NULL,	'O'},
 			{"normal",		no_argument,		NULL,	'n'},
@@ -10625,9 +10643,13 @@ main(int argc, char *argv[])
 		case 'I':	/* -I, --noicons */
 			options.noicons = True;
 			break;
-		case 't':	/* -t, --theme THEME */
+		case 18:	/* --theme THEME */
 			free(options.theme);
 			options.theme = strdup(optarg);
+			break;
+		case 't':	/* -t, --icon-theme */
+			free(options.itheme);
+			options.itheme = strdup(optarg);
 			break;
 		case 'L':	/* -L, --launch */
 			options.launch = True;

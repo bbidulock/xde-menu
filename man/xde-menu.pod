@@ -427,7 +427,13 @@ behaviour of the underlying window manager).  When the window manager
 B<--format> does not support a root menu, (e.g. L<dwm(1)>), icons will
 be added to the menu.
 
-=item B<--theme>, B<-t> I<THEME>
+=item B<--theme> I<THEME>
+
+Specify the theme name to use when displaying menus.  The default
+is to obtain the theme name from the default locations (such as the
+F<$HOME/.gtkrc-2.0> file).
+
+=item B<--icon-theme>, B<-t> I<THEME>
 
 Specify the icon theme name to use when generating icons.  The default
 is to obtain the icon theme name from the default locations (such as the
