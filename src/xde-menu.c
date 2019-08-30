@@ -162,7 +162,7 @@ Options options = {
 	.recently = NULL,
 	.recent = NULL,
 	.maximum = 50,
-	.menu = "applications",
+	.menu = NULL,
 	.keypress = NULL,
 	.keyboard = False,
 	.pointer = False,
@@ -9044,7 +9044,12 @@ startup_notification_complete(Window selwin)
 
 		l = strlen((p = msg)) + 1;
 		while (l > 0) {
-			strncpy(xev.xclient.data.b, p, 20);
+			/* stupid gcc 9 compiler!  I knew what I was doing! */
+			if (l >= 20) {
+				memcpy(xev.xclient.data.b, p, 20);
+			} else {
+				strncpy(xev.xclient.data.b, p, 19);
+			}
 			p += 20;
 			l -= 20;
 			/* just PropertyChange mask in the spec doesn't work :( */
@@ -9803,6 +9808,13 @@ set_default_desktop(void)
 }
 
 static void
+set_default_menu(void)
+{
+	free(options.menu);
+	options.menu = strdup("applications");
+}
+
+static void
 set_default_output(void)
 {
 }
@@ -9971,6 +9983,7 @@ set_defaults(void)
 	set_default_wmname();
 	set_default_format();
 	set_default_desktop();
+	set_default_menu();
 	set_default_output();
 	set_default_theme();
 	set_default_icon_theme();
