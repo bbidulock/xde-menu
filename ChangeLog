@@ -1,5 +1,24 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 92c1240bbdeaff0cb8f383e07f22ac589f826a31
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 02:06:31 2019 -0600
+
+    update NEWS file for release
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      | 33 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 45 insertions(+), 1 deletion(-)
+
+commit 3bad25f15d3ddf7d8ea0a89d27c5b1a08f472a92
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 02:05:29 2019 -0600
+
+    add annotated tags to generated NEWS
+
+ gennews.sh | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
 commit ca71ac6f5705a4b944a817be09486f789964e290
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Aug 30 01:42:26 2019 -0600

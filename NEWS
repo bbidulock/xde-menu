@@ -20,7 +20,7 @@ git tag -n100 -l 0.9
 
 git shortlog -e -n -w80,6,8 0.8...0.9
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (9):
       reformat TODO
       update for gettext 0.20.1
       address issue #4 and work around gcc 9.1 compiler
@@ -28,6 +28,8 @@ Brian Bidulock <bidulock@openss7.org> (7):
       update release notes
       only reference commits, not tags
       update release files
+      add annotated tags to generated NEWS
+      update NEWS file for release
 
 
 Release xde-menu-0.8 released 2018-09-22
