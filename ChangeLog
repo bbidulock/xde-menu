@@ -1,5 +1,70 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 4679206aef23c9d4a31b0b4085dfc639edd0aefe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 01:34:58 2019 -0600
+
+    only reference commits, not tags
+
+ gennews.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit cc2c8cc1e112184c8a929a36967a48c06ab209d0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 01:14:07 2019 -0600
+
+    update release notes
+
+ RELEASE | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 0e3d45841640556853ed3ce3e7fe3842a58522a8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 01:08:12 2019 -0600
+
+    add dist-lzip to automake and require 1.16
+
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 9adcfe3f1919351712d1efc60707c7e35916ccb3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 01:03:25 2019 -0600
+
+    address issue #4 and work around gcc 9.1 compiler
+
+ src/xde-menu.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+commit ac668d59fbcd6ddddd65b0637ce19a8a920711ae
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 17 22:51:34 2019 -0600
+
+    update for gettext 0.20.1
+
+ autogen.sh | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+commit f6a19dc5116dde0e465f61fd75aa7a3df3586435
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 18 10:39:11 2019 -0700
+
+    reformat TODO
+
+ TODO | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+commit cbe21b738eab5c3b7bad9f523fe60079d64b22bc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Sep 22 12:54:41 2018 -0600
+
+    post-release update
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      |  3 ++-
+ RELEASE   | 12 ++++++++++++
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
 commit 09fcfe286e8e6a1592454b3dee0b1a8014218f8a
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Sep 22 12:15:24 2018 -0600
