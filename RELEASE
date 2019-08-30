@@ -1,12 +1,12 @@
-xde-menu 0.8 - Stable release of xde-menu
+xde-menu 0.9 - Stable release of xde-menu
 
 This is a stable release of the xde-menu package that provides
 XDG compliant menu generation for a wide range of light-weight
 window managers as well as providing a pop-up and system-tray
 GTK+ menu.  All of the functionality is working, including many
 window-manager specific sub-menus and startup notification
-completion.  This release fixes several issues with option
-handling and now fully supports specifying the GTK+ theme and
-icon theme used to generate or display menus.  Attached is an
-autoconf tarball for building the package from source.  See TODO
-and NEWS in the release for more information.
+completion.  This release fixes an issue with -M --menu option
+handling, accomodates spurious string warnings from gcc 9.1 and
+introduces lzip compressed archives.  Attached is an autoconf
+tarball for building the package from source.  See TODO and
+NEWS in the release for more information.
