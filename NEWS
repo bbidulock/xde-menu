@@ -1,4 +1,37 @@
-xde-menu -- history of user-visible changes.  2019-08-30
+xde-menu -- history of user-visible changes.  2019-09-03
+
+Release xde-menu-0.10 released 2019-09-03
+-----------------------------------------
+
+git tag -n100 -l 0.10
+
+0.10            xde-menu 0.10 - Maintenance release of xde-menu
+
+    This is the tenth release of the xde-menu package that provides XDG
+    compliant menu generation for a wide range of light-weight window
+    managers as well as providing a pop-up and system-tray GTK+ menu. All
+    of the functionality is working, including many window-manager specific
+    sub-menus and startup notification completion.
+
+    This release is a maintenance release the updates the release build
+    system, generates a better NEWS file, allows annotated tags, and
+    maintains the release archives at lzip compression.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.9...0.10
+
+Brian Bidulock <bidulock@openss7.org> (7):
+      correct category sp for issue #5
+      add release notes
+      place filename last in sed command
+      update build process to include release notes
+      use lzip compression
+      Merge branch 'master' of github.com:bbidulock/xde-menu
+      add license file to repo
+
 
 Release xde-menu-0.9 released 2019-08-30
 ----------------------------------------
@@ -20,7 +53,7 @@ git tag -n100 -l 0.9
 
 git shortlog -e -n -w80,6,8 0.8...0.9
 
-Brian Bidulock <bidulock@openss7.org> (9):
+Brian Bidulock <bidulock@openss7.org> (10):
       reformat TODO
       update for gettext 0.20.1
       address issue #4 and work around gcc 9.1 compiler
@@ -30,6 +63,7 @@ Brian Bidulock <bidulock@openss7.org> (9):
       update release files
       add annotated tags to generated NEWS
       update NEWS file for release
+      update release files
 
 
 Release xde-menu-0.8 released 2018-09-22
@@ -173,19 +207,5 @@ Brian Bidulock <bidulock@openss7.org> (34):
       build workspace menu on the fly
       update todo items
       use allocation not requisition
-      update release files
-
-
-Release xde-menu-0.3 released 2016-07-09
-----------------------------------------
-
-git shortlog -e -n -w80,6,8 0.2...0.3
-
-Brian Bidulock <bidulock@openss7.org> (6):
-      read X resources from files
-      simplify distribution
-      try to get click on submenu working
-      do no generate errors on --help or --version
-      update release files
       update release files
 

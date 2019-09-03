@@ -1,9 +1,9 @@
-[xde-menu -- read me first file.  2019-08-30]: #
+[xde-menu -- read me first file.  2019-09-03]: #
 
 xde-menu
 ===============
 
-Package `xde-menu-0.9` was released under GPLv3 license 2019-08-30.
+Package `xde-menu-0.10` was released under GPLv3 license 2019-09-03.
 
 This package provides a number of "C"-language tools for working with
 the _X Desktop Environment_.  Most of these tools were previously
@@ -15,7 +15,7 @@ libraries not available from `perl(1)`.
 Release
 -------
 
-This is the `xde-menu-0.9` package, released 2019-08-30.  This
+This is the `xde-menu-0.10` package, released 2019-09-03.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 
@@ -72,12 +72,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-menu
 [2]: https://github.com/bbidulock/xde-menu/issues
-[3]: https://github.com/bbidulock/xde-menu/blob/0.9/NEWS
-[4]: https://github.com/bbidulock/xde-menu/blob/0.9/ChangeLog
-[5]: https://github.com/bbidulock/xde-menu/blob/0.9/TODO
-[6]: https://github.com/bbidulock/xde-menu/blob/0.9/COMPLIANCE
-[7]: https://github.com/bbidulock/xde-menu/blob/0.9/INSTALL
-[8]: https://github.com/bbidulock/xde-menu/blob/0.9/LICENSE
-[9]: https://github.com/bbidulock/xde-menu/blob/0.9/COPYING
+[3]: https://github.com/bbidulock/xde-menu/blob/0.10/NEWS
+[4]: https://github.com/bbidulock/xde-menu/blob/0.10/ChangeLog
+[5]: https://github.com/bbidulock/xde-menu/blob/0.10/TODO
+[6]: https://github.com/bbidulock/xde-menu/blob/0.10/COMPLIANCE
+[7]: https://github.com/bbidulock/xde-menu/blob/0.10/INSTALL
+[8]: https://github.com/bbidulock/xde-menu/blob/0.10/LICENSE
+[9]: https://github.com/bbidulock/xde-menu/blob/0.10/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

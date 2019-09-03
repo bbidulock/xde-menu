@@ -1,5 +1,78 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 8b42776c0f3d1e92244ef00abb29aeaa8599f898
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 02:05:27 2019 -0600
+
+    add license file to repo
+
+ .gitignore |   1 -
+ COPYING    | 674 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 674 insertions(+), 1 deletion(-)
+
+commit 87f583af5bd755b0c42804f21d23a21d1271b520
+Merge: 7bb5560 874e912
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 02:00:52 2019 -0600
+
+    Merge branch 'master' of github.com:bbidulock/xde-menu
+
+commit 7bb5560e798835a1fc954eab6aa6f079e8f26e3e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 02:00:09 2019 -0600
+
+    use lzip compression
+
+ configure.ac | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+commit 100723598df6f3d16c0cb167087eecf2c442c173
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 01:59:42 2019 -0600
+
+    update build process to include release notes
+
+ Makefile.am | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+
+commit 706c2227bda374c47982e782abcd374371b42e95
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 01:59:13 2019 -0600
+
+    place filename last in sed command
+
+ autogen.sh | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+commit 21e8d9c7a8730b2958646a936aafca784f5a6ca9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 01:58:56 2019 -0600
+
+    add release notes
+
+ .gitignore |  3 +++
+ RELEASE.md | 21 +++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+
+commit 874e912f6350bab6abd28375863789b256043bbf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 00:52:42 2019 -0600
+
+    correct category sp for issue #5
+
+ data/xde-menu.desktop | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit e10cec8142e8ea09b4f3bf14946b61b9941bc6f0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 02:26:28 2019 -0600
+
+    update release files
+
+ ChangeLog | 19 +++++++++++++++++++
+ NEWS      |  4 +++-
+ 2 files changed, 22 insertions(+), 1 deletion(-)
+
 commit 92c1240bbdeaff0cb8f383e07f22ac589f826a31
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Aug 30 02:06:31 2019 -0600
