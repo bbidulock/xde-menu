@@ -1,5 +1,63 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 725e2e860af274de7ae0881ea7655467850338b9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 07:10:29 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit 85fc0178fb20c06cef91f93866e7e1dd0305ddc3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 07:07:48 2019 -0600
+
+    have better defaults now
+
+ configure.sh | 3 ---
+ 1 file changed, 3 deletions(-)
+
+commit 9a8d1ac150e71d193574e5c7ee31d1c138d3680e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 07:07:32 2019 -0600
+
+    better autoconf directory defaults
+
+ configure.ac | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+commit 85f4fcc5a9a26c1d87626dc05961a1082f096997
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 02:10:22 2019 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         | 52 +++++++++++++++++++++++++++-------------
+ README.md    | 20 ++++++++--------
+ configure.ac | 12 +++++-----
+ 5 files changed, 126 insertions(+), 33 deletions(-)
+
+commit 8a58397d283405e916e86f0470e8f0ec2357b888
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 02:09:57 2019 -0600
+
+    remove redundant release file
+
+ RELEASE | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+commit 8d42e2df35cefd2531abbbdc5a73b7df87507856
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 02:09:01 2019 -0600
+
+    make release notes on distribution
+
+ dist.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 commit 8b42776c0f3d1e92244ef00abb29aeaa8599f898
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Sep 3 02:05:27 2019 -0600

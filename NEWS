@@ -15,7 +15,8 @@ git tag -n100 -l 0.10
 
     This release is a maintenance release the updates the release build
     system, generates a better NEWS file, allows annotated tags, and
-    maintains the release archives at lzip compression.
+    maintains the release archives at lzip compression. It also provides
+    better autoconf directory defaults and improves the build process more.
 
     Included in the release is an autoconf tarball for building the package
     from source. See the NEWS and TODO file in the release for more
@@ -23,7 +24,7 @@ git tag -n100 -l 0.10
 
 git shortlog -e -n -w80,6,8 0.9...0.10
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (13):
       correct category sp for issue #5
       add release notes
       place filename last in sed command
@@ -31,6 +32,12 @@ Brian Bidulock <bidulock@openss7.org> (7):
       use lzip compression
       Merge branch 'master' of github.com:bbidulock/xde-menu
       add license file to repo
+      make release notes on distribution
+      remove redundant release file
+      update release files
+      better autoconf directory defaults
+      have better defaults now
+      update release notes
 
 
 Release xde-menu-0.9 released 2019-08-30
