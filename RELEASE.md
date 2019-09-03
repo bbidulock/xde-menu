@@ -11,7 +11,8 @@ sub-menus and startup notification completion.
 
 This release is a maintenance release the updates the release build
 system, generates a better NEWS file, allows annotated tags, and
-maintains the release archives at lzip compression.
+maintains the release archives at lzip compression.  It also provides
+better autoconf directory defaults and improves the build process more.
 
 Included in the release is an autoconf tarball for building the package
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release
