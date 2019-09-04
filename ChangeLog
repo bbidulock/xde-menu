@@ -1,5 +1,15 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 50dc9bfee59fbf70018b5f3c8def578ccda6a56a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 07:12:14 2019 -0600
+
+    update release files
+
+ ChangeLog | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS      | 11 +++++++++--
+ 2 files changed, 67 insertions(+), 2 deletions(-)
+
 commit 725e2e860af274de7ae0881ea7655467850338b9
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Sep 3 07:10:29 2019 -0600
