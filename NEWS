@@ -29,7 +29,7 @@ git tag -n100 -l 0.10
 
 git shortlog -e -n -w80,6,8 0.9...0.10
 
-Brian Bidulock <bidulock@openss7.org> (19):
+Brian Bidulock <bidulock@openss7.org> (20):
       correct category sp for issue #5
       add release notes
       place filename last in sed command
@@ -48,6 +48,7 @@ Brian Bidulock <bidulock@openss7.org> (19):
       post-release update
       allow terminal used to be selected
       update xde-menu docs w/ terminal program selection
+      update release notes
       update release notes
 
 
