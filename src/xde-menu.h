@@ -356,6 +356,13 @@ typedef struct {
 } XdeGeometry;
 
 typedef struct {
+	char *exec;
+	char *resopts;
+	char *options;
+	Bool notify;
+} Terminal;
+
+typedef struct {
 	int debug;
 	int output;
 	char *display;
@@ -410,6 +417,9 @@ typedef struct {
 	Bool generate;
 	Bool actions;
 	Bool exit;
+	char *termname;
+	char *terminal;
+	char *termresn;
 } Options;
 
 #define XDE_MENU_FLAG_DIEONERR		(1<< 0)
@@ -577,6 +587,7 @@ struct XdeScreen {
 	GtkStatusIcon *icon;		/* system tray status icon this screen */
 };
 
+extern Terminal terminals[];
 extern Options options;
 
 extern XdeScreen *screens;

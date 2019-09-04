@@ -139,6 +139,49 @@ Atom _XA_PREFIX_EDITOR;
 static Atom _XA_NET_STARTUP_INFO;
 static Atom _XA_NET_STARTUP_INFO_BEGIN;
 
+Terminal terminals[] = {
+	{ "uxterm",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	False	},
+	{ "xterm",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	False	},
+	{ "st",			" -c \"%s\" -t \"%%c\" -e ",	" -t \"%c\" -e ",	False	},
+	{ "aterm",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	False	},
+	{ "rxvt",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	False	},
+	{ "alacritty",		" --class \"%s\" -t \"%%c\" -e "," -t \"%c\" -e ",	False	},
+
+	{ "pterm",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	True	},
+	{ "Eterm",		" -n \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	True	},
+//	{ "urxvtc",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	False	},
+	{ "urxvt",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	True	},
+	{ "urxvt-tabbed",	" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	True	},
+	{ "termit",		" -n \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	True	},
+	{ "gnome-terminal",	" --name=\"%s\" -t \"%%c\" -- "," -t \"%c\" -- ",	True	},
+	{ "termite",		" --name=\"%s\" -t \"%%c\" -e "," -t \"%c\" -e ",	True	},
+	{ "mate-terminal",	" --name=\"%s\" -t \"%%c\" -e "," -t \"%c\" -e ",	True	},
+	{ "terminology",	" --name=\"%s\" -T=\"%%c\" -e "," -T=\"%c\" -e ",	True	},
+	{ "kitty",		" --name \"%s\" -T \"%%c\" ",	" -T \"%c\" ",		True	},
+
+	{ "roxterm",		NULL,				" -T \"%c\" -e ",	True	},  // ??? fist instance only?
+	{ "lxterminal",		NULL,				" -t \"%c\" -e ",	True	},
+	{ "xfce4-terminal",	NULL,				" -T \"%c\" -x ",	True	},
+	{ "lilyterm",		NULL,				" -T \"%c\" -E ",	True	},
+	{ "tilix",		NULL,				" -t \"%c\" -e ",	True	},
+	{ "guake",		NULL,				" -r \"%c\" -e ",	True	},
+	{ "terminator",		" -c \"%s\" -T \"%%c\" -x ",	" -T \"%c\" -x ",	True	},  // resclass doesn't work...
+
+	{ "x-terminal-emulator",NULL,				" -e ",			True	},
+	{ "deepin-terminal",	NULL,				" -e ",			True	},
+	{ "tilda",		NULL,				" -c ",			True	},
+
+	{ "qterminal",		NULL,				" -e ",			False	},
+	{ "konsole",		NULL,				" -e ",			False	},
+
+	{ "terminix",		NULL,				NULL,			False	},
+	{ "hyper",		NULL,				NULL,			False	},
+
+	{ "koi8rxterm",		" -name \"%s\" -T \"%%c\" -e ",	" -T \"%c\" -e ",	False	},
+
+	{ NULL,			NULL,				NULL,			False	}
+};
+
 Options options = {
 	.debug = 0,
 	.output = 1,
@@ -199,6 +242,9 @@ Options options = {
 	.generate = True,
 	.actions = False,
 	.exit = False,
+	.termname = NULL,
+	.terminal = NULL,
+	.termresn = NULL,
 };
 
 Display *dpy = NULL;
@@ -1172,13 +1218,13 @@ xde_get_command(GDesktopAppInfo *info, const char *appid, const char *icon)
 	if (!(cmd = calloc(2048, sizeof(*cmd))))
 		return (cmd);
 	if (terminal) {
-		if (wmclass) {
-			snprintf(cmd, 1024, "xterm -name \"%s\" -T \"%%c\" -e ", wmclass);
+		if (wmclass && options.termresn) {
+			snprintf(cmd, 1024, options.termresn, wmclass);
 		} else {
 			/* A little more to be done here: we should set WMCLASS to xterm
 			   to assist the DE.  SLIENT should be set to zero. */
-			strncat(cmd, "xterm -T \"%c\" -e ", 1024);
-			wmclass = "xterm";
+			strncat(cmd, options.terminal, 1024);
+			wmclass = options.termname;
 		}
 	}
 	strncat(cmd, exec, 1024);
@@ -1228,13 +1274,13 @@ xde_get_action(GDesktopAppInfo *info, const char *appid, const char *icon, const
 	terminal = g_desktop_app_info_get_boolean(info, G_KEY_FILE_DESKTOP_KEY_TERMINAL);
 	wmclass = g_desktop_app_info_get_string(info, G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS);
 	if (terminal) {
-		if (wmclass) {
-			snprintf(cmd, 1024, "xterm -name \"%s\" -T \"%%c\" -e ", wmclass);
+		if (wmclass && options.termresn) {
+			snprintf(cmd, 1024, options.termresn, wmclass);
 		} else {
 			/* A little more to be done here: we should set WMCLASS to xterm
 			   to assist the DE.  SLIENT should be set to zero. */
-			strncat(cmd, "xterm -T \"%c\" -e ", 1024);
-			wmclass = "xterm";
+			strncat(cmd, options.terminal, 1024);
+			wmclass = options.termname;
 		}
 	}
 	strncat(cmd, aexec, 1024);
@@ -5753,6 +5799,12 @@ put_resources(void)
 		put_resource(rdb, "actions", val);
 	if ((val = putXrmBool(options.exit)))
 		put_resource(rdb, "exit", val);
+	if ((val = putXrmString(options.termname)))
+		put_resource(rdb, "termname", val);
+	if ((val = putXrmString(options.terminal)))
+		put_resource(rdb, "terminal", val);
+	if ((val = putXrmString(options.termresn)))
+		put_resource(rdb, "termresn", val);
 	XrmPutFileDatabase(rdb, usrdb);
 	XrmSetDatabase(dpy, rdb);
 	XrmDestroyDatabase(rdb);
@@ -6440,6 +6492,12 @@ get_resources(void)
 		getXrmBool(val, &options.actions);
 	if ((val = get_resource(rdb, "exit", NULL)))
 		getXrmBool(val, &options.exit);
+	if ((val = get_resource(rdb, "termname", NULL)))
+		getXrmString(val, &options.termname);
+	if ((val = get_resource(rdb, "terminal", NULL)))
+		getXrmString(val, &options.terminal);
+	if ((val = get_resource(rdb, "termresn", NULL)))
+		getXrmString(val, &options.termresn);
 
 	XrmDestroyDatabase(rdb);
 }
@@ -9940,6 +9998,11 @@ set_default_files(void)
 	g_free(file);
 }
 
+static void
+set_default_terminal(void)
+{
+}
+
 /*
  * Set options in the "options" structure.  The defaults are determined by preset defaults,
  * environment variables and other startup information, but not information from the X Server.  All
@@ -9990,6 +10053,7 @@ set_defaults(void)
 	set_default_config();
 	set_default_paths();
 	set_default_files();
+	set_default_terminal();
 }
 
 static void
@@ -10406,6 +10470,130 @@ get_default_config(void)
 	g_free(file);
 }
 
+static char *
+first_word(const char *str)
+{
+	char *q = strchrnul(str, ' ');
+
+	return strndup(str, q - str);
+}
+
+static Bool
+check_exec_path(const char *binary)
+{
+	char *path, *pstr, *ptok, *psav;
+	char file[PATH_MAX + 1];
+
+	if (!(path = strdup(getenv("PATH") ? : "")))
+		return False;
+
+	for (pstr = path; (ptok = strtok_r(pstr, ":", &psav)); pstr = NULL) {
+		strncpy(file, ptok, PATH_MAX);
+		strncat(file, "/", PATH_MAX);
+		strncat(file, binary, PATH_MAX);
+		if (!access(file, X_OK)) {
+			free(path);
+			return True;
+		}
+	}
+	free(path);
+	return False;
+}
+
+static Bool
+get_terminal(Terminal *t)
+{
+	size_t len;
+	char *p;
+
+	len = strlen(t->exec) + strlen(t->options) + 1;
+	if (!(p = calloc(len + 1, sizeof(*p))))
+		return False;
+	strcpy(p, t->exec);
+	strcat(p, t->options);
+	free(options.terminal);
+	options.terminal = p;
+	free(options.termname);
+	options.termname = strdup(t->exec);
+
+	if (!t->resopts)
+		return True;
+	len = strlen(t->exec) + strlen(t->resopts) + 1;
+	if (!(p = calloc(len + 1, sizeof(*p))))
+		return True;
+	strcpy(p, t->exec);
+	strcat(p, t->resopts);
+	free(options.termresn);
+	options.termresn = p;
+	return True;
+}
+
+static void
+get_default_terminal(void)
+{
+	const char *env;
+
+	if (!options.terminal && (env = getenv("XDG_TERMINAL"))) {
+		options.terminal = strdup(env);
+	}
+	if (!options.termresn && (env = getenv("XDG_TERMRESN")) && options.terminal) {
+		options.termresn = strdup(env);
+	}
+	if ((!options.terminal && (env = getenv("TERMINAL"))) || (env = options.termname)) {
+		Terminal *t;
+
+		for (t = terminals; t->exec; t++) {
+			if (!t->options)
+				continue;
+			if (!strcmp(t->exec, env)) {
+				if (get_terminal(t))
+					break;
+			}
+		}
+	}
+	if (!options.terminal) {
+		Terminal *t;
+
+		for (t = terminals; t->exec; t++) {
+			if (!t->options)
+				continue;
+			if (check_exec_path(t->exec)) {
+				if (get_terminal(t))
+					break;
+			}
+		}
+	}
+	if (!options.terminal) {
+		options.termname = strdup("uxterm");
+		options.terminal = strdup("uxterm -T \"%c\" -e ");
+		options.termresn = strdup("uxterm -name \"%s\" -T \"%%c\" -e ");
+	}
+	if (options.terminal && !options.termname) {
+		char *exec = first_word(options.terminal);
+
+		options.termname = strdup(basename(exec));
+		free(exec);
+	}
+	if (options.launch && options.terminal) {
+		/* set environment variables for xdg-launch */
+		if (options.termname) {
+			setenv("TERMINAL", options.termname, TRUE);
+		} else {
+			unsetenv("TERMINAL");
+		}
+		if (options.terminal) {
+			setenv("XDG_TERMINAL", options.terminal, TRUE);
+		} else {
+			unsetenv("XDG_TERMINAL");
+		}
+		if (options.termresn) {
+			setenv("XDG_TERMRESN", options.termresn, TRUE);
+		} else {
+			unsetenv("XDG_TERMRESN");
+		}
+	}
+}
+
 static void
 get_defaults(void)
 {
@@ -10429,6 +10617,7 @@ get_defaults(void)
 	get_default_theme();
 	get_default_icon_theme();
 	get_default_config();
+	get_default_terminal();
 }
 
 int
