@@ -10404,14 +10404,16 @@ get_default_root(void)
 
 	pfx = calloc(PATH_MAX, sizeof(*dirs));
 
+	if ((env = getenv("XDG_MENU_PREFIX"))) {
+		if (pfx[0])
+			strcat(pfx, ":");
+		strcat(pfx, env);
+	}
 	if ((env = getenv("XDG_VENDOR_ID"))) {
 		if (pfx[0])
 			strcat(pfx, ":");
 		strcat(pfx, env);
 		strcat(pfx, "-");
-	}
-	if ((env = getenv("XDG_MENU_PREFIX"))) {
-		strcat(pfx, env);
 	}
 	if (pfx[0])
 		strcat(pfx, ":");
@@ -10419,6 +10421,8 @@ get_default_root(void)
 	if (pfx[0])
 		strcat(pfx, ":");
 	strcat(pfx, "arch-");
+	if (pfx[0])
+		strcat(pfx, ":");
 	DPRINTF(1, "$XDG_MENU_PREFIX:$XDG_VENDOR_ID- is '%s'\n", pfx);
 	q = pfx + strlen(pfx);
 	p = pfx;
