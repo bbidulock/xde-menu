@@ -1,9 +1,9 @@
-[xde-menu -- read me first file.  2019-09-03]: #
+[xde-menu -- read me first file.  2019-09-04]: #
 
 xde-menu
 ===============
 
-Package `xde-menu-0.10` was released under GPLv3 license 2019-09-03.
+Package `xde-menu-0.10` was released under GPLv3 license 2019-09-04.
 
 This package provides a number of "C"-language tools for working with
 the _X Desktop Environment_.  Most of these tools were previously
@@ -15,7 +15,7 @@ libraries not available from `perl(1)`.
 Release
 -------
 
-This is the `xde-menu-0.10` package, released 2019-09-03.  This
+This is the `xde-menu-0.10` package, released 2019-09-04.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 

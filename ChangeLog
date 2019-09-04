@@ -1,5 +1,58 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 62e2ed6d25645f9ae86ad42902306434fe4e169b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 4 00:21:31 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+commit d6fe9472d60b86ba660aad5b1cc500da9f32ba93
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 4 00:17:45 2019 -0600
+
+    update xde-menu docs w/ terminal program selection
+
+ man/xde-menu.pod | 146 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 139 insertions(+), 7 deletions(-)
+
+commit e12d8a1e06ee8514eb0951763c1a917ac53468e2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 23:42:49 2019 -0600
+
+    allow terminal used to be selected
+
+    - take from environment variables or search for terminal
+      emulator programs
+
+    - when using xdg-launch, pass terminal emulator program
+      through using environment variables
+
+ src/xde-menu.c | 205 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+ src/xde-menu.h |  11 +++
+ 2 files changed, 208 insertions(+), 8 deletions(-)
+
+commit 53c5a98e8d978c3362bdbe00021d3b660d591aa2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 23:42:07 2019 -0600
+
+    post-release update
+
+ ChangeLog | 10 ++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+commit 775a5ad05ef5cecaaca698f9a5295e6e79358fa7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 23:41:16 2019 -0600
+
+    add Terminal type
+
+ .indent.pro | 1 +
+ 1 file changed, 1 insertion(+)
+
 commit 50dc9bfee59fbf70018b5f3c8def578ccda6a56a
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Sep 3 07:12:14 2019 -0600
