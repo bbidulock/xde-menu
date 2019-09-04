@@ -441,12 +441,18 @@ F<$HOME/.gtkrc-2.0> file).
 
 =item B<--launch>, B<-L>, B<--nolaunch>, B<-0>
 
-Specifies whether to use L<xde-launch(1)> to launch the desktop files
+Specifies whether to use L<xdg-launch(1)> to launch the desktop files
 directly or not.  This option will only be honoured when the
-L<xde-launch(1)> program is available and accessible.
-Also, some window managers (e.g. L<openbox(1)>) provide their own
-desktop startup launching and some don't.  So, the default setting may
-depend on the active window manager.
+L<xdg-launch(1)> program is available and accessible.  Also, some window
+managers (e.g. L<openbox(1)>) provide their own desktop startup
+launching and some don't.  So, the default setting may depend on the
+active window manager.
+
+When specified and available, rather than launching programs itself,
+B<xde-menu> will pass the appropriate command to L<xdg-launch(1)>.  Note
+that if a terminal emulation program was also specified with environment
+variables or X resources, these preferences will be passed to
+L<xdg-launch(1)> in environment variables.
 
 =item B<--style>, B<-s> I<STYLE>
 
@@ -1159,6 +1165,87 @@ are intercepted by the window manager.  Support is unlikely.
 
 =back
 
+=head2 TERMINAL PROGRAMS
+
+For desktop entries that set C<Terminal=true>, when they may also set
+C<StartupWMClass> to a class name specific to the program being
+executed.  Most terminal programs (and L<xterm(1)> specifically) can set
+the C<WMCLASS> name and class to something other than that of the
+terminal program (i.e. instead of C<xterm.XTerm>).  When the desktop
+entries do so, B<xde-menu> will set the name attribute on the terminal
+to the name specified when the terminal is launched, if possible.  This
+also permits, for terminal emulation programs such as L<xterm(1)>, the
+ability to set special terminal resources by application.  Because not
+many desktop entry files do this, when no C<StartupWMClass> is
+specified, the C<APPID> or C<BINARY> will be used instead and
+C<StartupWMClass> will be automatically populated.
+
+This procedure provides additional assistance to window managers when
+terminal emulation programs do not properly observe startup
+notification.  (For example, L<xterm(1)> does not properly observe
+startup notification, even though it properly observes X11 Session
+Management, whereas many other terminal emulators support both.)
+
+It is possible to change the default terminal emulation program used
+when these applications are launched by using environment variables (see
+L</ENVIRONMENT>) or X resources (see L</X RESOURCES>).
+
+Terminal programs that are known to B<xde-menu> are:
+L<uxterm(1)>,
+L<xterm(1)>,
+L<st(1)>,
+L<aterm(1)>,
+L<rxvt(1)>,
+L<alacritty(1)>,
+which do not support startup notification, but do support setting the
+resource name;
+L<pterm(1)>,
+L<Eterm(1)>,
+L<urxvt(1)>,
+L<urxvt-tabbed(1)>,
+L<termit(1)>,
+L<gnome-terminal(1)>,
+L<termite(1)>,
+L<mate-terminal(1)>,
+L<terminology(1)>,
+L<kitty(1)>,
+which do support startup notification and do support setting the
+resource name;
+L<roxterm(1)>,
+L<lxterminal(1)>,
+L<xfce4-terminal(1)>,
+L<lilyterm(1)>,
+L<tilix(1)>,
+L<guake(1)>,
+L<terminator(1)>,
+which do support startup notification but do not support setting the
+resource name;
+L<x-terminal-emulator(1)>,
+L<deepin-terminal(1)>,
+L<tilda(1)>,
+which do support startup notification but do not support setting the
+resource name, nor setting the window title;
+L<qterminal(1)>,
+L<konsole(1)>,
+which do not support startup notification, nor setting the resource
+name, nor setting the window title; and
+L<koi8rxterm(1)>
+which is language specific.
+
+When the B<TERMINAL> environment variable is set to one of these
+terminals (a terminal known to B<xde-menu>), it will automatically
+determine the corresponding B<XDG_TERMINAL> and B<XDG_TERMRESN> commands
+when they are not specified.  See L</X RESOURCES> and L</ENVIRONMENT>
+below.  When no terminal environment variables are specified, terminal
+programs will be detected in the user's B<PATH> in the order specified
+above.  Note that L<terminix(1)> and L<hyper(1)> are currently unknown.
+B<XDG_TERMINAL> and B<XDG_TERMRESN> must currently be specified to use
+those or other unknown terminals.
+
+See L</X RESOURCES> and L</ENVIRONMENT> below for more information on
+selecting the terminal to use for launching applications that need one.
+
+
 =head1 X RESOURCES
 
 Most values that affect the look and feel of B<xde-menu> may also be
@@ -1374,7 +1461,7 @@ applications menu.
 
 =item B<xde-menu>[.I<WMNAME>]B<.unallocated>: {B<true>|B<false>}
 
-Truth value specifying whether to include unallocated applications in
+Truth value specifying whether to include unassigned applications in
 the applications menu.
 
 =item B<xde-menu>[.I<WMNAME>]B<.separators>: {B<true>|B<false>}
@@ -1401,6 +1488,28 @@ applications menu for applications that provide actions.
 
 Truth value specifying whether to exit once the window manager root
 window has been generated.
+
+=item B<xde-menu>[.I<WMNAME>]B<.termname>: I<TERMINAL-NAME>
+
+Word specifying the name of the terminal emulation program executable
+to be used to launch, or pass to L<xdg-launch(1)>, for applications that
+need terminals.
+
+=item B<xde-menu>[.I<WMNAME>]B<.terminal>: I<EXEC-COMMAND>
+
+String specifying the terminal emulation program command
+to be used to launch, or pass to L<xdg-launch(1)>, for applications that
+need terminals.  This command can contain C<Exec> line substitutions.
+
+=item B<xde-menu>[.I<WMNAME>]B<.termresn>: I<EXEC-COMMAND>
+
+String specifying the terminal emulation program command to be used when
+a resource name is available and can be set to launch, or pass to
+L<xdg-launch(1)>, for applications that need terminals.  This command
+can contain C<Exec> line substitutions; however, their C<%> must be
+escaped with an additional C<%>, and somewhere in the command line there
+must appear a L<printf(3)> style unescaped C<%s> expression to be
+substituted with the resource name.
 
 =back
 
@@ -1488,6 +1597,29 @@ specifications.
 Specifies the name of the icon theme.  When not specified, the icon
 theme will be determined from configuration sources (e.g. the
 F<$HOME/.gtkrc-2.0> file).
+
+=item C<$XDG_TERMINAL>
+
+Used by B<xde-menu>, or passed to L<xdg-launch(1)>, as the command to
+prefix to the C<Exec> line of terminal applications to launch
+applications within a terminal.
+
+=item C<$XDG_TERMRESN>
+
+Used by B<xde-menu>, or passed to L<xdg-launch(1)>, as the command to
+prefix to the exec line of terminal applications to launch applications
+within a terminal when a resource name is available to be set on the
+terminal.  (Not necessarily defined for all terminal types).
+
+=item C<$TERMINAL>
+
+Use by B<xde-menu>, or passed to L<xdg-launch(1)>, as the name of the
+preferred terminal program to run.  If this terminal is known to
+B<xde-menu>, it will automatically determine the corresponding
+B<XDG_TERMINAL> and B<XDG_TERMRESN> commands when they are not
+specified.
+See L</TERMINAL PROGRAMS>, above, for a list of known terminal emulation
+programs.
 
 =back
 
@@ -1588,7 +1720,7 @@ These are the locations (in order of preference) of a simple XML
 formatted recently used files list maintained by legacy applications (as
 well as L<xdg-launch(1)>).
 
-=item F<$XDG_DATA_HOME/recen-applications>
+=item F<$XDG_DATA_HOME/recent-applications>
 
 =item F<$HOME/.recent-applications>
 
