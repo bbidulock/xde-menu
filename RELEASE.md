@@ -1,23 +1,20 @@
-[xde-menu -- release notes.  2019-09-04]: #
+[xde-menu -- release notes.  2019-09-05]: #
 
-xde-menu 0.10 -- Maintenance release of xde-menu
+xde-menu 0.11 -- Maintenance release of xde-menu
 ================================================
 
-This is the tenth release of the xde-menu package that provides XDG
+This is another release of the xde-menu package that provides XDG
 compliant menu generation for a wide range of light-weight window
 managers as well as providing a pop-up and system-tray GTK+ menu.  All
 of the functionality is working, including many window-manager specific
 sub-menus and startup notification completion.
 
-This release is a maintenance release the updates the release build
-system, generates a better NEWS file, allows annotated tags, and
-maintains the release archives at lzip compression.  It also provides
-better autoconf directory defaults and improves the build process more.
-
-In addition to build improvements, this release includes the ability to
-select the terminal emulation program that is used to run desktop
-applications that specify `Terminal=true` in their desktop entry files,
-using environment variables or X resources.
+This release is a maintenance release, primarily for bug fixes, that
+addresses all outstanding issues at the time of release.  The package
+will no longer build against libgnome-menu, but only libgnome-menu-3.0,
+as the libgnome-menu build was failing and could not reasonably be fixed.
+It removes deprecated m4 macros from configure.ac and removes deprecated
+keywords from the desktop entry file.
 
 Included in the release is an autoconf tarball for building the package
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release
