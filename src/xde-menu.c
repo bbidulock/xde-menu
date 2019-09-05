@@ -1615,6 +1615,22 @@ xde_string_compare(gconstpointer a, gconstpointer b)
 	return strcasecmp(a, b);
 }
 
+static void
+fork_and_exit(void)
+{
+	pid_t pid = getpid();
+
+	if ((pid = fork()) < 0) {
+		EPRINTF("%s\n", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	if (!pid)
+		/* child continues */
+		return;
+	/* parent exits */
+	exit(EXIT_SUCCESS);
+}
+
 #ifdef HAVE_GNOME_MENUS_3
 
 static void
@@ -2129,7 +2145,7 @@ xde_gtk_common_menu(MenuContext *ctx, GMenuTreeDirectory *gmenu)
 	ctx->stack = g_list_delete_link(ctx->stack, ctx->stack);
 
 	gtk_widget_show_all(GTK_WIDGET(menu));
-	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+//	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(application_menu_key_press), NULL);
 	return (menu);
 }
@@ -2164,7 +2180,7 @@ xde_gtk_common_actions(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *i
 	if (!actions || !*actions)
 		return (menu);
 	menu = GTK_MENU(gtk_menu_new());
-	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+//	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(application_menu_key_press), NULL);
 	for (; actions && *actions; actions++) {
 		GtkMenuItem *item;
@@ -3283,7 +3299,7 @@ window_menu(GtkWidget *item, GdkEvent *event, gpointer user_data)
 		return GTK_EVENT_PROPAGATE;
 #if 0
 	menu = wnck_action_menu_new(win);
-	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+//	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	parent = gtk_widget_get_parent(item);
 	/* FIXME: need a menu position function like menu cascading. */
 	gtk_menu_popup(GTK_MENU(menu), parent, item, 
@@ -3293,7 +3309,7 @@ window_menu(GtkWidget *item, GdkEvent *event, gpointer user_data)
 	(void) parent;
 	if (!gtk_menu_item_get_submenu(GTK_MENU_ITEM(item))) {
 		menu = wnck_action_menu_new(win);
-		g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+//		g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu);
 	}
 	return GTK_EVENT_PROPAGATE;
@@ -3367,7 +3383,7 @@ window_menu_key_press(GtkWidget *menu, GdkEvent *event, gpointer user_data)
 		if (gtk_menu_item_get_submenu(GTK_MENU_ITEM(item)))
 			return GTK_EVENT_PROPAGATE;
 		submenu = wnck_action_menu_new(win);
-		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
+//		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
 		return GTK_EVENT_PROPAGATE;
 	} else if (ev->keyval == GDK_KEY_Escape) {
@@ -3444,7 +3460,7 @@ refill_workspace_menu(GtkWidget *menu)
 
 		submenu = gtk_menu_new();
 		g_signal_connect(G_OBJECT(submenu), "key_press_event", G_CALLBACK(window_menu_key_press), NULL);
-		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
+//		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
 
 		for (window = windows; window; window = window->next) {
 			GdkPixbuf *pixbuf;
@@ -3566,7 +3582,7 @@ refill_workspace_menu(GtkWidget *menu)
 
 		submenu = gtk_menu_new();
 		g_signal_connect(G_OBJECT(submenu), "key_press_event", G_CALLBACK(window_menu_key_press), NULL);
-		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
+//		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
 
 #if 1
 		icon = gtk_image_new_from_icon_name("preferences-desktop-display", GTK_ICON_SIZE_MENU);
@@ -3725,7 +3741,7 @@ refill_workspace_menu(GtkWidget *menu)
 
 		submenu = gtk_menu_new();
 		g_signal_connect(G_OBJECT(submenu), "key_press_event", G_CALLBACK(window_menu_key_press), NULL);
-		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
+//		g_signal_connect(G_OBJECT(submenu), "selection_done", G_CALLBACK(selection_done), NULL);
 
 		for (window = windows; window; window = window->next) {
 			GdkPixbuf *pixbuf;
@@ -3815,7 +3831,7 @@ xde_gtk_common_wkspcs(MenuContext *ctx)
 
 	menu = gtk_menu_new();
 	g_signal_connect(G_OBJECT(menu), "key_press_event", G_CALLBACK(workspace_menu_key_press), NULL);
-	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+//	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	item = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(workspace_menu_activate), menu);
 	gtk_menu_item_set_submenu(item, menu);
@@ -3854,9 +3870,11 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 	MenuContext *ctx = user_data;
 	GList *menu;
 	FILE *file = stdout;
+	GError *err = NULL;
 
-	if (!gmenu_tree_load_sync(tree, NULL)) {
-		EPRINTF("could not sync menu %s\n", options.rootmenu);
+	if (!gmenu_tree_load_sync(tree, &err) || err) {
+		EPRINTF("could not sync menu %s: %s\n", options.rootmenu, err ? err->message : NULL);
+		g_clear_error(&err);
 		return;
 	}
 	if (ctx->xsessions) {
@@ -3881,22 +3899,6 @@ menu_tree_changed(GMenuTree *tree, gpointer user_data)
 		g_object_unref(ctx->menu);
 		ctx->menu = NULL;
 	}
-}
-
-static void
-fork_and_exit(void)
-{
-	pid_t pid = getpid();
-
-	if ((pid = fork()) < 0) {
-		EPRINTF("%s\n", strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-	if (!pid)
-		/* child continues */
-		return;
-	/* parent exits */
-	exit(EXIT_SUCCESS);
 }
 
 static void
@@ -4098,6 +4100,12 @@ make_menu(void)
 	tree = NULL;
 }
 
+static void
+menu_generate(void)
+{
+	make_menu();
+}
+
 #endif				/* HAVE_GNOME_MENUS_3 */
 
 static MenuContext *
@@ -4168,6 +4176,7 @@ menu_pop(XdeScreen *xscr)
 	MenuContext *ctx;
 	GMenuTree *tree;
 	GtkMenu *menu;
+	GError *err = NULL;
 
 	if (!(tree = get_menu())) {
 		EPRINTF("could not allocate menu tree\n");
@@ -4182,14 +4191,15 @@ menu_pop(XdeScreen *xscr)
 	ctx->level = 0;
 	ctx->indent = calloc(64, sizeof(*ctx->indent));
 
-	if (!gmenu_tree_load_sync(tree, NULL)) {
-		EPRINTF("could not sync menu %s\n", options.rootmenu);
+	if (!gmenu_tree_load_sync(tree, &err) || err) {
+		EPRINTF("could not sync menu %s: %s\n", options.rootmenu, err ?  err->message : NULL);
+		g_clear_error(&err);
 		return;
 	}
 	DPRINTF(1, "calling create!\n");
 	menu = ctx->gtk.create(ctx, options.style, NULL);
 	DPRINTF(1, "done create!\n");
-	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
+//	g_signal_connect(G_OBJECT(menu), "selection_done", G_CALLBACK(selection_done), NULL);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, position_menu, find_monitor(),
 		       have_button(options.button), options.timestamp);
 }
@@ -4199,6 +4209,7 @@ menu_show(XdeScreen *xscr)
 {
 	MenuContext *ctx;
 	GMenuTree *tree;
+	GError *err = NULL;
 
 	if (!(ctx = xscr->context)) {
 		EPRINTF("no menu context for screen %d\n", xscr->index);
@@ -4210,8 +4221,9 @@ menu_show(XdeScreen *xscr)
 			return;
 		}
 		DPRINTF(1, "poping the GTK+ menu for button %d\n", options.button);
-		if (!gmenu_tree_load_sync(tree, NULL)) {
-			EPRINTF("could not sync menu %s\n", options.rootmenu);
+		if (!gmenu_tree_load_sync(tree, &err) || err) {
+			EPRINTF("could not sync menu %s: %s\n", options.rootmenu, err ? err->message : NULL);
+			g_clear_error(&err);
 			return;
 		}
 		DPRINTF(1, "calling create!\n");
@@ -6526,6 +6538,7 @@ button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 	GMenuTree *tree;
 	GdkEventButton *ev;
 	int screen = 0;
+	GError *err = NULL;
 
 	ev = (typeof(ev)) event;
 	if (ev->button != 1)
@@ -6543,8 +6556,9 @@ button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 			EPRINTF("no menu tree for context for screen %d\n", screen);
 			return GTK_EVENT_STOP;
 		}
-		if (!gmenu_tree_load_sync(tree, NULL)) {
-			EPRINTF("could not sync menu %s\n", options.rootmenu);
+		if (!gmenu_tree_load_sync(tree, &err) || err) {
+			EPRINTF("could not sync menu %s: %s\n", options.rootmenu, err ? err->message : NULL);
+			g_clear_error(&err);
 			return GTK_EVENT_STOP;
 		}
 		DPRINTF(1, "calling create!\n");
@@ -6575,6 +6589,7 @@ save_selected(GtkMenuItem *item, gpointer user_data)
 #endif
 }
 
+#ifdef HAVE_GNOME_MENUS_3
 static void
 popup_refresh(XdeScreen *xscr)
 {
@@ -6602,6 +6617,7 @@ refresh_selected(GtkMenuItem *item, gpointer user_data)
 	popup_refresh(xscr);
 	return;
 }
+#endif				/* HAVE_GNOME_MENUS_3 */
 
 void
 about_selected(GtkMenuItem *item, gpointer user_data)
@@ -6680,10 +6696,12 @@ popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
+#ifdef HAVE_GNOME_MENUS_3
 	item = gtk_image_menu_item_new_from_stock("gtk-refresh", NULL);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(refresh_selected), xscr);
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
+#endif
 
 	item = gtk_image_menu_item_new_from_stock("gtk-about", NULL);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(about_selected), xscr);
@@ -8403,7 +8421,9 @@ event_handler_ClientMessage(XEvent *xev)
 		set_flags(xev->xclient.data.l[2]);
 		set_word1(xev->xclient.data.l[3]);
 		set_word2(xev->xclient.data.l[4]);
+#ifdef HAVE_GNOME_MENUS_3
 		popup_refresh(xscr);
+#endif
 		return GDK_FILTER_REMOVE;
 	} else if (type == _XA_PREFIX_RESTART) {
 		set_scmon(xev->xclient.data.l[1]);
