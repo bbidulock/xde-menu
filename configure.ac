@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
-AC_INIT([xde-menu],[0.10.3],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
-AC_REVISION([0.10.3])
+AC_INIT([xde-menu],[0.10.7],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
+AC_REVISION([0.10.7])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,10 +20,10 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2019-09-04'
+DATE='2019-09-05'
 AC_SUBST([DATE])
 
-MDOCDATE='September 4, 2019'
+MDOCDATE='September 5, 2019'
 AC_SUBST([MDOCDATE])
 
 BRANCH='master'
@@ -129,21 +129,23 @@ PKG_CHECK_MODULES([WNCK],[libwnck-1.0])
 PKG_CHECK_MODULES([CAIRO],[cairo])
 dnl PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
 
-AC_ARG_ENABLE([gnome-menus3],
-	AC_HELP_STRING([--disable-gnome-menus3],
-		[Disable GNOME menus 3.0 (use 2.0 instead) @<:@default=auto@:>@]))
-if test "x$enable_gnome_menus3" != xno ; then
-	PKG_CHECK_MODULES([GNOME_MENU],[libgnome-menu-3.0],
-		[AC_DEFINE([HAVE_GNOME_MENUS_3],[1],[Define to 1 to support GNOME menus 3.])],
-		[enable_gnome_menus3=no])
-fi
-AC_MSG_CHECKING([for GNOME MENUS 3 support])
-AC_MSG_RESULT([${enable_gnome_menus3:-yes}])
-
-if test "x$enable_gnome_menus3" = xno ; then
-	PKG_CHECK_MODULES([GNOME_MENU],[libgnome-menu])
-	PKG_CHECK_MODULES([GIO_UNIX],[gio-unix-2.0])
-fi
+PKG_CHECK_MODULES([GNOME_MENU],[libgnome-menu-3.0],
+		[AC_DEFINE([HAVE_GNOME_MENUS_3],[1],[Define to 1 to support GNOME menus 3.])])
+dnl AC_ARG_ENABLE([gnome-menus3],
+dnl 	AC_HELP_STRING([--disable-gnome-menus3],
+dnl 		[Disable GNOME menus 3.0 (use 2.0 instead) @<:@default=auto@:>@]))
+dnl if test "x$enable_gnome_menus3" != xno ; then
+dnl 	PKG_CHECK_MODULES([GNOME_MENU],[libgnome-menu-3.0],
+dnl 		[AC_DEFINE([HAVE_GNOME_MENUS_3],[1],[Define to 1 to support GNOME menus 3.])],
+dnl 		[enable_gnome_menus3=no])
+dnl fi
+dnl AC_MSG_CHECKING([for GNOME MENUS 3 support])
+dnl AC_MSG_RESULT([${enable_gnome_menus3:-yes}])
+dnl 
+dnl if test "x$enable_gnome_menus3" = xno ; then
+dnl 	PKG_CHECK_MODULES([GNOME_MENU],[libgnome-menu])
+dnl 	PKG_CHECK_MODULES([GIO_UNIX],[gio-unix-2.0])
+dnl fi
 
 dnl AC_ARG_ENABLE([xrandr],
 dnl 	AC_HELP_STRING([--disable-xrandr],
