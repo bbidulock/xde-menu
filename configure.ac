@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
-AC_INIT([xde-menu],[0.10.7],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
-AC_REVISION([0.10.7])
+AC_INIT([xde-menu],[0.11],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
+AC_REVISION([0.11])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -26,11 +26,11 @@ AC_SUBST([DATE])
 MDOCDATE='September 5, 2019'
 AC_SUBST([MDOCDATE])
 
-BRANCH='master'
+BRANCH='0.11'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 

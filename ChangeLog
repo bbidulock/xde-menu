@@ -1,5 +1,108 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 6eb98d872a51abc3e683a57865400769c99d3d53
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 04:59:41 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
+
+commit 1f989278f01838c00f9018f8eeea03c50af9a1af
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 01:54:13 2019 -0600
+
+    remove deprecated Encoding for issue #5
+
+ data/xde-menu.desktop | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 1d0fe968b36154529885449f4021e1f0061fbc83
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 01:50:59 2019 -0600
+
+    require libgnome-menu-3.0 only now
+
+    - it has same dependencies as libgnome-menu (glib2)
+    - it is no larger really
+    - it provides much better support
+
+ configure.ac | 40 +++++++++++++++++++++-------------------
+ 1 file changed, 21 insertions(+), 19 deletions(-)
+
+commit bededdcdcbdf52e00532b7b03571076c6c6114c5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 01:46:45 2019 -0600
+
+    add gio-unix flags to Makefile
+
+ src/Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit f702942b12f893c037d719c81ed8c344864ad3ed
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 01:45:46 2019 -0600
+
+    handle some gnome-menus-3.0'isms and log better errors
+
+ src/xde-menu.c | 88 +++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 54 insertions(+), 34 deletions(-)
+
+commit 6eff6652da0114111074ee19f66034ad2a9c60c7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 01:45:05 2019 -0600
+
+    handle missing flags in gnome-menus-2.0
+
+ src/xde-menu.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+commit 85a02dbbe936774cd3f070f7ec673b0de785789d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 01:00:33 2019 -0600
+
+    need gio-unix-2.0 includes
+
+ configure.ac | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+commit d5ec6dda460071c3c70c161ea5ced4849ad56b2f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 4 09:46:57 2019 -0600
+
+    fix search for .menu file to address issue #4
+
+    - no-prefix path was not included in search: now added to end of
+      search
+    - when both XDG_MENU_PREFIX and XDG_VENDOR_ID were specified,
+      delimiter was not added first, resulting in mangled prefix in
+      search
+    - XDG_MENU_PREFIX should be searched before ${XDG_VENDOR_ID}-
+      because it is more specific
+
+ src/xde-menu.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+commit abf12da61e99cbf188ac90b044edf8584c699564
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 4 09:19:32 2019 -0600
+
+    remove deprecated macro for issue #7
+
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit d91ad9fb39d02e4655b81b54ba2bec4fa6a26d14
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 4 09:18:30 2019 -0600
+
+    post-release commit
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
 commit 1bfb93c4007d66613467da01cbc4064c0b25d215
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Sep 4 00:26:19 2019 -0600

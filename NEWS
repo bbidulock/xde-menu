@@ -1,4 +1,43 @@
-xde-menu -- history of user-visible changes.  2019-09-04
+xde-menu -- history of user-visible changes.  2019-09-05
+
+Release xde-menu-0.11 released 2019-09-05
+-----------------------------------------
+
+git tag -n100 -l 0.11
+
+0.11            xde-menu 0.11 - Maintenance release of xde-menu
+
+    This is another release of the xde-menu package that provides XDG
+    compliant menu generation for a wide range of light-weight window
+    managers as well as providing a pop-up and system-tray GTK+ menu. All
+    of the functionality is working, including many window-manager specific
+    sub-menus and startup notification completion.
+
+    This release is a maintenance release, primarily for bug fixes, that
+    addresses all outstanding issues at the time of release. The package
+    will no longer build against libgnome-menu, but only libgnome-menu-3.0,
+    as the libgnome-menu build was failing and could not reasonably be
+    fixed. It removes deprecated m4 macros from configure.ac and removes
+    deprecated keywords from the desktop entry file.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.10...0.11
+
+Brian Bidulock <bidulock@openss7.org> (10):
+      post-release commit
+      remove deprecated macro for issue #7
+      fix search for .menu file to address issue #4
+      need gio-unix-2.0 includes
+      handle missing flags in gnome-menus-2.0
+      handle some gnome-menus-3.0'isms and log better errors
+      add gio-unix flags to Makefile
+      require libgnome-menu-3.0 only now
+      remove deprecated Encoding for issue #5
+      update release notes
+
 
 Release xde-menu-0.10 released 2019-09-04
 -----------------------------------------
@@ -184,47 +223,5 @@ Brian Bidulock <bidulock@openss7.org> (20):
       one too many
       update release files
       final release tweaks
-      update release files
-
-
-Release xde-menu-0.4 released 2016-08-12
-----------------------------------------
-
-git shortlog -e -n -w80,6,8 0.3...0.4
-
-Brian Bidulock <bidulock@openss7.org> (34):
-      cosmetics
-      git hates trailing space
-      better formatting
-      limit changelog
-      better debugging and track monitors
-      track and pop by monitor
-      show monitor option in help
-      commit missing file
-      remove old libunique method
-      no longer need libuique
-      compiles
-      fix locale free error
-      fix non-popping menus
-      rationalize a bit
-      some loop in update_client_list
-      more common file updates
-      split menufile from config file filename
-      update documentation and help message
-      compiles
-      updates
-      install configuration defaults
-      more debugging
-      even more debugs
-      careful with logic
-      correct masks
-      get more resources
-      some corrects and remove debug memory leaks
-      match documentation
-      get rid of keep parameter
-      minor updates
-      build workspace menu on the fly
-      update todo items
-      use allocation not requisition
       update release files
 
