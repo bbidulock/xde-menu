@@ -148,6 +148,11 @@
 #include <getopt.h>
 #endif
 
+#ifndef HAVE_GNOME_MENUS_3
+#define GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED	1 << 4
+#define GMENU_TREE_FLAGS_SORT_DISPLAY_NAME	1 << 5
+#endif
+
 /** @} */
 
 /** @section Preamble
