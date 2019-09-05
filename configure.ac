@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
-AC_INIT([xde-menu],[0.10],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
-AC_REVISION([0.10])
+AC_INIT([xde-menu],[0.10.3],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
+AC_REVISION([0.10.3])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -26,11 +26,11 @@ AC_SUBST([DATE])
 MDOCDATE='September 4, 2019'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.10'
+BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 
@@ -142,6 +142,7 @@ AC_MSG_RESULT([${enable_gnome_menus3:-yes}])
 
 if test "x$enable_gnome_menus3" = xno ; then
 	PKG_CHECK_MODULES([GNOME_MENU],[libgnome-menu])
+	PKG_CHECK_MODULES([GIO_UNIX],[gio-unix-2.0])
 fi
 
 dnl AC_ARG_ENABLE([xrandr],
