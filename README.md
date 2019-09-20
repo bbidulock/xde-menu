@@ -57,6 +57,13 @@ For general information on GNU's `./configure`, see the file
 [INSTALL][7].
 
 
+Packaging status
+----------------
+
+- [Fedora](https://apps.fedoraproject.org/packages/xde-menu): `sudo dnf install xde-menu`
+- Arch Linux ([AUR](https://aur.archlinux.org/packages/xde-menu))
+
+
 Running
 -------
 
