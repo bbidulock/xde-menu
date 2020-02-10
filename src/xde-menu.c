@@ -375,6 +375,8 @@ find_monitor(void)
 static gboolean
 position_pointer(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 {
+	(void) widget;
+	(void) xmon;
 	PTRACE(5);
 	gdk_display_get_pointer(disp, NULL, x, y, NULL);
 	return TRUE;
@@ -400,6 +402,7 @@ position_topleft_workarea(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 #if 1
 	WnckWorkspace *wkspc;
 
+	(void) widget;
 	/* XXX: not sure this is what we want... */
 	wkspc = wnck_screen_get_active_workspace(xmon->xscr->wnck);
 	*x = wnck_workspace_get_viewport_x(wkspc);
@@ -409,6 +412,7 @@ position_topleft_workarea(GtkWidget *widget, XdeMonitor *xmon, gint *x, gint *y)
 	GdkRectangle rect;
 	gint px, py, nmon;
 
+	(void) widget;
 	PTRACE(5);
 	gdk_display_get_pointer(disp, &scr, &px, &py, NULL);
 	nmon = gdk_screen_get_monitor_at_point(scr, px, py);
@@ -886,6 +890,7 @@ xde_test_icon_ext(MenuContext *ctx, const char *path, int flags)
 {
 	char *p;
 
+	(void) ctx;
 	if ((p = strrchr(path, '.'))) {
 		if ((flags & GET_ENTRY_ICON_FLAG_XPM) && strcmp(p, ".xpm") == 0)
 			return TRUE;
@@ -1183,6 +1188,7 @@ xde_subst_command(char *cmd, const char *appid, const char *icon, const char *na
 	int len;
 	char *p;
 
+	(void) appid;
 	xde_do_subst(cmd, "i", icon);
 	xde_do_subst(cmd, "c", name);
 	xde_do_subst(cmd, "C", wmclass);
@@ -1696,6 +1702,7 @@ display_entry(FILE *file, GMenuTreeEntry *entry, int level)
 static void
 display_separator(FILE *file, GMenuTreeSeparator *separator, int level)
 {
+	(void) separator;
 	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Separator");
 }
@@ -1703,6 +1710,7 @@ display_separator(FILE *file, GMenuTreeSeparator *separator, int level)
 static void
 display_header(FILE *file, GMenuTreeHeader *header, int level)
 {
+	(void) header;
 	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Header");
 }
@@ -1710,6 +1718,7 @@ display_header(FILE *file, GMenuTreeHeader *header, int level)
 static void
 display_alias(FILE *file, GMenuTreeAlias *alias, int level)
 {
+	(void) alias;
 	display_level(file, level);
 	fprintf(file, "%s\n", "Menu Alias");
 }
@@ -2021,7 +2030,10 @@ selection_done(GtkMenuShell *menushell, gpointer user_data)
 	OPRINTF(1, "Selection done: exiting\n");
 	if (!gtk_menu_get_tearoff_state(GTK_MENU(menushell)))
 		mainloop_quit();
+#else
+	(void) menushell;
 #endif
+	(void) user_data;
 }
 
 static gboolean
@@ -2056,6 +2068,7 @@ application_deselect(GtkItem * item, gpointer user_data)
 {
 	GtkWidget *menu;
 
+	(void) user_data;
 	OPRINTF(1, "Menu item [%s] deselected\n", gtk_menu_item_get_label(GTK_MENU_ITEM(item)));
 	if ((menu = gtk_widget_get_parent(GTK_WIDGET(item))))
 		g_object_set_data(G_OBJECT(menu), "selected-item", NULL);
@@ -2068,6 +2081,7 @@ application_menu_key_press(GtkWidget *menu, GdkEvent *event, gpointer user_data)
 	GtkWidget *item;
 	gchar *cmd;
 
+	(void) user_data;
 	OPRINTF(1, "Application menu key press\n");
 	if (!(item = g_object_get_data(G_OBJECT(menu), "selected-item"))) {
 		OPRINTF(1, "No selected item!\n");
@@ -2196,6 +2210,8 @@ xde_gtk_common_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
+	(void) sep;
 	item = GTK_MENU_ITEM(gtk_separator_menu_item_new());
 	return (item);
 }
@@ -2337,10 +2353,11 @@ xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data)
 	char *cmd, *exec;
 	int result;
 
+	(void) menuitem;
 	if ((cmd = user_data)) {
 		exec = g_strdup_printf("exec %s &", cmd);
 		DPRINTF(1, "executing: system(\"%s\")\n", exec);
-		if ((result = system(cmd)) == -1) ;
+		if ((result = system(cmd)) == -1) { }
 		free(exec);
 	} else
 		EPRINTF("no command to execute!\n");
@@ -2349,6 +2366,7 @@ xde_entry_activated(GtkMenuItem *menuitem, gpointer user_data)
 void
 xde_entry_disconnect(gpointer data, GClosure *closure)
 {
+	(void) closure;
 	free(data);
 }
 
@@ -2601,6 +2619,7 @@ xde_gtk_common_pin(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	item = GTK_MENU_ITEM(gtk_tearoff_menu_item_new());
 	gtk_widget_show_all(GTK_WIDGET(item));
 	return (item);
@@ -2729,6 +2748,7 @@ xde_common_get_styles(MenuContext *ctx, const char *dname, const char *fname, co
 	struct dirent *d;
 	DIR *dir;
 
+	(void) ctx;
 	if (!(dir = opendir(dname))) {
 		DPRINTF(1, "%s: %s\n", dname, strerror(errno));
 		return (list);
@@ -2803,6 +2823,7 @@ xde_common_get_themes(MenuContext *ctx)
 	GList *list = NULL;
 	char *p;
 
+	(void) ctx;
 	for (p = xdg_data_path; p < xdg_data_last; p += strlen(p) + 1) {
 		int len = strlen(p) + strlen(subdir) + 1;
 		char *dirname = calloc(len, sizeof(*dirname));
@@ -2863,6 +2884,7 @@ xde_common_find_themes(MenuContext *ctx, GList *styles)
 	static const char *subdir = "/themes/";
 	GList *list = NULL, *style;
 
+	(void) ctx;
 	for (style = styles; style; style = style->next) {
 		char *copy, *theme, *dir, *p;
 		int tlen;
@@ -3230,6 +3252,7 @@ workspace_deselect(GtkItem *item, gpointer user_data)
 {
 	GtkWidget *menu;
 
+	(void) user_data;
 	OPRINTF(1, "Menu item [%s] deselected\n", gtk_menu_item_get_label(GTK_MENU_ITEM(item)));
 	if ((menu = gtk_widget_get_parent(GTK_WIDGET(item))))
 		g_object_set_data(G_OBJECT(menu), "selected-item", NULL);
@@ -3256,6 +3279,7 @@ workspace_menu_key_press(GtkWidget *menu, GdkEvent *event, gpointer user_data)
 	GtkWidget *item;
 	WnckWorkspace *work;
 
+	(void) user_data;
 	OPRINTF(1, "Window menu key press\n");
 	if (!(item = g_object_get_data(G_OBJECT(menu), "selected-item"))) {
 		OPRINTF(1, "No selected item!\n");
@@ -3332,6 +3356,7 @@ window_deselect(GtkItem *item, gpointer user_data)
 {
 	GtkWidget *menu;
 
+	(void) user_data;
 	OPRINTF(1, "Menu item [%s] deselected\n", gtk_menu_item_get_label(GTK_MENU_ITEM(item)));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), NULL);
 	if ((menu = gtk_widget_get_parent(GTK_WIDGET(item))))
@@ -3362,6 +3387,7 @@ window_menu_key_press(GtkWidget *menu, GdkEvent *event, gpointer user_data)
 	GtkWidget *item, *submenu;
 	WnckWindow *win;
 
+	(void) user_data;
 	OPRINTF(1, "Workspace menu key press\n");
 	if (!(item = g_object_get_data(G_OBJECT(menu), "selected-item"))) {
 		OPRINTF(1, "No selected item!\n");
@@ -3401,6 +3427,8 @@ add_workspace(GtkMenuItem *item, gpointer user_data)
 	WnckScreen *wnck = user_data;
 	int count;
 
+	(void) item;
+	(void) user_data;
 	if ((count = wnck_screen_get_workspace_count(wnck)) && count < 32)
 		wnck_screen_change_workspace_count(wnck, count + 1);
 }
@@ -3411,6 +3439,8 @@ del_workspace(GtkMenuItem *item, gpointer user_data)
 	WnckScreen *wnck = user_data;
 	int count;
 
+	(void) item;
+	(void) user_data;
 	if ((count = wnck_screen_get_workspace_count(wnck)) && count > 1)
 		wnck_screen_change_workspace_count(wnck, count - 1);
 }
@@ -3541,7 +3571,8 @@ refill_workspace_menu(GtkWidget *menu)
 	gtk_menu_append(menu, sep);
 	gtk_widget_show(sep);
 	for (workspace = workspaces; workspace; workspace = workspace->next) {
-		int wnum, len;
+		int wnum;
+		size_t len;
 		WnckWorkspace *work;
 		const char *name;
 		GtkWidget *item, *submenu, *title, *icon;
@@ -3808,6 +3839,7 @@ refill_workspace_menu(GtkWidget *menu)
 static void
 destroy_child(GtkWidget *child, gpointer user_data)
 {
+	(void) user_data;
 	gtk_widget_destroy(child);
 }
 
@@ -3816,6 +3848,8 @@ workspace_menu_activate(GtkMenuItem *item, gpointer user_data)
 {
 	GtkWidget *menu = user_data;
 
+	(void) item;
+	(void) user_data;
 	gtk_container_foreach(GTK_CONTAINER(menu), destroy_child, NULL);
 	refill_workspace_menu(menu);
 }
@@ -5165,6 +5199,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 		&prop[10]
 	};
 
+	(void) data;
 	j = 0;
 
 	/* CloneCommand: This is like the RestartCommand except it restarts a copy of the
@@ -5427,6 +5462,9 @@ clientSaveYourselfPhase2CB(SmcConn smcConn, SmPointer data)
 static void
 clientSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown, int interactStyle, Bool fast)
 {
+	(void) saveType;
+	(void) interactStyle;
+	(void) fast;
 	if (!(shutting_down = shutdown)) {
 		if (!SmcRequestSaveYourselfPhase2(smcConn, clientSaveYourselfPhase2CB, data))
 			SmcSaveYourselfDone(smcConn, False);
@@ -5446,6 +5484,7 @@ clientSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdow
 static void
 clientDieCB(SmcConn smcConn, SmPointer data)
 {
+	(void) data;
 	SmcCloseConnection(smcConn, 0, NULL);
 	shutting_down = False;
 	mainloop_quit();
@@ -5454,6 +5493,8 @@ clientDieCB(SmcConn smcConn, SmPointer data)
 static void
 clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
 {
+	(void) smcConn;
+	(void) data;
 	if (saving_yourself) {
 		saving_yourself = False;
 		mainloop_quit();
@@ -5475,6 +5516,8 @@ clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
 static void
 clientShutdownCancelledCB(SmcConn smcConn, SmPointer data)
 {
+	(void) smcConn;
+	(void) data;
 	shutting_down = False;
 	mainloop_quit();
 }
@@ -6578,12 +6621,15 @@ static void popup_show(XdeScreen *xscr);
 static void
 edit_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
 	popup_show(user_data);
 }
 
 static void
 save_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 #if 0
 	edit_sav_values();
 #endif
@@ -6614,6 +6660,7 @@ refresh_selected(GtkMenuItem *item, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
 
+	(void) item;
 	popup_refresh(xscr);
 	return;
 }
@@ -6623,6 +6670,9 @@ void
 about_selected(GtkMenuItem *item, gpointer user_data)
 {
 	gchar *authors[] = { "Brian F. G. Bidulock <bidulock@openss7.org>", NULL };
+
+	(void) item;
+	(void) user_data;
 	gtk_show_about_dialog(NULL,
 			      "authors", authors,
 			      "comments", "An XDG compliant menu system.",
@@ -6669,12 +6719,16 @@ popup_restart(void)
 void
 redo_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 	popup_restart();
 }
 
 void
 quit_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 	mainloop_quit();
 }
 
@@ -6759,6 +6813,11 @@ query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_mode,
 	XdeScreen *xscr = user_data;
 
 	(void) xscr;
+	(void) icon;
+	(void) x;
+	(void) y;
+	(void) keyboard_mode;
+	(void) tooltip;
 #if 0
 	if (xscr->ttwindow) {
 		present_popup(xscr);
@@ -6805,6 +6864,7 @@ systray_tooltip(XdeScreen *xscr)
 	if (xscr->ttwindow)
 		return;
 
+	(void) xscr;
 	w = gtk_window_new(GTK_WINDOW_POPUP);
 	gtk_widget_add_events(w, GDK_ALL_EVENTS_MASK);
 	gtk_window_set_accept_focus(GTK_WINDOW(w), TRUE);
@@ -6846,6 +6906,8 @@ maximum volume: from 0% to 100%.");
 	g_signal_connect(G_OBJECT(w), "realize", G_CALLBACK(popup_widget_realize), xscr);
 
 	xscr->ttwindow = w;
+#else
+	(void) xscr;
 #endif
 }
 
@@ -7102,30 +7164,43 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 static void
 workspace_destroyed(WnckScreen *wnck, WnckWorkspace *space, gpointer data)
 {
+	(void) wnck;
+	(void) space;
+	(void) data;
 	/* pager can handle this on its own */
 }
 
 static void
 workspace_created(WnckScreen *wnck, WnckWorkspace *space, gpointer data)
 {
+	(void) wnck;
+	(void) space;
+	(void) data;
 	/* pager can handle this on its own */
 }
 
 static void
 viewports_changed(WnckScreen *wnck, gpointer data)
 {
+	(void) wnck;
+	(void) data;
 	/* pager can handle this on its own */
 }
 
 static void
 background_changed(WnckScreen *wnck, gpointer data)
 {
+	(void) wnck;
+	(void) data;
 	/* XXX: might have setbg do something here */
 }
 
 static void
 active_workspace_changed(WnckScreen *wnck, WnckWorkspace *prev, gpointer data)
 {
+	(void) wnck;
+	(void) prev;
+	(void) data;
 	/* XXX: should be handled by update_current_desktop */
 }
 #endif
@@ -7139,31 +7214,47 @@ active_workspace_changed(WnckScreen *wnck, WnckWorkspace *prev, gpointer data)
 static void
 actions_changed(WnckWindow *window, WnckWindowActions changed, WnckWindowActions state, gpointer xscr)
 {
+	(void) window;
+	(void) changed;
+	(void) state;
+	(void) xscr;
 }
 
 static void
 geometry_changed(WnckWindow *window, gpointer xscr)
 {
+	(void) window;
+	(void) xscr;
 }
 
 static void
 icon_changed(WnckWindow *window, gpointer xscr)
 {
+	(void) window;
+	(void) xscr;
 }
 
 static void
 name_changed(WnckWindow *window, gpointer xscr)
 {
+	(void) window;
+	(void) xscr;
 }
 
 static void
 state_changed(WnckWindow *window, WnckWindowState changed, WnckWindowState state, gpointer xscr)
 {
+	(void) window;
+	(void) changed;
+	(void) state;
+	(void) xscr;
 }
 
 static void
 workspace_changed(WnckWindow *window, gpointer xscr)
 {
+	(void) window;
+	(void) xscr;
 }
 #endif
 
@@ -7309,35 +7400,42 @@ active_window_changed(WnckScreen *wnck, WnckWindow *prev, gpointer user)
 static void
 clients_changed(WnckScreen *wnck, XdeScreen *xscr)
 {
+	(void) wnck;
+	(void) xscr;
 }
 
 static void
-application_closed(WnckScreen *wnck, WnckApplication * app, gpointer xscr)
+application_closed(WnckScreen *wnck, WnckApplication *app, gpointer xscr)
 {
+	(void) app;
 	clients_changed(wnck, xscr);
 }
 
 static void
-application_opened(WnckScreen *wnck, WnckApplication * app, gpointer xscr)
+application_opened(WnckScreen *wnck, WnckApplication *app, gpointer xscr)
 {
+	(void) app;
 	clients_changed(wnck, xscr);
 }
 
 static void
-class_group_closed(WnckScreen *wnck, WnckClassGroup * class_group, gpointer xscr)
+class_group_closed(WnckScreen *wnck, WnckClassGroup *class_group, gpointer xscr)
 {
+	(void) class_group;
 	clients_changed(wnck, xscr);
 }
 
 static void
-class_group_opened(WnckScreen *wnck, WnckClassGroup * class_group, gpointer xscr)
+class_group_opened(WnckScreen *wnck, WnckClassGroup *class_group, gpointer xscr)
 {
+	(void) class_group;
 	clients_changed(wnck, xscr);
 }
 
 static void
 window_closed(WnckScreen *wnck, WnckWindow *window, gpointer xscr)
 {
+	(void) window;
 	clients_changed(wnck, xscr);
 }
 
@@ -7362,6 +7460,8 @@ window_stacking_changed(WnckScreen *wnck, gpointer xscr)
 static void
 showing_desktop_changed(WnckScreen *wnck, gpointer xscr)
 {
+	(void) wnck;
+	(void) xscr;
 }
 
 /** @} */
@@ -7632,17 +7732,22 @@ update_client_list(XdeScreen *xscr, Atom prop)
 			mstacked[m] = g_list_append(mstacked[m], window);
 		}
 	}
+#else
+	(void) xscr;
+	(void) prop;
 #endif
 }
 
 static void
 update_screen_active_window(XdeScreen *xscr)
 {
+	(void) xscr;
 }
 
 static void
 update_monitor_active_window(XdeMonitor *xmon)
 {
+	(void) xmon;
 }
 
 static void
@@ -7652,8 +7757,7 @@ update_active_window(XdeScreen *xscr, Atom prop)
 	Atom actual = None;
 	int format = 0;
 	unsigned long nitems = 0, after = 0;
-	unsigned long *data = NULL;
-	int i, j = 0, *x;
+	unsigned long i, j = 0, *x, *data = NULL;
 	Window *active;
 	GdkWindow **window;
 	XdeMonitor *xmon;
@@ -7668,7 +7772,7 @@ update_active_window(XdeScreen *xscr, Atom prop)
 				       &nitems, &after, (unsigned char **) &data) == Success &&
 		    format == 32 && nitems >= 1 && data) {
 			active[0] = data[0];
-			if (nitems > 1 && nitems == xscr->nmon) {
+			if (nitems > 1 && nitems == (unsigned long) xscr->nmon) {
 				xscr->mhaware = True;
 				x = &i;
 			} else
@@ -7684,7 +7788,7 @@ update_active_window(XdeScreen *xscr, Atom prop)
 				       &nitems, &after, (unsigned char **) &data) == Success &&
 		    format == 32 && nitems >= 1 && data) {
 			active[0] = data[0];
-			if (nitems > 1 && nitems == xscr->nmon) {
+			if (nitems > 1 && nitems == (unsigned long) xscr->nmon) {
 				xscr->mhaware = True;
 				x = &i;
 			} else
@@ -7702,9 +7806,9 @@ update_active_window(XdeScreen *xscr, Atom prop)
 		xscr->active.now = window[0];
 		update_screen_active_window(xscr);
 	}
-	for (i = 0, xmon = xscr->mons; i < xscr->nmon; i++, xmon++) {
+	for (i = 0, xmon = xscr->mons; i < (unsigned long) xscr->nmon; i++, xmon++) {
 		if ((window[i + 1] = gdk_x11_window_foreign_new_for_display(disp, active[i + 1]))) {
-			if ((i != gdk_screen_get_monitor_at_window(xscr->scrn, window[i + 1]))) {
+			if ((i != (unsigned long) gdk_screen_get_monitor_at_window(xscr->scrn, window[i + 1]))) {
 				g_object_unref(G_OBJECT(window[i + 1]));
 				window[i + 1] = NULL;
 				continue;
@@ -7723,6 +7827,9 @@ update_active_window(XdeScreen *xscr, Atom prop)
 static void
 update_screen_size(XdeScreen *xscr, int new_width, int new_height)
 {
+	(void) xscr;
+	(void) new_width;
+	(void) new_height;
 }
 
 static void
@@ -7737,6 +7844,9 @@ create_monitor(XdeScreen *xscr, XdeMonitor *xmon, int m)
 static void
 delete_monitor(XdeScreen *xscr, XdeMonitor *mon, int m)
 {
+	(void) xscr;
+	(void) mon;
+	(void) m;
 }
 
 static void
@@ -8464,6 +8574,8 @@ client_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 {
 	XEvent *xev = (typeof(xev)) xevent;
 
+	(void) event;
+	(void) data;
 	PTRACE(5);
 	switch (xev->type) {
 	case ClientMessage:
@@ -8519,6 +8631,7 @@ selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XEvent *xev = (typeof(xev)) xevent;
 	XdeScreen *xscr = data;
 
+	(void) event;
 	PTRACE(5);
 	switch (xev->type) {
 	case SelectionClear:
@@ -8535,6 +8648,7 @@ laywin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XEvent *xev = (typeof(xev)) xevent;
 	XdeScreen *xscr = data;
 
+	(void) event;
 	PTRACE(5);
 	switch (xev->type) {
 	case SelectionClear:
@@ -8619,6 +8733,7 @@ root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XEvent *xev = (typeof(xev)) xevent;
 	XdeScreen *xscr = data;
 
+	(void) event;
 	PTRACE(5);
 	switch (xev->type) {
 	case PropertyNotify:
@@ -8630,12 +8745,16 @@ root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 static GdkFilterReturn
 events_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 {
+	(void) xevent;
+	(void) event;
+	(void) data;
 	return GDK_FILTER_CONTINUE;
 }
 
 int
 handler(Display *display, XErrorEvent *xev)
 {
+	(void) display;
 	if (options.debug) {
 		char msg[80], req[80], num[80], def[80];
 
@@ -8653,6 +8772,7 @@ handler(Display *display, XErrorEvent *xev)
 int
 iohandler(Display *display)
 {
+	(void) display;
 	dumpstack(__FILE__, __LINE__, __func__);
 	exit(EXIT_FAILURE);
 }
@@ -8663,6 +8783,7 @@ int (*oldiohandler) (Display *) = NULL;
 gboolean
 hup_signal_handler(gpointer data)
 {
+	(void) data;
 	/* perform reload */
 	return G_SOURCE_CONTINUE;
 }
@@ -8670,6 +8791,7 @@ hup_signal_handler(gpointer data)
 gboolean
 int_signal_handler(gpointer data)
 {
+	(void) data;
 	exit(EXIT_SUCCESS);
 	return G_SOURCE_CONTINUE;
 }
@@ -8677,6 +8799,7 @@ int_signal_handler(gpointer data)
 gboolean
 term_signal_handler(gpointer data)
 {
+	(void) data;
 	mainloop_quit();
 	return G_SOURCE_CONTINUE;
 }
@@ -8739,6 +8862,7 @@ ifd_watch(GIOChannel *chan, GIOCondition cond, gpointer data)
 	SmcConn smcConn = data;
 	IceConn iceConn = SmcGetIceConnection(smcConn);
 
+	(void) chan;
 	if (cond & (G_IO_NVAL | G_IO_HUP | G_IO_ERR)) {
 		EPRINTF("poll failed: %s %s %s\n",
 			(cond & G_IO_NVAL) ? "NVAL" : "",
@@ -9225,6 +9349,8 @@ get_selection(Bool replace, Window selwin)
 static void
 do_generate(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	menu_generate();
 }
 
@@ -9237,6 +9363,8 @@ do_run(int argc, char *argv[])
 	long mask = StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask;
 	XdeMonitor *xmon;
 
+	(void) argc;
+	(void) argv;
 	PTRACE(5);
 	selwin = XCreateSimpleWindow(dpy, broadcast, 0, 0, 1, 1, 0, 0, 0);
 
@@ -9370,6 +9498,8 @@ do_run(int argc, char *argv[])
 static void
 do_quit(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	PTRACE(5);
 	get_selection(True, None);
 }
@@ -9382,6 +9512,8 @@ do_quit(int argc, char *argv[])
 static void
 copying(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -9426,6 +9558,8 @@ regulations).\n\
 static void
 version(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -9448,6 +9582,7 @@ See `%1$s --copying' for copying permissions.\n\
 static void
 usage(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stderr, "\
@@ -9609,6 +9744,7 @@ show_organize(Organize organize)
 static void
 help(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	/* *INDENT-OFF* */
@@ -11222,6 +11358,7 @@ main(int argc, char *argv[])
 	switch (command) {
 	case CommandDefault:
 		options.command = CommandMenugen;
+		/* fall thru */
 	case CommandMenugen:
 		DPRINTF(1, "just generating window manager root menu\n");
 		do_generate(argc, argv);
