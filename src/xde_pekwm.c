@@ -53,6 +53,7 @@ xde_wrap_icon(MenuContext *ctx, char *file)
 {
 	char *icon;
 
+	(void) ctx;
 	if (file) {
 		icon = calloc(strlen(file) + 12, sizeof(*icon));
 		strcpy(icon, "Icon = \"");
@@ -301,6 +302,7 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 	GList *text = NULL;
 	char *s;
 
+	(void) sep;
 	s = g_strdup_printf("%sSeparator {}\n", ctx->indent);
 	text = g_list_append(text, s);
 	return (text);
@@ -489,6 +491,10 @@ xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const c
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) ent;
+	(void) info;
+	(void) action;
 	return (text);
 }
 
@@ -506,6 +512,7 @@ xde_pin(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -651,6 +658,7 @@ xde_config(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -659,6 +667,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
@@ -667,6 +676,7 @@ xde_wkspcs(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -684,6 +694,7 @@ xde_wmspec(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -692,6 +703,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
