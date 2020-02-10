@@ -256,6 +256,7 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 	GList *text = NULL;
 	char *s;
 
+	(void) sep;
 	if (strcmp(ctx->name, "twm")) {
 		s = g_strdup_printf("    %-32s  %s\n", "\"\"", "f.separator");
 		text = g_list_append(text, s);
@@ -423,6 +424,10 @@ xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const c
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) ent;
+	(void) info;
+	(void) action;
 	return (text);
 }
 
@@ -537,6 +542,7 @@ xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	/* FIXME: this should just place the "Styles" entry in the menu refering to the
 	   "twmstyles" menu which was built by the getstyles script before m4
 	   configuration. */
@@ -558,6 +564,7 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	/* FIXME: because we have built up the internal twmstyles menu actions for
 	   setting style, it is actually possible to create a "twmthemes" menu here that
 	   will only contain the styles with an equivalent theme and invoke the
@@ -582,6 +589,7 @@ xde_config(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -590,6 +598,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
@@ -598,6 +607,7 @@ xde_wkspcs(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -675,6 +685,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
