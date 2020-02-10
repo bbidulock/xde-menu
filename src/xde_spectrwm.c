@@ -71,6 +71,9 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) entries;
+	(void) name;
 	return (text);
 }
 
@@ -88,6 +91,8 @@ xde_rootmenu(MenuContext *ctx, GList *entries)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) entries;
 	return (text);
 }
 
@@ -159,6 +164,8 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) sep;
 	return (text);
 }
 
@@ -176,6 +183,8 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) hdr;
 	return (text);
 }
 
@@ -193,6 +202,8 @@ xde_directory(MenuContext *ctx, GMenuTreeDirectory *dir)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) dir;
 	return (text);
 }
 
@@ -210,6 +221,8 @@ xde_entry(MenuContext *ctx, GMenuTreeEntry *ent)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) ent;
 	return (text);
 }
 
@@ -245,6 +258,10 @@ xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const c
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) ent;
+	(void) info;
+	(void) action;
 	return (text);
 }
 
@@ -262,6 +279,7 @@ xde_pin(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -279,6 +297,7 @@ xde_wmmenu(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -296,6 +315,7 @@ xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -304,6 +324,7 @@ xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	/* XXX: spectrwm does not support styles? */
 	return (item);
 }
@@ -313,6 +334,7 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -330,6 +352,7 @@ xde_config(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -338,6 +361,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
@@ -346,6 +370,7 @@ xde_wkspcs(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -363,6 +388,7 @@ xde_wmspec(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -371,6 +397,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
