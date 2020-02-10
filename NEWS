@@ -22,7 +22,7 @@ git tag -n100 -l 0.12
 
 git shortlog -e -n -w80,6,8 0.11...0.12
 
-Brian Bidulock <bidulock@openss7.org> (55):
+Brian Bidulock <bidulock@openss7.org> (56):
       Merge pull request #9 from tim77/tim77-patch-1
       gtk2 uses deprecated glib2 declarations
       Merge branch 'master' of github.com:bbidulock/xde-menu
@@ -78,6 +78,7 @@ Brian Bidulock <bidulock@openss7.org> (55):
       update copyright headers
       update release files
       post-release update
+      update release files
 
 Artem Polishchuk <tim77@users.noreply.github.com> (1):
       Add packaging status
