@@ -8171,7 +8171,8 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 	if (changed) {
 		DPRINTF(1, "New icon theme is %s\n", xscr->itheme);
 		/* FIXME: do something more about it. */
-	}
+	} else
+		DPRINTF(1, "No change in current icon theme %s\n", xscr->itheme);
 }
 
 static void
@@ -10048,7 +10049,7 @@ set_defaults(void)
 		/* we can get the timestamp from the startup id */
 		if ((p = strstr(env, "_TIME"))) {
 			timestamp = strtoul(p + 5, &endptr, 10);
-			if (endptr && *endptr)
+			if (endptr && !*endptr)
 				options.timestamp = timestamp;
 		}
 		/* we can get the monitor number from the startup id */
@@ -10794,7 +10795,7 @@ main(int argc, char *argv[])
 				goto bad_option;
 			options.screen = val;
 			break;
-		case 5: /* --Monitor MONITOR */
+		case 5: /* --monitor MONITOR */
 			val = strtoul(optarg, &endptr, 0);
 			if (endptr && *endptr)
 				goto bad_option;
@@ -10918,12 +10919,15 @@ main(int argc, char *argv[])
 				options.button = 1;
 			break;
 
-		case 'b':	/* -b, --button BUTTON */
+		case 'b':	/* -b, --button [BUTTON] */
+			if (optarg) {
 			val = strtoul(optarg, &endptr, 0);
-			if (endptr && *endptr)
-				goto bad_option;
-			if (val < 0 || val > 8)
-				goto bad_option;
+				if (endptr && *endptr)
+					goto bad_option;
+				if (val < 0 || val > 8)
+					goto bad_option;
+			} else
+				val = 1;
 			if (val) {
 				options.keyboard = False;
 				options.pointer = True;
@@ -11196,8 +11200,8 @@ main(int argc, char *argv[])
 			goto bad_usage;
 		}
 	}
-	DPRINTF(1, "%s: option index = %d\n", argv[0], optind);
-	DPRINTF(1, "%s: option count = %d\n", argv[0], argc);
+	DPRINTF(1, "option index = %d\n", optind);
+	DPRINTF(1, "option count = %d\n", argc);
 	if (optind == argc - 1 && options.fileout && !options.menufile) {
 		/* handle broken glibc optional_argument behaviour */
 		free(options.menufile);
@@ -11219,11 +11223,11 @@ main(int argc, char *argv[])
 	case CommandDefault:
 		options.command = CommandMenugen;
 	case CommandMenugen:
-		DPRINTF(1, "%s: just generating window manager root menu\n", argv[0]);
+		DPRINTF(1, "just generating window manager root menu\n");
 		do_generate(argc, argv);
 		break;
 	case CommandMonitor:
-		DPRINTF(1, "%s: running a new instance\n", argv[0]);
+		DPRINTF(1, "running a new instance\n");
 		do_run(argc, argv);
 		break;
 	case CommandRefresh:
