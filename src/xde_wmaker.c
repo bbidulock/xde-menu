@@ -73,6 +73,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	char *esc1, *esc2;
 	char *s;
 
+	(void) ctx;
 	esc1 = xde_character_escape(name, '\\');
 	esc2 = xde_character_escape(name, '"');
 
@@ -430,6 +431,8 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) sep;
 	return (text);
 }
 
@@ -447,6 +450,8 @@ xde_header(MenuContext *ctx, GMenuTreeHeader *hdr)
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) hdr;
 	return (text);
 }
 
@@ -570,6 +575,10 @@ xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const c
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) ent;
+	(void) info;
+	(void) action;
 	return (text);
 }
 
@@ -587,6 +596,7 @@ xde_pin(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -664,6 +674,7 @@ xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	/* FIXME: this should just include wmaker's style menu */
 	return (text);
 }
@@ -682,6 +693,7 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	/* FIXME: this should just include wmaker's theme menu */
 	return (text);
 }
@@ -700,6 +712,7 @@ xde_config(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -708,6 +721,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
@@ -716,6 +730,7 @@ xde_wkspcs(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -733,6 +748,7 @@ xde_wmspec(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -741,6 +757,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
