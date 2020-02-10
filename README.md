@@ -1,9 +1,9 @@
-[xde-menu -- read me first file.  2019-09-05]: #
+[xde-menu -- read me first file.  2020-02-10]: #
 
 xde-menu
 ===============
 
-Package `xde-menu-0.11` was released under GPLv3 license 2019-09-05.
+Package `xde-menu-1.12` was released under GPLv3 license 2020-02-10.
 
 This package provides a number of "C"-language tools for working with
 the _X Desktop Environment_.  Most of these tools were previously
@@ -15,7 +15,7 @@ libraries not available from `perl(1)`.
 Release
 -------
 
-This is the `xde-menu-0.11` package, released 2019-09-05.  This
+This is the `xde-menu-1.12` package, released 2020-02-10.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 
@@ -57,13 +57,6 @@ For general information on GNU's `./configure`, see the file
 [INSTALL][7].
 
 
-Packaging status
-----------------
-
-- [Fedora](https://apps.fedoraproject.org/packages/xde-menu): `sudo dnf install xde-menu`
-- Arch Linux ([AUR](https://aur.archlinux.org/packages/xde-menu))
-
-
 Running
 -------
 
@@ -79,12 +72,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-menu
 [2]: https://github.com/bbidulock/xde-menu/issues
-[3]: https://github.com/bbidulock/xde-menu/blob/0.11/NEWS
-[4]: https://github.com/bbidulock/xde-menu/blob/0.11/ChangeLog
-[5]: https://github.com/bbidulock/xde-menu/blob/0.11/TODO
-[6]: https://github.com/bbidulock/xde-menu/blob/0.11/COMPLIANCE
-[7]: https://github.com/bbidulock/xde-menu/blob/0.11/INSTALL
-[8]: https://github.com/bbidulock/xde-menu/blob/0.11/LICENSE
-[9]: https://github.com/bbidulock/xde-menu/blob/0.11/COPYING
+[3]: https://github.com/bbidulock/xde-menu/blob/1.12/NEWS
+[4]: https://github.com/bbidulock/xde-menu/blob/1.12/ChangeLog
+[5]: https://github.com/bbidulock/xde-menu/blob/1.12/TODO
+[6]: https://github.com/bbidulock/xde-menu/blob/1.12/COMPLIANCE
+[7]: https://github.com/bbidulock/xde-menu/blob/1.12/INSTALL
+[8]: https://github.com/bbidulock/xde-menu/blob/1.12/LICENSE
+[9]: https://github.com/bbidulock/xde-menu/blob/1.12/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

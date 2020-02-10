@@ -1,5 +1,550 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 9c7cebc053e5a93f3451d828ba05ec02680517ab
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:50:23 2020 -0700
+
+    update copyright headers
+
+ src/xde-menu.c         | 8 ++++----
+ src/xde-menu.h         | 2 +-
+ src/xde_2bwm.c         | 2 +-
+ src/xde_adwm.c         | 2 +-
+ src/xde_aewm++.c       | 2 +-
+ src/xde_aewm.c         | 2 +-
+ src/xde_afterstep.c    | 2 +-
+ src/xde_awesome.c      | 2 +-
+ src/xde_blackbox.c     | 2 +-
+ src/xde_bspwm.c        | 2 +-
+ src/xde_ctwm.c         | 2 +-
+ src/xde_cwm.c          | 2 +-
+ src/xde_dtwm.c         | 2 +-
+ src/xde_dwm.c          | 2 +-
+ src/xde_echinus.c      | 2 +-
+ src/xde_etwm.c         | 2 +-
+ src/xde_ewmh.c         | 2 +-
+ src/xde_fluxbox.c      | 2 +-
+ src/xde_flwm.c         | 2 +-
+ src/xde_fvwm.c         | 2 +-
+ src/xde_glasswm.c      | 2 +-
+ src/xde_goomwwm.c      | 2 +-
+ src/xde_herbstluftwm.c | 2 +-
+ src/xde_i3.c           | 2 +-
+ src/xde_icewm.c        | 2 +-
+ src/xde_jwm.c          | 2 +-
+ src/xde_larswm.c       | 2 +-
+ src/xde_matwm2.c       | 2 +-
+ src/xde_metacity.c     | 2 +-
+ src/xde_mvwm.c         | 2 +-
+ src/xde_mwm.c          | 2 +-
+ src/xde_openbox.c      | 2 +-
+ src/xde_openboxold.c   | 2 +-
+ src/xde_pekwm.c        | 2 +-
+ src/xde_perlpanel.c    | 2 +-
+ src/xde_spectrwm.c     | 2 +-
+ src/xde_twm.c          | 2 +-
+ src/xde_uwm.c          | 2 +-
+ src/xde_vtwm.c         | 2 +-
+ src/xde_waimea.c       | 2 +-
+ src/xde_wind.c         | 2 +-
+ src/xde_wm2.c          | 2 +-
+ src/xde_wmaker.c       | 2 +-
+ src/xde_wmakerold.c    | 2 +-
+ src/xde_wmii.c         | 2 +-
+ src/xde_wmx.c          | 2 +-
+ src/xde_xdwm.c         | 2 +-
+ src/xde_yeahwm.c       | 2 +-
+ 48 files changed, 51 insertions(+), 51 deletions(-)
+
+commit 8531f0291ae2a96673525de95ca45d7ac12fafd9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:46:09 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_yeahwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 7a7df986109bbf073630b608452d74942b15e2f6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:44:38 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_xdwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 5b4e8fc0da793fe1273e2f496f123407112e8f14
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:43:12 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_wmx.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 17b79cc8c751e83ccb64c468650e04dc32af2160
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:41:47 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_wmii.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 8bc4d4dd939458891f63b88b12d3c3b9854ea3c4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:40:15 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_wmakerold.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+commit 53745c0943338c2f82b2e5a0da628412af1836c5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:39:12 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_wmaker.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+commit c8c07041c98d748bb6528f46cdfce15dfa420e53
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:38:09 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_wm2.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit f6eea09bdf3ebe793312f03b430c47b290eff53f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:36:46 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_wind.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit d870afcac918201ca5461ebd18a50ddff9d7b315
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:35:18 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_waimea.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit e5d41f06abc9cc4d3f92bf1eab49ec610cf4b861
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:34:53 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_vtwm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit d7737af0f04cf54b4c1e8127d0bc1e213b889788
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:34:08 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_uwm.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+commit cc3ddb64f4caac21699240b45ab49c579fd020b1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:33:13 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_twm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit b50b6e05d9b428effba838c741c02bbb9d80e664
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:32:27 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_spectrwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 3088ebabaed2c693e56927e54a28a658ac899ddf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:30:58 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_perlpanel.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 9b29792cce0fc3bd4dfc9adec783f1b57ae4cb1d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:30:34 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_pekwm.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+commit 1685d7d8f40d8a617d1fd8a58c321549a513356d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:29:31 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_openboxold.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 7e9d8590ade6d5831f22cec1fc38966dd8a652b2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:29:07 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_openbox.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+commit 4275bdf83e7afc6b084b91f363f9f6e25d8c5643
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:28:12 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_mwm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 6aee121a4368acc0cb8cc5659898abd24d8e72d6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:27:16 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_mvwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit f2c63e2dcd7b1d3c4a4e7392be2957de2b82505e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:25:47 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_metacity.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+commit adea7411cb7dc8adff0ac13898638164ab4cad8e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:17:46 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_matwm2.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit e97b0c90a7090c1f3b8b5dec58e89279f0033150
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:15:23 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_larswm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 65635ee1fcad3851b9899218a1190ace7d36de7f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:13:22 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_jwm.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+commit 369d142dbad6f6a3c58e3c96e8685022fd14aeaf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:11:41 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_icewm.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+commit b2a41b9bf2ddb145908fde5926c3484a996dd7c4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:10:18 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_i3.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit ade961852d63a573a3513f2ce5949d55e254b48c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:21 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_herbstluftwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 2c95b77e9a0258bbf36e8f6e5306688292bc6c31
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:17 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_goomwwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 09fd374aec365042754d6939e59dfd7decd7a8a3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:13 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_glasswm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 8f3729f027bf0650f327f93ca495d308db1380b6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:09 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_fvwm.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+commit 510306639225f9fc7a7396c6208a6c32b67a899c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:06 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_flwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 0b5b970920f94a6aec32a2ad539c847b4c222bdf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:03 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_fluxbox.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit d8f1e05412b07aa3add6808a0813eeefb0c2015a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:08:00 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_ewmh.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 78565c5f22831dc46262ad2699e087c7ca21903d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:56 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_etwm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 2101bc881abc00915b346bcbea54b362068caf36
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:52 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_echinus.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+commit 990c2a467d21e9b8eb1deedf9d2ddfa7b31ed712
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:48 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_dwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 756fb9c053b907cbcd2a64870a7db6ade7bb4df9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:45 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_dtwm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit dc1f5d4b39fcf69e81e66232c765428d928692a1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:41 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_cwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 55628204336d78f4e9a9dfc75d8bac23e6735db3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:38 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_ctwm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit bb31e59147162d200df82cb3e585180fc529b628
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:33 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_bspwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit a2e4fe892c6568cfdabd26bbf2550f562f210d8a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:25 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_blackbox.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit f8134b61119d9ad6ca2ec2288696d531c5190c33
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:20 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_awesome.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+commit 86bc330ed31437c661bef68affcd9983b19aa76a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:13 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_afterstep.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+commit a4f7b6e16c307b13a458bbba559157ad5e912235
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:09 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_aewm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 608f0837a44d95f27789865aea2a283a35087196
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:07:05 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_aewm++.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit a648c806b5a4edb10a48247fced0e1ab3190dc36
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:06:57 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_adwm.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+commit ca8de0b94d47b2beefdeb19fbd1b4e47697cc92f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:06:52 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde_2bwm.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+commit 95f5e3f8d67ead1b8525e2124385a3f73f6caa2c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 01:06:44 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-menu.c | 161 +++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 149 insertions(+), 12 deletions(-)
+
+commit 994147d7375f2d35b630c5fbf30d3a497b64b3ee
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Feb 9 19:19:41 2020 -0700
+
+    a few corrections to options processing
+
+ src/xde-menu.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
+
+commit 2d7bb6410a77572ced175a1a398c0675be7dae9c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Feb 9 19:18:40 2020 -0700
+
+    simplify cscope and MDOCDATE
+
+ autogen.sh   | 8 ++++++--
+ configure.sh | 7 ++-----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+commit 1dfbbe9a52a8f36b4b01725a99b82b973c818f3a
+Merge: f9a98a5 2bc5fc0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 24 00:24:20 2019 -0600
+
+    Merge branch 'master' of github.com:bbidulock/xde-menu
+
+commit f9a98a5780f703f6f3fe3566258d9622fedaeaae
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 24 00:23:46 2019 -0600
+
+    gtk2 uses deprecated glib2 declarations
+
+ configure.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 2bc5fc07ea9c91dba2eb5f7e353ad23762bc6149
+Merge: 7fce7e4 1c0d3f7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Sep 21 14:38:33 2019 -0600
+
+    Merge pull request #9 from tim77/tim77-patch-1
+
+    Add packaging status
+
+commit 1c0d3f7725e3471b78431930989dcb55a3c61b4d
+Author: Artem Polishchuk <tim77@users.noreply.github.com>
+Date:   Fri Sep 20 18:03:01 2019 +0300
+
+    Add packaging status
+
+ README.md | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+commit 7fce7e47281b558e1ffcb70774fabc2f696e2dab
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 05:02:59 2019 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 103 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         |  83 +++++++++++++++++++++-----------------------
+ README.md    |  20 +++++------
+ configure.ac |   8 ++---
+ 5 files changed, 158 insertions(+), 58 deletions(-)
+
 commit 6eb98d872a51abc3e683a57865400769c99d3d53
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Sep 5 04:59:41 2019 -0600
