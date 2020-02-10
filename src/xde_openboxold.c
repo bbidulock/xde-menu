@@ -254,6 +254,7 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 	GList *text = NULL;
 	char *s;
 
+	(void) sep;
 	if (!strcmp(ctx->name, "blackbox"))
 		s = g_strdup_printf("%s%s\n", ctx->indent, "[nop] (————————————) {}");
 	else if (!strcmp(ctx->name, "fluxbox"))
@@ -510,6 +511,7 @@ xde_pin(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -751,6 +753,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
@@ -880,6 +883,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
