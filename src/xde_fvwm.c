@@ -53,6 +53,7 @@ xde_wrap_icon(MenuContext *ctx, char *file)
 {
 	char *icon;
 
+	(void) ctx;
 	if (file) {
 		icon = calloc(strlen(file) + 3, sizeof(*icon));
 		strcpy(icon, "%");
@@ -124,6 +125,7 @@ xde_appmenu(MenuContext *ctx, GList *entries, const char *name)
 	GList *text = NULL;
 	char *s, *esc;
 
+	(void) ctx;
 	esc = xde_character_escape(name, '"');
 	s = strdup("DestroyMenu xdg_menu\n");
 	text = g_list_append(text, s);
@@ -240,6 +242,8 @@ xde_separator(MenuContext *ctx, GMenuTreeSeparator *sep)
 	GList *text = NULL;
 	char *s;
 
+	(void) ctx;
+	(void) sep;
 	s = strdup("+ \"\" Nop\n");
 	text = g_list_append(text, s);
 	return (text);
@@ -420,6 +424,10 @@ xde_action(MenuContext *ctx, GMenuTreeEntry *ent, GDesktopAppInfo *info, const c
 {
 	GList *text = NULL;
 
+	(void) ctx;
+	(void) ent;
+	(void) info;
+	(void) action;
 	return (text);
 }
 
@@ -437,6 +445,7 @@ xde_pin(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -519,6 +528,7 @@ xde_styles(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -527,6 +537,7 @@ xde_gtk_styles(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	/* FIXME */
 	return (item);
 }
@@ -536,6 +547,7 @@ xde_themes(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -544,6 +556,7 @@ xde_gtk_themes(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	/* FIXME */
 	return (item);
 }
@@ -553,6 +566,7 @@ xde_config(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -561,6 +575,7 @@ xde_gtk_config(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
@@ -569,6 +584,7 @@ xde_wkspcs(MenuContext *ctx)
 {
 	GList *text = NULL;
 
+	(void) ctx;
 	return (text);
 }
 
@@ -647,6 +663,7 @@ xde_gtk_wmspec(MenuContext *ctx)
 {
 	GtkMenuItem *item = NULL;
 
+	(void) ctx;
 	return (item);
 }
 
