@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
-AC_INIT([xde-menu],[1.12],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
-AC_REVISION([1.12])
+AC_INIT([xde-menu],[0.12],[http://github.com/bbidulock/xde-menu],[xde-menu],[http://github.com/bbidulock/xde-menu/issues])
+AC_REVISION([0.12])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -26,7 +26,7 @@ AC_SUBST([DATE])
 MDOCDATE='February 10, 2020'
 AC_SUBST([MDOCDATE])
 
-BRANCH='1.12'
+BRANCH='0.12'
 AC_SUBST([BRANCH])
 
 # Initialize Automake

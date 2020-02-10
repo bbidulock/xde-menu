@@ -1,11 +1,11 @@
 xde-menu -- history of user-visible changes.  2020-02-10
 
-Release xde-menu-1.12 released 2020-02-10
+Release xde-menu-0.12 released 2020-02-10
 -----------------------------------------
 
-git tag -n100 -l 1.12
+git tag -n100 -l 0.12
 
-1.12            xde-menu 0.12 - Maintenance release of xde-menu
+0.12            xde-menu 0.12 - Maintenance release of xde-menu
 
     This is another release of the xde-menu package that provides XDG
     compliant menu generation for a wide range of light-weight window
@@ -20,9 +20,9 @@ git tag -n100 -l 1.12
     from source. See the NEWS and TODO file in the release for more
     information. Please report problems to the issues list on GitHub.
 
-git shortlog -e -n -w80,6,8 0.11...1.12
+git shortlog -e -n -w80,6,8 0.11...0.12
 
-Brian Bidulock <bidulock@openss7.org> (54):
+Brian Bidulock <bidulock@openss7.org> (55):
       Merge pull request #9 from tim77/tim77-patch-1
       gtk2 uses deprecated glib2 declarations
       Merge branch 'master' of github.com:bbidulock/xde-menu
@@ -77,6 +77,7 @@ Brian Bidulock <bidulock@openss7.org> (54):
       fixups for -Wextra
       update copyright headers
       update release files
+      post-release update
 
 Artem Polishchuk <tim77@users.noreply.github.com> (1):
       Add packaging status
