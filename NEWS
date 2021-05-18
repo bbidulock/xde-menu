@@ -1,4 +1,32 @@
-xde-menu -- history of user-visible changes.  2020-02-10
+xde-menu -- history of user-visible changes.  2021-05-18
+
+Release xde-menu-0.13 released 2021-05-18
+-----------------------------------------
+
+git tag -n100 -l 0.13
+
+0.13            xde-menu 0.13 - Maintenance release of xde-menu
+
+    This is another release of the xde-menu package that provides XDG
+    compliant menu generation for a wide range of light-weight window
+    managers as well as providing a pop-up and system-tray GTK+ menu. All
+    of the functionality is working, including many window-manager specific
+    sub-menus and startup notification completion.
+
+    This release is a maintenance release, primarily for gcc 11.1 support
+    and updated autoconf tool chain.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.12...0.13
+
+Brian Bidulock <bidulock@openss7.org> (3):
+      post-release update
+      whoops
+      update copyright headers
+
 
 Release xde-menu-0.12 released 2020-02-10
 -----------------------------------------
@@ -269,16 +297,4 @@ Brian Bidulock <bidulock@openss7.org> (26):
       use hard links
       update release files
       post relase files
-
-
-Release xde-menu-0.6 released 2018-03-25
-----------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5...0.6
-
-Brian Bidulock <bidulock@openss7.org> (4):
-      do startup notification completion
-      update release files
-      final update release files
-      post-release files
 

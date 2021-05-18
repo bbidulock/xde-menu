@@ -1,5 +1,79 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit acea25d717f0f655d3ebb5b6b7237e8dd3a31733
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 18 12:43:50 2021 -0600
+
+    update copyright headers
+
+ src/xde-menu.c         | 8 ++++----
+ src/xde_2bwm.c         | 2 +-
+ src/xde_adwm.c         | 2 +-
+ src/xde_aewm++.c       | 2 +-
+ src/xde_aewm.c         | 2 +-
+ src/xde_afterstep.c    | 2 +-
+ src/xde_awesome.c      | 2 +-
+ src/xde_blackbox.c     | 2 +-
+ src/xde_bspwm.c        | 2 +-
+ src/xde_ctwm.c         | 2 +-
+ src/xde_cwm.c          | 2 +-
+ src/xde_dtwm.c         | 2 +-
+ src/xde_dwm.c          | 2 +-
+ src/xde_echinus.c      | 2 +-
+ src/xde_etwm.c         | 2 +-
+ src/xde_ewmh.c         | 2 +-
+ src/xde_fluxbox.c      | 2 +-
+ src/xde_flwm.c         | 2 +-
+ src/xde_fvwm.c         | 2 +-
+ src/xde_glasswm.c      | 2 +-
+ src/xde_goomwwm.c      | 2 +-
+ src/xde_herbstluftwm.c | 2 +-
+ src/xde_i3.c           | 2 +-
+ src/xde_icewm.c        | 2 +-
+ src/xde_jwm.c          | 2 +-
+ src/xde_larswm.c       | 2 +-
+ src/xde_matwm2.c       | 2 +-
+ src/xde_metacity.c     | 2 +-
+ src/xde_mvwm.c         | 2 +-
+ src/xde_mwm.c          | 2 +-
+ src/xde_openbox.c      | 2 +-
+ src/xde_openboxold.c   | 2 +-
+ src/xde_pekwm.c        | 2 +-
+ src/xde_perlpanel.c    | 2 +-
+ src/xde_spectrwm.c     | 2 +-
+ src/xde_twm.c          | 2 +-
+ src/xde_uwm.c          | 2 +-
+ src/xde_vtwm.c         | 2 +-
+ src/xde_waimea.c       | 2 +-
+ src/xde_wind.c         | 2 +-
+ src/xde_wm2.c          | 2 +-
+ src/xde_wmaker.c       | 2 +-
+ src/xde_wmakerold.c    | 2 +-
+ src/xde_wmii.c         | 2 +-
+ src/xde_wmx.c          | 2 +-
+ src/xde_xdwm.c         | 2 +-
+ src/xde_yeahwm.c       | 2 +-
+ 47 files changed, 50 insertions(+), 50 deletions(-)
+
+commit bcd6b62108c8f4ae2b8d3adef71f5d4956db0767
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 08:31:31 2020 -0700
+
+    whoops
+
+ autogen.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 28199409d2a02c53e46da0abc1438f6d010c7a5e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Feb 10 02:17:59 2020 -0700
+
+    post-release update
+
+ ChangeLog | 12 ++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
 commit e852b48dac2540b50de8c0354a87ace3b75d6b69
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon Feb 10 02:16:50 2020 -0700
