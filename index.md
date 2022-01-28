@@ -1,9 +1,12 @@
+---
+layout: default
+---
 [xde-menu -- read me first file.  2021-05-18]: #
 
 xde-menu
 ===============
 
-Package `xde-menu-0.13.1` was released under GPLv3 license
+Package `xde-menu-0.13` was released under GPLv3 license
 2021-05-18.
 
 This package provides a number of "C"-language tools for working with
@@ -12,15 +15,13 @@ written in `perl(1)` and were part of the `xde-tools` package.  They
 have now been codified in "C" for speed and to provide access to
 libraries not available from `perl(1)`.
 
-For screenshots and examples, see [SAMPLES](samples).
-
 The source for `xde-menu` is hosted on [GitHub][1].
 
 
 Release
 -------
 
-This is the `xde-menu-0.13.1` package, released 2021-05-18.
+This is the `xde-menu-0.13` package, released 2021-05-18.
 This release, and the latest version, can be obtained from [GitHub][1],
 using a command such as:
 
@@ -63,36 +64,12 @@ For general information on GNU's `./configure`, see the file
 [INSTALL][8].
 
 
-Dependencies
-------------
-
-To build and install the package you will need a basic development
-installation.  To build and install the package you will also need the
-``libwnck``, ``libsm``, ``gnome-menus`` and ``gdk-pixbuf-xlib``
-development packages.
-
-To run the package, you should also build and install the
-[``libwnck+``](https://github.com/bbidulock/libwnck+) package (for
-enhanced functionality),
-[``xdg-launch``](https://github.com/bbidulock/xdg-launch) package (for
-light-weight window manager launch notification), and
-[``xde-theme``](https://github.com/bbidulock/xde-theme) package (for
-light-weight window manager style and theme change support).
-
-To run the package, you will likely also want to build and install the
-[``xde-helpers``](https://github.com/bbidulock/xde-helpers) package (for
-XDG root menu definitions for _XDE_).
-
-
 Running
 -------
 
 Read the manual page after installation:
 
     $> man xde-menu
-
-
-Enjoy!
 
 
 Issues
@@ -104,13 +81,13 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-menu
 [2]: https://github.com/bbidulock/xde-menu/issues
-[3]: https://github.com/bbidulock/xde-menu/blob/master/RELEASE
-[4]: https://github.com/bbidulock/xde-menu/blob/master/NEWS
-[5]: https://github.com/bbidulock/xde-menu/blob/master/ChangeLog
-[6]: https://github.com/bbidulock/xde-menu/blob/master/TODO
-[7]: https://github.com/bbidulock/xde-menu/blob/master/COMPLIANCE
-[8]: https://github.com/bbidulock/xde-menu/blob/master/INSTALL
-[9]: https://github.com/bbidulock/xde-menu/blob/master/LICENSE
-[10]: https://github.com/bbidulock/xde-menu/blob/master/COPYING
+[3]: https://github.com/bbidulock/xde-menu/blob/0.13/RELEASE
+[4]: https://github.com/bbidulock/xde-menu/blob/0.13/NEWS
+[5]: https://github.com/bbidulock/xde-menu/blob/0.13/ChangeLog
+[6]: https://github.com/bbidulock/xde-menu/blob/0.13/TODO
+[7]: https://github.com/bbidulock/xde-menu/blob/0.13/COMPLIANCE
+[8]: https://github.com/bbidulock/xde-menu/blob/0.13/INSTALL
+[9]: https://github.com/bbidulock/xde-menu/blob/0.13/LICENSE
+[10]: https://github.com/bbidulock/xde-menu/blob/0.13/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #
