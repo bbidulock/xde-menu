@@ -1,10 +1,10 @@
-[xde-menu -- read me first file.  2021-05-18]: #
+[xde-menu -- read me first file.  2022-02-02]: #
 
 xde-menu
 ===============
 
-Package `xde-menu-0.13.1` was released under GPLv3 license
-2021-05-18.
+Package `xde-menu-0.14` was released under GPLv3 license
+2022-02-02.
 
 This package provides a number of "C"-language tools for working with
 the _X Desktop Environment_.  Most of these tools were previously
@@ -20,7 +20,7 @@ The source for `xde-menu` is hosted on [GitHub][1].
 Release
 -------
 
-This is the `xde-menu-0.13.1` package, released 2021-05-18.
+This is the `xde-menu-0.14` package, released 2022-02-02.
 This release, and the latest version, can be obtained from [GitHub][1],
 using a command such as:
 
@@ -104,13 +104,13 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-menu
 [2]: https://github.com/bbidulock/xde-menu/issues
-[3]: https://github.com/bbidulock/xde-menu/blob/master/RELEASE
-[4]: https://github.com/bbidulock/xde-menu/blob/master/NEWS
-[5]: https://github.com/bbidulock/xde-menu/blob/master/ChangeLog
-[6]: https://github.com/bbidulock/xde-menu/blob/master/TODO
-[7]: https://github.com/bbidulock/xde-menu/blob/master/COMPLIANCE
-[8]: https://github.com/bbidulock/xde-menu/blob/master/INSTALL
-[9]: https://github.com/bbidulock/xde-menu/blob/master/LICENSE
-[10]: https://github.com/bbidulock/xde-menu/blob/master/COPYING
+[3]: https://github.com/bbidulock/xde-menu/blob/0.14/RELEASE
+[4]: https://github.com/bbidulock/xde-menu/blob/0.14/NEWS
+[5]: https://github.com/bbidulock/xde-menu/blob/0.14/ChangeLog
+[6]: https://github.com/bbidulock/xde-menu/blob/0.14/TODO
+[7]: https://github.com/bbidulock/xde-menu/blob/0.14/COMPLIANCE
+[8]: https://github.com/bbidulock/xde-menu/blob/0.14/INSTALL
+[9]: https://github.com/bbidulock/xde-menu/blob/0.14/LICENSE
+[10]: https://github.com/bbidulock/xde-menu/blob/0.14/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

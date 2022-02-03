@@ -1,6 +1,6 @@
-[xde-menu -- release notes.  2021-05-18]: #
+[xde-menu -- release notes.  2021-02-23]: #
 
-xde-menu 0.13 -- Maintenance release of xde-menu
+xde-menu 0.14 -- Maintenance release of xde-menu
 ================================================
 
 This is another release of the xde-menu package that provides XDG
@@ -9,8 +9,8 @@ managers as well as providing a pop-up and system-tray GTK+ menu.  All
 of the functionality is working, including many window-manager specific
 sub-menus and startup notification completion.
 
-This release is a maintenance release, primarily for gcc 11.1 support
-and updated autoconf tool chain.
+This release is a maintenance release, primarily for gcc 11.1.0 support,
+updated autoconf tool chain and new build flags.
 
 Included in the release is an autoconf tarball for building the package
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release

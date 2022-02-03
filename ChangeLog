@@ -1,5 +1,109 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit a88c9f743dfdfffd17739737853d69ad708ec12c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Feb 2 23:40:11 2022 -0700
+
+    update copyright
+
+ src/xde-menu.c         | 8 ++++----
+ src/xde-menu.h         | 2 +-
+ src/xde_2bwm.c         | 2 +-
+ src/xde_adwm.c         | 2 +-
+ src/xde_aewm++.c       | 2 +-
+ src/xde_aewm.c         | 2 +-
+ src/xde_afterstep.c    | 2 +-
+ src/xde_awesome.c      | 2 +-
+ src/xde_blackbox.c     | 2 +-
+ src/xde_bspwm.c        | 2 +-
+ src/xde_ctwm.c         | 2 +-
+ src/xde_cwm.c          | 2 +-
+ src/xde_dtwm.c         | 2 +-
+ src/xde_dwm.c          | 2 +-
+ src/xde_echinus.c      | 2 +-
+ src/xde_etwm.c         | 2 +-
+ src/xde_ewmh.c         | 2 +-
+ src/xde_fluxbox.c      | 2 +-
+ src/xde_flwm.c         | 2 +-
+ src/xde_fvwm.c         | 2 +-
+ src/xde_glasswm.c      | 2 +-
+ src/xde_goomwwm.c      | 2 +-
+ src/xde_herbstluftwm.c | 2 +-
+ src/xde_i3.c           | 2 +-
+ src/xde_icewm.c        | 2 +-
+ src/xde_jwm.c          | 2 +-
+ src/xde_larswm.c       | 2 +-
+ src/xde_matwm2.c       | 2 +-
+ src/xde_metacity.c     | 2 +-
+ src/xde_mvwm.c         | 2 +-
+ src/xde_mwm.c          | 2 +-
+ src/xde_openbox.c      | 2 +-
+ src/xde_openboxold.c   | 2 +-
+ src/xde_pekwm.c        | 2 +-
+ src/xde_perlpanel.c    | 2 +-
+ src/xde_twm.c          | 2 +-
+ src/xde_uwm.c          | 2 +-
+ src/xde_vtwm.c         | 2 +-
+ src/xde_waimea.c       | 2 +-
+ src/xde_wind.c         | 2 +-
+ src/xde_wm2.c          | 2 +-
+ src/xde_wmaker.c       | 2 +-
+ src/xde_wmakerold.c    | 2 +-
+ src/xde_wmii.c         | 2 +-
+ src/xde_wmx.c          | 2 +-
+ src/xde_xdwm.c         | 2 +-
+ src/xde_yeahwm.c       | 2 +-
+ 47 files changed, 50 insertions(+), 50 deletions(-)
+
+commit e5dfd3212c1b6c8121acc2a01c8100a590fc7fa3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 02:31:54 2022 -0700
+
+    add unused scripts
+
+ xde-menu-monitor | 3 +++
+ xde-menu-popmenu | 3 +++
+ xde-menu-quit    | 3 +++
+ xde-menu-refresh | 3 +++
+ xde-menu-replace | 3 +++
+ xde-menu-restart | 3 +++
+ xde-menugen      | 3 +++
+ 7 files changed, 21 insertions(+)
+
+commit 2802f7adf42d4d3617c5f04c4a809f9591ef6c89
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 02:30:43 2022 -0700
+
+    add gh-pages
+
+ Makefile.am  |  3 ++
+ README.md    | 81 +++++++++++++++++++++++++++++++++---------------
+ README.md.in | 81 +++++++++++++++++++++++++++++++++---------------
+ _config.yml  |  4 +++
+ dist.sh      |  2 +-
+ index.md     | 93 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ logo.svg     | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 306 insertions(+), 49 deletions(-)
+
+commit 419f820b0caa4dbc6755a3900cfdded890001a48
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 27 21:06:58 2022 -0700
+
+    update build flags
+
+ configure.sh | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+commit e567b465a8dcb2e7ba8eefa16271f79a316054ff
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 18 12:51:22 2021 -0600
+
+    post-release update
+
+ ChangeLog | 22 ++++++++++++++++++++++
+ NEWS      |  4 +++-
+ 2 files changed, 25 insertions(+), 1 deletion(-)
+
 commit 32afc11f14a34e6b928812cc443611eb197fd441
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue May 18 12:49:57 2021 -0600

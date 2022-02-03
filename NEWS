@@ -1,4 +1,34 @@
-xde-menu -- history of user-visible changes.  2021-05-18
+xde-menu -- history of user-visible changes.  2022-02-02
+
+Release xde-menu-0.14 released 2022-02-02
+-----------------------------------------
+
+git tag -n100 -l 0.14
+
+0.14            xde-menu 0.14 - Maintenance release of xde-menu
+
+    This is another release of the xde-menu package that provides XDG
+    compliant menu generation for a wide range of light-weight window
+    managers as well as providing a pop-up and system-tray GTK+ menu. All
+    of the functionality is working, including many window-manager specific
+    sub-menus and startup notification completion.
+
+    This release is a maintenance release, primarily for gcc 11.1.0
+    support, updated autoconf tool chain and new build flags.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.13...0.14
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      post-release update
+      update build flags
+      add gh-pages
+      add unused scripts
+      update copyright
+
 
 Release xde-menu-0.13 released 2021-05-18
 -----------------------------------------
@@ -265,38 +295,4 @@ Brian Bidulock <bidulock@openss7.org> (5):
       address first part of #3
       update release files
       post-release update
-
-
-Release xde-menu-0.7 released 2018-06-19
-----------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6...0.7
-
-Brian Bidulock <bidulock@openss7.org> (26):
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      handle glibc broken optional arguments processing
-      document optional arguments better
-      unbroken glibc compatability
-      adjust optional arg for -b and -k
-      use symbolic links instead of scripts
-      use symbolic links instead of scripts
-      use symbolic links instead of scripts
-      use hard links
-      update release files
-      post relase files
 
