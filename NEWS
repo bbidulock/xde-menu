@@ -22,12 +22,13 @@ git tag -n100 -l 0.14
 
 git shortlog -e -n -w80,6,8 0.13...0.14
 
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (6):
       post-release update
       update build flags
       add gh-pages
       add unused scripts
       update copyright
+      update release files
 
 
 Release xde-menu-0.13 released 2021-05-18
